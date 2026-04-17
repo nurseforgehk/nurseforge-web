@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function NurseForgeFinalV16() {
+export default function NurseForgeFinalV17() {
   const [mounted, setMounted] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -84,19 +84,17 @@ export default function NurseForgeFinalV16() {
       </div>
 
       <div style={{ maxWidth: '500px', margin: '0 auto 30px auto' }}>
-        {/* 膠紙座陳列連連結按鈕 */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
             <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
             <ShowcaseCardMini img="/greytape.jpg" title="灰色膠紙座" price="$58" />
         </div>
         
-        {/* 新增：兩個打橫的 IG 連結按鈕 */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '25px' }}>
-            <a href="https://www.instagram.com/p/DW9hjFeEtjL/?utm_source=ig_web_copy_link&igsh=NTc4MTIwNjQ2YQ==" target="_blank" style={igLinkBtnStyle}>🎨 睇顏色訂造效果圖</a>
+            {/* 更新了按鈕名稱 */}
+            <a href="https://www.instagram.com/p/DW9hjFeEtjL/?utm_source=ig_web_copy_link&igsh=NTc4MTIwNjQ2YQ==" target="_blank" style={igLinkBtnStyle}>🎨 睇客制顏色選項</a>
             <a href="https://www.instagram.com/p/DW3pJ1zkuY4/?utm_source=ig_web_copy_link&igsh=NTc4MTIwNjQ2YQ==" target="_blank" style={igLinkBtnStyle}>🛡️ 點解要加防塵蓋？</a>
         </div>
 
-        {/* 其他產品陳列 */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
           {['pbed', 'bbed', 'twobed', 'cm', 'sick', 'kc'].map((img, idx) => (
             <ShowcaseCardMini key={idx} img={`/${img}.jpg`} title={["粉紅白吉床", "藍白吉床", "吉床套裝", "收聲先", "不想上班", "如意吉場"][idx]} price={["$58","$58","$110","$68","$28","$28"][idx]} />
@@ -104,7 +102,6 @@ export default function NurseForgeFinalV16() {
         </div>
       </div>
 
-      {/* 填表區 */}
       <div ref={orderSectionRef} style={{ width: '100%', maxWidth: '480px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
         <div style={formCardStyle}>
           <Section title="📦 第一區：膠紙座系列">
@@ -208,6 +205,17 @@ export default function NurseForgeFinalV16() {
 
       <div style={footerStyle}>
         <div style={{ width: '100%', maxWidth: '480px' }}>
+          {/* 新增：底部金額顯示與運費提示 */}
+          <div style={bottomTotalCardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+               <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#666' }}>已選商品總額：</span>
+               <span style={{ fontSize: '20px', fontWeight: '900', color: '#77815C' }}>HKD ${total}</span>
+            </div>
+            <p style={{ fontSize: '10px', color: '#77815C', fontWeight: 'bold', marginTop: '2px', textAlign: 'right' }}>
+              💡 滿 $120 即享順豐站/智能櫃免運費
+            </p>
+          </div>
+
           <div style={{ display: 'flex', gap: '10px', marginBottom: '5px' }}>
             <button onClick={() => { if(!shipping.igName) return alert("填IG先！"); navigator.clipboard.writeText(`Order: ${shipping.igName}`); setCopied(true); setTimeout(()=>setCopied(false),2000); }} style={secondaryBtnStyle}>{copied ? "✅ 已複製" : "📋 複製 IG 名"}</button>
             <a href="https://payme.hsbc/nfhk" target="_blank" style={paymeBtnStyle}>立即 PayMe</a>
@@ -222,6 +230,15 @@ export default function NurseForgeFinalV16() {
 }
 
 // 樣式表
+const bottomTotalCardStyle: any = {
+    backgroundColor: '#f8f9fa',
+    padding: '8px 15px',
+    borderRadius: '12px',
+    border: '1px solid #eee',
+    marginBottom: '8px',
+    width: '100%'
+};
+
 const igLinkBtnStyle: any = {
     flex: 1,
     padding: '10px',
