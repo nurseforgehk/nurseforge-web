@@ -90,7 +90,6 @@ export default function NurseForgeFinalV8_1() {
         <p style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '5px' }}>由護士鍛造，為醫護而生</p>
       </div>
 
-      {/* 移除海洋藍圖片展示，改回常規熱銷品 */}
       <div style={{ maxWidth: '500px', margin: '0 auto 30px auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
         <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
         <ShowcaseCardMini img="/greytape.jpg" title="灰色膠紙座" price="$58" />
@@ -109,7 +108,6 @@ export default function NurseForgeFinalV8_1() {
             <Row name="🤍 白色 White ($58)" count={items.tapeWhite} onAdd={() => update('tapeWhite', 1)} onSub={() => update('tapeWhite', -1)} />
             <Row name="🩶 灰色 Grey ($58)" count={items.tapeGrey} onAdd={() => update('tapeGrey', 1)} onSub={() => update('tapeGrey', -1)} />
             
-            {/* 4月限定色選項 - 依然保留選項供選購 */}
             <div style={{ margin: '15px 0', padding: '15px', backgroundColor: '#E0F2F1', borderRadius: '15px', border: '2px solid #00897B' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
@@ -151,7 +149,6 @@ export default function NurseForgeFinalV8_1() {
           </Section>
         </div>
 
-        {/* 第二、三、四區及預覽部分保持不變 */}
         <div style={formCardStyle}>
           <Section title="🔔 第二區：Clicker 系列">
             <Row name="🌸 粉紅白吉床 ($58)" count={items.clickerLuckyPink} onAdd={() => update('clickerLuckyPink', 1)} onSub={() => update('clickerLuckyPink', -1)} />
@@ -175,8 +172,8 @@ export default function NurseForgeFinalV8_1() {
               <input placeholder="IG 帳號" style={inputStyle} value={shipping.igName} onChange={e => setShipping({...shipping, igName: e.target.value})} />
             </div>
             <input placeholder="聯絡電話號碼" style={inputStyle} value={shipping.phone} onChange={e => setShipping({...shipping, phone: e.target.value})} />
-            <textarea placeholder="詳細收件地址 / 順豐代碼" style={{...inputStyle, height: '80px'}} value={shipping.address} onChange={e => setShipping({...shipping, address: e.target.value})} />
-            <input placeholder="備註事項 (Remarks)" style={{...inputStyle, border: '2px solid #77815C', marginTop: '5px'}} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
+            <textarea placeholder="詳細收件地址 / 順豐代碼" style={{...inputStyle, height: '80px'} as any} value={shipping.address} onChange={e => setShipping({...shipping, address: e.target.value})} />
+            <input placeholder="備註事項 (Remarks)" style={{...inputStyle, border: '2px solid #77815C', marginTop: '5px'} as any} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px' }}>
               {!hasClicker && <Radio label="本地平郵" active={shipping.method === 'post'} onClick={() => setShipping({...shipping, method: 'post'})} />}
@@ -184,7 +181,7 @@ export default function NurseForgeFinalV8_1() {
               <Radio label={isFreeSF ? "智能櫃 (免運)" : "智能櫃到付"} active={shipping.method === 'sf_locker'} onClick={() => setShipping({...shipping, method: 'sf_locker'})} />
               <Radio label="送上門 (到付)" active={shipping.method === 'sf_direct'} onClick={() => setShipping({...shipping, method: 'sf_direct'})} />
             </div>
-            <div style={{...addonCardStyle, marginTop: '25px'}}>
+            <div style={addonCardStyle}>
               <span style={{ fontSize: '15px', fontWeight: '900', color: '#D63384' }}>💰 補錢湊數：${items.addonDiff}</span>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button onClick={() => update('addonDiff', -1)} style={diffBtnStyle}>-1</button>
@@ -247,33 +244,33 @@ export default function NurseForgeFinalV8_1() {
           <button onClick={() => { if(!shipping.igName) return alert("填IG先！"); navigator.clipboard.writeText(`Order: ${shipping.igName}`); setCopied(true); setTimeout(()=>setCopied(false),2000); }} style={secondaryBtnStyle}>{copied ? "✅ 已複製" : "📋 複製 IG 名"}</button>
           <a href="https://payme.hsbc/nfhk" target="_blank" style={paymeBtnStyle}>立即 PayMe</a>
         </div>
-        <button onClick={download} disabled={!agreed} style={{ ...primaryBtnStyle, backgroundColor: agreed ? '#77815C' : '#ccc' }}>下載執貨單並 DM 我</button>
+        <button onClick={download} disabled={!agreed} style={{ ...primaryBtnStyle, backgroundColor: agreed ? '#77815C' : '#ccc' } as any}>下載執貨單並 DM 我</button>
       </div>
     </div>
   );
 }
 
-// 樣式部分
-const fabStyle = { position: 'fixed', right: '20px', bottom: '180px', width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#fff', border: 'none', boxShadow: '0 8px 20px rgba(0,0,0,0.3)', zIndex: 999, cursor: 'pointer', fontSize: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
-const formCardStyle = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
-const orderDraftStyle = { backgroundColor: '#fff', padding: '30px', width: '100%', maxWidth: '420px', border: '5px solid #77815C', color: '#000' };
-const orderHeaderStyle = { borderBottom: '3px solid #77815C', paddingBottom: '12px', marginBottom: '15px', textAlign: 'center' };
-const orderInfoBoxStyle = { fontSize: '14px', marginBottom: '20px', lineHeight: '1.6', backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '12px' };
-const orderTotalAreaStyle = { borderTop: '3px dashed #eee', marginTop: '15px', paddingTop: '15px', textAlign: 'right' };
-const agreementBoxStyle = { width: '100%', maxWidth: '420px', marginTop: '20px', padding: '15px', backgroundColor: '#FFF9E6', borderRadius: '12px', border: '1px solid #FFCC00' };
-const footerStyle = { position: 'fixed', bottom: '0', width: '100%', left: '0', backgroundColor: '#fff', padding: '20px 20px 40px 20px', borderTop: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', zIndex: 1000 };
-const inputStyle = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px', color: '#000' };
-const btnStyle = { width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', border: 'none', backgroundColor: '#f0f0f0', fontWeight: 'bold', cursor: 'pointer' };
-const diffBtnStyle = { width: '40px', height: '40px', border: '2px solid #D63384', backgroundColor: '#fff', color: '#D63384', borderRadius: '10px', fontWeight: 'bold' };
-const primaryBtnStyle = { width: '100%', maxWidth: '480px', padding: '18px', color: '#fff', border: 'none', borderRadius: '40px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' };
-const secondaryBtnStyle = { flex: 1, padding: '14px', backgroundColor: '#fff', color: '#77815C', border: '2px solid #77815C', borderRadius: '12px', fontWeight: 'bold' };
-const paymeBtnStyle = { flex: 2, padding: '14px', backgroundColor: '#FF002B', color: '#fff', textDecoration: 'none', borderRadius: '12px', textAlign: 'center', fontWeight: 'bold' };
-const addonCardStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', backgroundColor: '#FFF5F7', borderRadius: '15px', border: '2px solid #FFD1DC' };
+// 核心樣式定義 (全部加上 : any 以解決 TypeScript 類型問題)
+const fabStyle: any = { position: 'fixed', right: '20px', bottom: '180px', width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#fff', border: 'none', boxShadow: '0 8px 20px rgba(0,0,0,0.3)', zIndex: 999, cursor: 'pointer', fontSize: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
+const orderDraftStyle: any = { backgroundColor: '#fff', padding: '30px', width: '100%', maxWidth: '420px', border: '5px solid #77815C', color: '#000' };
+const orderHeaderStyle: any = { borderBottom: '3px solid #77815C', paddingBottom: '12px', marginBottom: '15px', textAlign: 'center' };
+const orderInfoBoxStyle: any = { fontSize: '14px', marginBottom: '20px', lineHeight: '1.6', backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '12px' };
+const orderTotalAreaStyle: any = { borderTop: '3px dashed #eee', marginTop: '15px', paddingTop: '15px', textAlign: 'right' };
+const agreementBoxStyle: any = { width: '100%', maxWidth: '420px', marginTop: '20px', padding: '15px', backgroundColor: '#FFF9E6', borderRadius: '12px', border: '1px solid #FFCC00' };
+const footerStyle: any = { position: 'fixed', bottom: '0', width: '100%', left: '0', backgroundColor: '#fff', padding: '20px 20px 40px 20px', borderTop: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', zIndex: 1000 };
+const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px', color: '#000' };
+const btnStyle: any = { width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', border: 'none', backgroundColor: '#f0f0f0', fontWeight: 'bold', cursor: 'pointer' };
+const diffBtnStyle: any = { width: '40px', height: '40px', border: '2px solid #D63384', backgroundColor: '#fff', color: '#D63384', borderRadius: '10px', fontWeight: 'bold' };
+const primaryBtnStyle: any = { width: '100%', maxWidth: '480px', padding: '18px', color: '#fff', border: 'none', borderRadius: '40px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' };
+const secondaryBtnStyle: any = { flex: 1, padding: '14px', backgroundColor: '#fff', color: '#77815C', border: '2px solid #77815C', borderRadius: '12px', fontWeight: 'bold' };
+const paymeBtnStyle: any = { flex: 2, padding: '14px', backgroundColor: '#FF002B', color: '#fff', textDecoration: 'none', borderRadius: '12px', textAlign: 'center', fontWeight: 'bold' };
+const addonCardStyle: any = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', backgroundColor: '#FFF5F7', borderRadius: '15px', border: '2px solid #FFD1DC', marginTop: '25px' };
 
 function ShowcaseCardMini({ img, title, price }: any) {
   return (
-    <div style={{ backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-      <img src={img} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} alt={title} />
+    <div style={{ backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' } as any}>
+      <img src={img} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' } as any} alt={title} />
       <div style={{ padding: '10px' }}>
         <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#000' }}>{title}</div>
         <div style={{ fontSize: '16px', color: '#77815C', fontWeight: '900' }}>{price}</div>
@@ -281,7 +278,7 @@ function ShowcaseCardMini({ img, title, price }: any) {
     </div>
   );
 }
-function Section({ title, children }: any) { return ( <div style={{ marginBottom: '15px' }}><h3 style={{ fontSize: '18px', fontWeight: '900', color: '#77815C', marginBottom: '15px', borderLeft: '6px solid #77815C', paddingLeft: '12px' }}>{title}</h3>{children}</div> ); }
-function Row({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f2f2f2' }}><span style={{ fontSize: '15px', color: '#000', fontWeight: '600' }}>{name}</span><div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}><button onClick={onSub} style={btnStyle}>−</button><span style={{ fontSize: '18px', fontWeight: '900', minWidth: '20px', textAlign: 'center' }}>{count}</span><button onClick={onAdd} style={btnStyle}>+</button></div></div> ); }
-function RowMini({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #eee' }}><span style={{ fontSize: '13px', color: '#000', fontWeight: 'bold' }}>{name}</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button onClick={onSub} style={{...btnStyle, width: '24px', height: '24px'}}>−</button><span style={{ fontSize: '14px', fontWeight: '900' }}>{count}</span><button onClick={onAdd} style={{...btnStyle, width: '24px', height: '24px'}}>+</button></div></div> ); }
-function Radio({ label, active, onClick }: any) { return ( <div onClick={onClick} style={{ padding: '10px 15px', borderRadius: '20px', border: `2px solid ${active ? '#77815C' : '#eee'}`, backgroundColor: active ? '#77815C' : '#fff', color: active ? '#fff' : '#000', fontSize: '13px', cursor: 'pointer', fontWeight: 'bold' }}>{label}</div> ); }
+function Section({ title, children }: any) { return ( <div style={{ marginBottom: '15px' }}><h3 style={{ fontSize: '18px', fontWeight: '900', color: '#77815C', marginBottom: '15px', borderLeft: '6px solid #77815C', paddingLeft: '12px' } as any}>{title}</h3>{children}</div> ); }
+function Row({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f2f2f2' } as any}><span style={{ fontSize: '15px', color: '#000', fontWeight: '600' }}>{name}</span><div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}><button onClick={onSub} style={btnStyle}>−</button><span style={{ fontSize: '18px', fontWeight: '900', minWidth: '20px', textAlign: 'center' }}>{count}</span><button onClick={onAdd} style={btnStyle}>+</button></div></div> ); }
+function RowMini({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #eee' } as any}><span style={{ fontSize: '13px', color: '#000', fontWeight: 'bold' }}>{name}</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button onClick={onSub} style={{...btnStyle, width: '24px', height: '24px'}}>−</button><span style={{ fontSize: '14px', fontWeight: '900' }}>{count}</span><button onClick={onAdd} style={{...btnStyle, width: '24px', height: '24px'}}>+</button></div></div> ); }
+function Radio({ label, active, onClick }: any) { return ( <div onClick={onClick} style={{ padding: '10px 15px', borderRadius: '20px', border: `2px solid ${active ? '#77815C' : '#eee'}`, backgroundColor: active ? '#77815C' : '#fff', color: active ? '#fff' : '#000', fontSize: '13px', cursor: 'pointer', fontWeight: 'bold' } as any}>{label}</div> ); }
