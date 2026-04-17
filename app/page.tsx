@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function NurseForgeFinalV18() {
+export default function NurseForgeFinalV19() {
   const [mounted, setMounted] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -26,7 +26,6 @@ export default function NurseForgeFinalV18() {
   };
 
   const [items, setItems] = useState(initialItems);
-
   const [shipping, setShipping] = useState({ 
     name: '', phone: '', igName: '', address: '', method: 'sf_station', remarks: ''
   });
@@ -39,6 +38,16 @@ export default function NurseForgeFinalV18() {
     setToday(new Date().toISOString().split('T')[0]);
     setRandomQuote(quotes[Math.floor(Math.random() * quotes.length)]);
   }, []);
+
+  // 判定是否選購了 Clicker
+  const hasClicker = items.clickerLuckyPink > 0 || items.clickerLuckyBlue > 0 || items.clickerShutUp > 0 || items.clickerCombo > 0;
+
+  // 如果選了 Clicker 且當前方法是平郵，則強制跳轉到順豐
+  useEffect(() => {
+    if (hasClicker && shipping.method === 'post') {
+      setShipping(s => ({ ...s, method: 'sf_station' }));
+    }
+  }, [hasClicker]);
 
   const total = [
     { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 }, { qty: items.tapeMonthly, p: 68 },
@@ -106,7 +115,7 @@ export default function NurseForgeFinalV18() {
 
       <div ref={orderSectionRef} style={{ width: '100%', maxWidth: '480px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
         <div style={formCardStyle}>
-          <Section title="📦 第一區：膠紙座系列" badge="可選平郵(包郵)">
+          <Section title="📦 第一區：膠紙座系列" badge="可選平郵(包郵)" badgeColor="#2E7D32">
             <Row name="🤍 白色 White ($58)" count={items.tapeWhite} onAdd={() => update('tapeWhite', 1)} onSub={() => update('tapeWhite', -1)} />
             <Row name="🩶 灰色 Grey ($58)" count={items.tapeGrey} onAdd={() => update('tapeGrey', 1)} onSub={() => update('tapeGrey', -1)} />
             <div style={specialRowStyle}>
@@ -133,7 +142,8 @@ export default function NurseForgeFinalV18() {
         </div>
 
         <div style={formCardStyle}>
-          <Section title="🔔 第二區：Clicker 系列">
+          {/* 新增：Clicker 區不設平郵提示 */}
+          <Section title="🔔 第二區：Clicker 系列" badge="❌ 不設平郵" badgeColor="#dc3545">
             <Row name="🌸 粉紅白吉床 ($58)" count={items.clickerLuckyPink} onAdd={() => update('clickerLuckyPink', 1)} onSub={() => update('clickerLuckyPink', -1)} />
             <Row name="💎 藍白吉床 ($58)" count={items.clickerLuckyBlue} onAdd={() => update('clickerLuckyBlue', 1)} onSub={() => update('clickerLuckyBlue', -1)} />
             <Row name="✨ 吉床套裝 (粉紅+藍) ($110)" count={items.clickerCombo} onAdd={() => update('clickerCombo', 1)} onSub={() => update('clickerCombo', -1)} />
@@ -142,7 +152,7 @@ export default function NurseForgeFinalV18() {
         </div>
 
         <div style={formCardStyle}>
-          <Section title="🎁 第三區：鎖匙扣系列 ($28)" badge="可選平郵(包郵)">
+          <Section title="🎁 第三區：鎖匙扣系列 ($28)" badge="可選平郵(包郵)" badgeColor="#2E7D32">
             <Row name="🚫 不想上班" count={items.keyringNoWork} onAdd={() => update('keyringNoWork', 1)} onSub={() => update('keyringNoWork', -1)} />
             <Row name="🍊 如意吉場" count={items.keyringLucky} onAdd={() => update('keyringLucky', 1)} onSub={() => update('keyringLucky', -1)} />
           </Section>
@@ -151,6 +161,8 @@ export default function NurseForgeFinalV18() {
         <div style={formCardStyle}>
           <Section title="🚚 第四區：配送及個人資訊">
             <p style={privacyNoticeStyle}>🛡️ <b>隱私聲明：</b>呢個網站唔會儲存任何個人資料。</p>
+            {hasClicker && <p style={{ color: '#dc3545', fontSize: '11px', fontWeight: 'bold', marginBottom: '8px' }}>⚠️ 由於閣下選購了 Clicker，配送只能選擇順豐或送上門。</p>}
+            
             <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
               <input placeholder="收件人姓名" style={inputStyle} value={shipping.name} onChange={e => setShipping({...shipping, name: e.target.value})} />
               <input placeholder="IG 帳號" style={inputStyle} value={shipping.igName} onChange={e => setShipping({...shipping, igName: e.target.value})} />
@@ -159,7 +171,9 @@ export default function NurseForgeFinalV18() {
             <textarea placeholder="詳細收件地址 / 順豐代碼" style={{...inputStyle, height: '80px'} as any} value={shipping.address} onChange={e => setShipping({...shipping, address: e.target.value})} />
             <input placeholder="備註事項 (Remarks)" style={{...inputStyle, border: '2px solid #77815C'} as any} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px' }}>
-              <Radio label="本地平郵 (包郵)" active={shipping.method === 'post'} onClick={() => setShipping({...shipping, method: 'post'})} />
+              {/* 如果選了 Clicker，隱藏平郵選項 */}
+              {!hasClicker && <Radio label="本地平郵 (包郵)" active={shipping.method === 'post'} onClick={() => setShipping({...shipping, method: 'post'})} />}
+              
               <Radio label={isFreeSF ? "順豐站 (免運)" : "順豐站到付"} active={shipping.method === 'sf_station'} onClick={() => setShipping({...shipping, method: 'sf_station'})} />
               <Radio label={isFreeSF ? "智能櫃 (免運)" : "智能櫃到付"} active={shipping.method === 'sf_locker'} onClick={() => setShipping({...shipping, method: 'sf_locker'})} />
               <Radio label="送上門 (到付)" active={shipping.method === 'sf_direct'} onClick={() => setShipping({...shipping, method: 'sf_direct'})} />
@@ -213,7 +227,6 @@ export default function NurseForgeFinalV18() {
                  <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#666' }}>已選商品總額：</span>
                  <div style={{ fontSize: '22px', fontWeight: '900', color: '#77815C' }}>HKD ${total}</div>
                </div>
-               {/* 新增：一件清除按鈕 */}
                <button onClick={clearAll} style={clearBtnStyle}>🗑️ 清除所有</button>
             </div>
             <p style={{ fontSize: '11px', color: '#77815C', fontWeight: '900', marginTop: '4px', textAlign: 'right', borderTop: '1px solid #e0e0e0', paddingTop: '4px' }}>
@@ -234,53 +247,21 @@ export default function NurseForgeFinalV18() {
   );
 }
 
-// 樣式表
-const clearBtnStyle: any = {
-    padding: '6px 12px',
-    backgroundColor: '#fff',
-    color: '#dc3545',
-    border: '1px solid #dc3545',
-    borderRadius: '8px',
-    fontSize: '12px',
-    fontWeight: 'bold',
-    cursor: 'pointer'
-};
-
-const badgeStyle: any = {
+// 樣式表 (僅列出變動部分)
+const badgeStyle = (color: string): any => ({
     fontSize: '10px',
-    backgroundColor: '#E8F5E9',
-    color: '#2E7D32',
+    backgroundColor: color === '#dc3545' ? '#FEE2E2' : '#E8F5E9',
+    color: color,
     padding: '2px 8px',
     borderRadius: '10px',
     marginLeft: '8px',
-    border: '1px solid #A5D6A7',
+    border: `1px solid ${color}`,
     verticalAlign: 'middle'
-};
+});
 
-const bottomTotalCardStyle: any = {
-    backgroundColor: '#fff',
-    padding: '12px 15px',
-    borderRadius: '16px',
-    border: '2px solid #77815C',
-    marginBottom: '10px',
-    width: '100%',
-    boxShadow: '0 -4px 15px rgba(0,0,0,0.05)'
-};
-
-const igLinkBtnStyle: any = {
-    flex: 1,
-    padding: '10px',
-    borderRadius: '12px',
-    background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
-    color: '#fff',
-    textDecoration: 'none',
-    fontSize: '12px',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-    minWidth: '160px'
-};
-
+const clearBtnStyle: any = { padding: '6px 12px', backgroundColor: '#fff', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' };
+const bottomTotalCardStyle: any = { backgroundColor: '#fff', padding: '12px 15px', borderRadius: '16px', border: '2px solid #77815C', marginBottom: '10px', width: '100%', boxShadow: '0 -4px 15px rgba(0,0,0,0.05)' };
+const igLinkBtnStyle: any = { flex: 1, padding: '10px', borderRadius: '12px', background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', color: '#fff', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', textAlign: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', minWidth: '160px' };
 const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', padding: '12px 18px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '3px solid #77815C', boxShadow: '0 6px 20px rgba(0,0,0,0.2)', zIndex: 1100, fontSize: '12px', cursor: 'pointer', textAlign: 'center', transform: 'rotate(-2deg)', transition: 'all 0.2s' };
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const orderDraftStyle: any = { backgroundColor: '#fff', padding: '15px', width: '95%', maxWidth: '380px', border: '4px solid #77815C', color: '#000', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' };
@@ -304,7 +285,7 @@ const addonCardStyle: any = { display: 'flex', justifyContent: 'space-between', 
 const diffBtnStyle: any = { width: '35px', height: '35px', border: '2px solid #D63384', backgroundColor: '#fff', color: '#D63384', borderRadius: '10px', fontWeight: 'bold' };
 
 function ShowcaseCardMini({ img, title, price }: any) { return ( <div style={{ backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' } as any}><img src={img} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' } as any} alt={title} /><div style={{ padding: '8px' }}><div style={{ fontSize: '12px', fontWeight: 'bold', color: '#000' }}>{title}</div><div style={{ fontSize: '14px', color: '#77815C', fontWeight: '900' }}>{price}</div></div></div> ); }
-function Section({ title, badge, children }: any) { return ( <div style={{ marginBottom: '10px' }}><h3 style={{ fontSize: '16px', fontWeight: '900', color: '#77815C', marginBottom: '12px', borderLeft: '5px solid #77815C', paddingLeft: '10px', display: 'flex', alignItems: 'center' } as any}>{title} {badge && <span style={badgeStyle}>{badge}</span>}</h3>{children}</div> ); }
+function Section({ title, badge, badgeColor, children }: any) { return ( <div style={{ marginBottom: '10px' }}><h3 style={{ fontSize: '16px', fontWeight: '900', color: '#77815C', marginBottom: '12px', borderLeft: '5px solid #77815C', paddingLeft: '10px', display: 'flex', alignItems: 'center' } as any}>{title} {badge && <span style={badgeStyle(badgeColor || '#2E7D32')}>{badge}</span>}</h3>{children}</div> ); }
 function Row({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f2f2f2' } as any}><span style={{ fontSize: '14px', color: '#000', fontWeight: '600' }}>{name}</span><div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}><button onClick={onSub} style={btnStyle}>−</button><span style={{ fontSize: '16px', fontWeight: '900', minWidth: '18px', textAlign: 'center' }}>{count}</span><button onClick={onAdd} style={btnStyle}>+</button></div></div> ); }
 function RowMini({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #eee' } as any}><span style={{ fontSize: '12px', color: '#000', fontWeight: 'bold' }}>{name}</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button onClick={onSub} style={{...btnStyle, width: '22px', height: '22px'}}>−</button><span style={{ fontSize: '14px', fontWeight: '900' }}>{count}</span><button onClick={onAdd} style={{...btnStyle, width: '22px', height: '22px'}}>+</button></div></div> ); }
 function Radio({ label, active, onClick }: any) { return ( <div onClick={onClick} style={{ padding: '8px 12px', borderRadius: '15px', border: `2px solid ${active ? '#77815C' : '#eee'}`, backgroundColor: active ? '#77815C' : '#fff', color: active ? '#fff' : '#000', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' } as any}>{label}</div> ); }
