@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function NurseForgeFinalV19() {
+export default function NurseForgeFinalV20() {
   const [mounted, setMounted] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -39,10 +39,8 @@ export default function NurseForgeFinalV19() {
     setRandomQuote(quotes[Math.floor(Math.random() * quotes.length)]);
   }, []);
 
-  // 判定是否選購了 Clicker
   const hasClicker = items.clickerLuckyPink > 0 || items.clickerLuckyBlue > 0 || items.clickerShutUp > 0 || items.clickerCombo > 0;
 
-  // 如果選了 Clicker 且當前方法是平郵，則強制跳轉到順豐
   useEffect(() => {
     if (hasClicker && shipping.method === 'post') {
       setShipping(s => ({ ...s, method: 'sf_station' }));
@@ -114,6 +112,7 @@ export default function NurseForgeFinalV19() {
       </div>
 
       <div ref={orderSectionRef} style={{ width: '100%', maxWidth: '480px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
+        {/* 第一、二、三區保持不變 */}
         <div style={formCardStyle}>
           <Section title="📦 第一區：膠紙座系列" badge="可選平郵(包郵)" badgeColor="#2E7D32">
             <Row name="🤍 白色 White ($58)" count={items.tapeWhite} onAdd={() => update('tapeWhite', 1)} onSub={() => update('tapeWhite', -1)} />
@@ -142,7 +141,6 @@ export default function NurseForgeFinalV19() {
         </div>
 
         <div style={formCardStyle}>
-          {/* 新增：Clicker 區不設平郵提示 */}
           <Section title="🔔 第二區：Clicker 系列" badge="❌ 不設平郵" badgeColor="#dc3545">
             <Row name="🌸 粉紅白吉床 ($58)" count={items.clickerLuckyPink} onAdd={() => update('clickerLuckyPink', 1)} onSub={() => update('clickerLuckyPink', -1)} />
             <Row name="💎 藍白吉床 ($58)" count={items.clickerLuckyBlue} onAdd={() => update('clickerLuckyBlue', 1)} onSub={() => update('clickerLuckyBlue', -1)} />
@@ -171,9 +169,7 @@ export default function NurseForgeFinalV19() {
             <textarea placeholder="詳細收件地址 / 順豐代碼" style={{...inputStyle, height: '80px'} as any} value={shipping.address} onChange={e => setShipping({...shipping, address: e.target.value})} />
             <input placeholder="備註事項 (Remarks)" style={{...inputStyle, border: '2px solid #77815C'} as any} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px' }}>
-              {/* 如果選了 Clicker，隱藏平郵選項 */}
               {!hasClicker && <Radio label="本地平郵 (包郵)" active={shipping.method === 'post'} onClick={() => setShipping({...shipping, method: 'post'})} />}
-              
               <Radio label={isFreeSF ? "順豐站 (免運)" : "順豐站到付"} active={shipping.method === 'sf_station'} onClick={() => setShipping({...shipping, method: 'sf_station'})} />
               <Radio label={isFreeSF ? "智能櫃 (免運)" : "智能櫃到付"} active={shipping.method === 'sf_locker'} onClick={() => setShipping({...shipping, method: 'sf_locker'})} />
               <Radio label="送上門 (到付)" active={shipping.method === 'sf_direct'} onClick={() => setShipping({...shipping, method: 'sf_direct'})} />
@@ -194,10 +190,15 @@ export default function NurseForgeFinalV19() {
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#666' }}><span>ID: {orderId}</span><span>DATE: {today}</span></div>
           </div>
           <div style={orderInfoBoxStyle}>
+            {/* 更新執貨單區域：顯示收件人名稱 */}
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '4px', marginBottom: '4px' }}>
-               <span><strong>IG:</strong> @{shipping.igName || '---'}</span><span><strong>Tel:</strong> {shipping.phone || '---'}</span>
+               <span><strong>IG:</strong> @{shipping.igName || '---'}</span>
+               <span><strong>Name:</strong> {shipping.name || '---'}</span>
             </div>
-            <p><strong>Ship:</strong> {methodMap[shipping.method]}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+               <span><strong>Tel:</strong> {shipping.phone || '---'}</span>
+               <span><strong>Ship:</strong> {methodMap[shipping.method]}</span>
+            </div>
             <p style={addressPreviewStyle}><strong>Addr:</strong> {shipping.address || '未填寫'}</p>
             {shipping.remarks && <p style={{ color: '#D63384', fontSize: '11px', marginTop: '2px' }}><strong>Rem:</strong> {shipping.remarks}</p>}
           </div>
@@ -247,18 +248,8 @@ export default function NurseForgeFinalV19() {
   );
 }
 
-// 樣式表 (僅列出變動部分)
-const badgeStyle = (color: string): any => ({
-    fontSize: '10px',
-    backgroundColor: color === '#dc3545' ? '#FEE2E2' : '#E8F5E9',
-    color: color,
-    padding: '2px 8px',
-    borderRadius: '10px',
-    marginLeft: '8px',
-    border: `1px solid ${color}`,
-    verticalAlign: 'middle'
-});
-
+// 樣式表 (與 V19 相同)
+const badgeStyle = (color: string): any => ({ fontSize: '10px', backgroundColor: color === '#dc3545' ? '#FEE2E2' : '#E8F5E9', color: color, padding: '2px 8px', borderRadius: '10px', marginLeft: '8px', border: `1px solid ${color}`, verticalAlign: 'middle' });
 const clearBtnStyle: any = { padding: '6px 12px', backgroundColor: '#fff', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' };
 const bottomTotalCardStyle: any = { backgroundColor: '#fff', padding: '12px 15px', borderRadius: '16px', border: '2px solid #77815C', marginBottom: '10px', width: '100%', boxShadow: '0 -4px 15px rgba(0,0,0,0.05)' };
 const igLinkBtnStyle: any = { flex: 1, padding: '10px', borderRadius: '12px', background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', color: '#fff', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', textAlign: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', minWidth: '160px' };
