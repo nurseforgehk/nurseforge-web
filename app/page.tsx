@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function NurseForgeFinalV15() {
+export default function NurseForgeFinalV16() {
   const [mounted, setMounted] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -53,7 +53,7 @@ export default function NurseForgeFinalV15() {
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
     { name: '4月限定色 (海洋藍)', qty: items.tapeMonthly, price: 68 },
     { name: '訂造色座 (Custom)', qty: (items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow), price: 78 },
-    { name: '隨座防塵蓋', qty: items.coverAddon, price: 10 },
+    { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10 },
     { name: '獨立防塵蓋', qty: items.coverSingle, price: 15 },
     { name: '粉紅白吉床', qty: items.clickerLuckyPink, price: 58 },
     { name: '藍白吉床', qty: items.clickerLuckyBlue, price: 58 },
@@ -83,11 +83,25 @@ export default function NurseForgeFinalV15() {
         <p style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '5px', opacity: 0.9 }}>by @nursingmeme_hk</p>
       </div>
 
-      {/* 產品展示區 */}
-      <div style={{ maxWidth: '500px', margin: '0 auto 30px auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-        {['whitetape', 'greytape', 'pbed', 'bbed', 'twobed', 'cm', 'sick', 'kc'].map((img, idx) => (
-          <ShowcaseCardMini key={idx} img={`/${img}.jpg`} title={["白色膠紙座", "灰色膠紙座", "粉紅白吉床", "藍白吉床", "吉床套裝", "收聲先", "不想上班", "如意吉場"][idx]} price={["$58","$58","$58","$58","$110","$68","$28","$28"][idx]} />
-        ))}
+      <div style={{ maxWidth: '500px', margin: '0 auto 30px auto' }}>
+        {/* 膠紙座陳列連連結按鈕 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+            <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
+            <ShowcaseCardMini img="/greytape.jpg" title="灰色膠紙座" price="$58" />
+        </div>
+        
+        {/* 新增：兩個打橫的 IG 連結按鈕 */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '25px' }}>
+            <a href="https://www.instagram.com/p/DW9hjFeEtjL/?utm_source=ig_web_copy_link&igsh=NTc4MTIwNjQ2YQ==" target="_blank" style={igLinkBtnStyle}>🎨 睇顏色訂造效果圖</a>
+            <a href="https://www.instagram.com/p/DW3pJ1zkuY4/?utm_source=ig_web_copy_link&igsh=NTc4MTIwNjQ2YQ==" target="_blank" style={igLinkBtnStyle}>🛡️ 點解要加防塵蓋？</a>
+        </div>
+
+        {/* 其他產品陳列 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+          {['pbed', 'bbed', 'twobed', 'cm', 'sick', 'kc'].map((img, idx) => (
+            <ShowcaseCardMini key={idx} img={`/${img}.jpg`} title={["粉紅白吉床", "藍白吉床", "吉床套裝", "收聲先", "不想上班", "如意吉場"][idx]} price={["$58","$58","$110","$68","$28","$28"][idx]} />
+          ))}
+        </div>
       </div>
 
       {/* 填表區 */}
@@ -159,7 +173,6 @@ export default function NurseForgeFinalV15() {
         </div>
       </div>
 
-      {/* 執貨單 Cap 圖區 (已壓縮) */}
       <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: '50px' }}>
         <div style={capNoticeStyle}>📸 請截圖 (Screenshot)</div>
         <div style={orderDraftStyle}>
@@ -183,8 +196,6 @@ export default function NurseForgeFinalV15() {
           <div style={orderTotalAreaStyle}><div style={{ fontSize: '24px', fontWeight: '900', color: '#77815C' }}>Total: HKD ${total}</div></div>
           <div style={quoteAreaStyle}>✨ {randomQuote}</div>
         </div>
-        
-        {/* 確認條款 */}
         <div style={agreementBoxStyle}>
            <label style={{ display: 'flex', gap: '12px', cursor: 'pointer' }}>
              <input type="checkbox" checked={agreed} onChange={() => setAgreed(!agreed)} style={{ width: '20px', height: '20px' }} />
@@ -195,7 +206,6 @@ export default function NurseForgeFinalV15() {
         </div>
       </div>
 
-      {/* 底部按鈕 */}
       <div style={footerStyle}>
         <div style={{ width: '100%', maxWidth: '480px' }}>
           <div style={{ display: 'flex', gap: '10px', marginBottom: '5px' }}>
@@ -211,17 +221,28 @@ export default function NurseForgeFinalV15() {
   );
 }
 
-// 樣式表 (主要壓縮 orderDraftStyle)
+// 樣式表
+const igLinkBtnStyle: any = {
+    flex: 1,
+    padding: '10px',
+    borderRadius: '12px',
+    background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
+    color: '#fff',
+    textDecoration: 'none',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+    minWidth: '160px'
+};
+
 const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', padding: '12px 18px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '3px solid #77815C', boxShadow: '0 6px 20px rgba(0,0,0,0.2)', zIndex: 1100, fontSize: '12px', cursor: 'pointer', textAlign: 'center', transform: 'rotate(-2deg)', transition: 'all 0.2s' };
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
-
-// 執貨單壓縮核心
 const orderDraftStyle: any = { backgroundColor: '#fff', padding: '15px', width: '95%', maxWidth: '380px', border: '4px solid #77815C', color: '#000', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' };
 const orderHeaderStyle: any = { borderBottom: '2px solid #77815C', paddingBottom: '8px', marginBottom: '10px', textAlign: 'center' };
 const orderInfoBoxStyle: any = { fontSize: '12px', marginBottom: '10px', lineHeight: '1.4', backgroundColor: '#f9f9f9', padding: '10px', borderRadius: '8px' };
 const orderTotalAreaStyle: any = { borderTop: '2px dashed #eee', marginTop: '10px', paddingTop: '8px', textAlign: 'right' };
 const quoteAreaStyle: any = { marginTop: '10px', padding: '8px 5px', borderTop: '1px solid #eee', fontSize: '11px', color: '#77815C', fontWeight: 'bold', fontStyle: 'italic', textAlign: 'center' };
-
 const agreementBoxStyle: any = { width: '95%', maxWidth: '380px', marginTop: '15px', padding: '10px', backgroundColor: '#FFF9E6', borderRadius: '12px', border: '1px solid #FFCC00' };
 const footerStyle: any = { position: 'fixed', bottom: '0', left: '0', width: '100%', backgroundColor: '#fff', padding: '10px 20px 25px 20px', borderTop: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center', zIndex: 1000 };
 const instagramBtnStyle = (agreed: boolean): any => ({ width: '100%', maxWidth: '480px', padding: '15px', color: '#fff', border: 'none', borderRadius: '40px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'none', textAlign: 'center', background: agreed ? 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)' : '#ccc', opacity: agreed ? 1 : 0.7, pointerEvents: agreed ? 'auto' : 'none', boxShadow: agreed ? '0 4px 15px rgba(204, 35, 102, 0.4)' : 'none' });
