@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function NurseForgeFinalV13() {
+export default function NurseForgeFinalV14() {
   const [mounted, setMounted] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -9,7 +9,6 @@ export default function NurseForgeFinalV13() {
   const [today, setToday] = useState('');
   const [randomQuote, setRandomQuote] = useState('');
 
-  // 完美金句庫
   const quotes = [
     "祝你準時收工！🕒", "見字飲水呀同事！💧", "記得去廁所，人工包埋㗎！🚽", 
     "祝你生意淡薄，越淡越好！🛌", "祝你日日返工靚腳靚場！✨", 
@@ -73,8 +72,9 @@ export default function NurseForgeFinalV13() {
   if (!mounted) return null;
 
   return (
-    <div style={{ padding: '20px 20px 450px 20px', backgroundColor: '#77815C', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ padding: '20px 20px 450px 20px', backgroundColor: '#77815C', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
       
+      {/* 修改後的導航掣：由 fixed 改為 absolute，確保唔會隨便阻住 Cap 圖 */}
       <button onClick={() => orderSectionRef.current?.scrollIntoView({ behavior: 'smooth' })} style={fabStyle}>
         我已經諗到買咩，<br/>直接帶我去揀商品 🛒
       </button>
@@ -113,7 +113,6 @@ export default function NurseForgeFinalV13() {
             </div>
             <div style={{ marginTop: '20px', borderTop: '2px dashed #eee', paddingTop: '15px' }}>
               <Row name="隨座加購防塵蓋 $10" count={items.coverAddon} onAdd={() => update('coverAddon', 1)} onSub={() => update('coverAddon', -1)} />
-              <Row name="補買防塵蓋 $15" count={items.coverSingle} onAdd={() => update('coverSingle', -1)} /> {/* Fix potential bug on decrement */}
               <Row name="補買防塵蓋 $15" count={items.coverSingle} onAdd={() => update('coverSingle', 1)} onSub={() => update('coverSingle', -1)} />
             </div>
           </Section>
@@ -181,7 +180,6 @@ export default function NurseForgeFinalV13() {
             ))}
           </div>
           <div style={orderTotalAreaStyle}><div style={{ fontSize: '32px', fontWeight: '900', color: '#77815C' }}>Total: HKD ${total}</div></div>
-          {/* 金句區域 */}
           <div style={quoteAreaStyle}>✨ {randomQuote}</div>
         </div>
         <div style={agreementBoxStyle}>
@@ -213,7 +211,25 @@ export default function NurseForgeFinalV13() {
 }
 
 // 樣式表
-const fabStyle: any = { position: 'fixed', right: '15px', top: '15px', padding: '12px 18px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '3px solid #77815C', boxShadow: '0 6px 20px rgba(0,0,0,0.2)', zIndex: 1100, fontSize: '13px', cursor: 'pointer', textAlign: 'center', transform: 'rotate(-2deg)', transition: 'all 0.2s' };
+const fabStyle: any = { 
+  position: 'absolute', // 由 fixed 改為 absolute
+  right: '15px', 
+  top: '15px', 
+  padding: '12px 18px', 
+  borderRadius: '20px', 
+  backgroundColor: '#fff', 
+  color: '#77815C', 
+  fontWeight: '900', 
+  border: '3px solid #77815C', 
+  boxShadow: '0 6px 20px rgba(0,0,0,0.2)', 
+  zIndex: 1100, 
+  fontSize: '13px', 
+  cursor: 'pointer', 
+  textAlign: 'center', 
+  transform: 'rotate(-2deg)', 
+  transition: 'all 0.2s' 
+};
+
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const orderDraftStyle: any = { backgroundColor: '#fff', padding: '30px', width: '100%', maxWidth: '420px', border: '5px solid #77815C', color: '#000', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' };
 const orderHeaderStyle: any = { borderBottom: '3px solid #77815C', paddingBottom: '12px', marginBottom: '15px', textAlign: 'center' };
