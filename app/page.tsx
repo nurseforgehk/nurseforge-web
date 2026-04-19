@@ -66,7 +66,7 @@ export default function NurseForgeFinalV22() {
     { k: 'tapePink', n: '🌸 櫻花粉膠紙座' }, { k: 'tapeDesertYellow', n: '🏜️ 沙漠黃膠紙座' }
   ];
 
-  // 這裡使用 any[] 強行通過 Vercel 檢查
+  // 徹底移除 isAddon 屬性，改用 name 判斷來繞過 TypeScript 報錯
   const activeProducts: any[] = [
     { name: '白色膠紙座', qty: items.tapeWhite, price: 58 },
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
@@ -80,8 +80,11 @@ export default function NurseForgeFinalV22() {
     { name: '收聲先', qty: items.clickerShutUp, price: 68 },
     { name: '不想上班鎖匙扣', qty: items.keyringNoWork, price: 28 },
     { name: '如意吉場鎖匙扣', qty: items.keyringLucky, price: 28 },
-    { name: '💰 補錢湊數', qty: 1, price: items.addonDiff, isAddon: true }
-  ].filter(p => p.qty > 0 && (p.isAddon ? p.price > 0 : true));
+    { name: '💰 補錢湊數', qty: 1, price: items.addonDiff }
+  ].filter(p => {
+    if (p.name === '💰 補錢湊數') return p.price > 0;
+    return p.qty > 0;
+  });
 
   const isFreeSF = total >= 120;
   const methodMap: any = { 
@@ -156,7 +159,7 @@ export default function NurseForgeFinalV22() {
         <div style={formCardStyle}>
           <Section title="🔔 第二區：Clicker 系列" badge="❌ 不設平郵" badgeColor="#dc3545">
             <Row name="🌸 粉紅白吉床 ($58)" count={items.clickerLuckyPink} onAdd={() => update('clickerLuckyPink', 1)} onSub={() => update('clickerLuckyPink', -1)} />
-            <Row name="💎 藍白吉床 ($58)" count={items.clickerLuckyBlue} onAdd={() => update('clickerLuckyBlue', -1)} onSub={() => update('clickerLuckyBlue', -1)} />
+            <Row name="💎 藍白吉床 ($58)" count={items.clickerLuckyBlue} onAdd={() => update('clickerLuckyBlue', 1)} onSub={() => update('clickerLuckyBlue', -1)} />
             <Row name="✨ 吉床套裝 ($110)" count={items.clickerCombo} onAdd={() => update('clickerCombo', 1)} onSub={() => update('clickerCombo', -1)} />
             <Row name="🤫 收聲先 ($68)" count={items.clickerShutUp} onAdd={() => update('clickerShutUp', 1)} onSub={() => update('clickerShutUp', -1)} />
           </Section>
