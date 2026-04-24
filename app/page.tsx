@@ -137,7 +137,7 @@ export default function NurseForgeFinalV22() {
         <div style={formCardStyle}>
           <Section title="📦 第一區：膠紙座系列" badge="可選平郵" badgeColor="#2E7D32">
             <Row name="🤍 白色 White ($58)" count={items.tapeWhite} onAdd={() => update('tapeWhite', 1)} onSub={() => update('tapeWhite', -1)} />
-            <Row name="🩶 灰色 Grey ($58)" count={items.tapeGrey} onAdd={() => update('tapeGrey', -1)} onSub={() => update('tapeGrey', -1)} />
+            <Row name="🩶 灰色 Grey ($58)" count={items.tapeGrey} onAdd={() => update('tapeGrey', 1)} onSub={() => update('tapeGrey', -1)} />
             <div style={specialRowStyle}>
                <div><span style={specialTagStyle}>APRIL SPECIAL</span><span style={{ fontSize: '14px', fontWeight: '900' }}>🌊 海洋藍 ($68)</span></div>
                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
@@ -277,7 +277,6 @@ export default function NurseForgeFinalV22() {
   );
 }
 
-// 樣式部分保持不變...
 const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', padding: '12px 18px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '3px solid #77815C', boxShadow: '0 6px 20px rgba(0,0,0,0.2)', zIndex: 1100, fontSize: '12px' };
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
