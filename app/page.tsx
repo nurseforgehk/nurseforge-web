@@ -20,7 +20,7 @@ export default function NurseForgeFinalV22() {
     tapeWhite: 0, tapeGrey: 0, tapeMonthly: 0, 
     tapeBlack: 0, tapeRed: 0, tapeYellow: 0, tapeOrange: 0, tapePurple: 0, tapeGreen: 0,
     tapePink: 0, tapeDesertYellow: 0, 
-    coverAddon: 0, coverSingle: 0, keyringNoWork: 0, keyringLucky: 0,
+    coverChiikawa: 0, coverAddon: 0, coverSingle: 0, keyringNoWork: 0, keyringLucky: 0,
     clickerLuckyPink: 0, clickerLuckyBlue: 0, clickerShutUp: 0, clickerCombo: 0, addonDiff: 0 
   };
 
@@ -52,7 +52,7 @@ export default function NurseForgeFinalV22() {
   const total = [
     { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 }, { qty: items.tapeMonthly, p: 68 },
     { qty: items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow, p: 78 },
-    { qty: items.coverAddon, p: 10 }, { qty: items.coverSingle, p: 15 },
+    { qty: items.coverChiikawa, p: 30 }, { qty: items.coverAddon, p: 10 }, { qty: items.coverSingle, p: 15 },
     { qty: items.clickerLuckyPink, p: 58 }, { qty: items.clickerLuckyBlue, p: 58 },
     { qty: items.clickerCombo, p: 110 }, { qty: items.clickerShutUp, p: 68 },
     { qty: items.keyringNoWork, p: 28 }, { qty: items.keyringLucky, p: 28 },
@@ -66,12 +66,12 @@ export default function NurseForgeFinalV22() {
     { k: 'tapePink', n: '🌸 櫻花粉膠紙座' }, { k: 'tapeDesertYellow', n: '🏜️ 沙漠黃膠紙座' }
   ];
 
-  // 徹底移除 isAddon 屬性，改用 name 判斷來繞過 TypeScript 報錯
   const activeProducts: any[] = [
     { name: '白色膠紙座', qty: items.tapeWhite, price: 58 },
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
     { name: '4月限定色 (海洋藍)', qty: items.tapeMonthly, price: 68 },
     ...customColors.map(c => ({ name: c.n, qty: (items as any)[c.k], price: 78 })),
+    { name: 'Chiikawa防塵蓋', qty: items.coverChiikawa, price: 30 },
     { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10 },
     { name: '獨立防塵蓋', qty: items.coverSingle, price: 15 },
     { name: '粉紅白吉床', qty: items.clickerLuckyPink, price: 58 },
@@ -113,10 +113,15 @@ export default function NurseForgeFinalV22() {
       </div>
 
       <div style={{ maxWidth: '500px', margin: '0 auto 30px auto' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px', textAlign: 'left' }}>產品預覽</h2>
+        
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
             <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
             <ShowcaseCardMini img="/greytape.jpg" title="灰色膠紙座" price="$58" />
+            <ShowcaseCardMini img="/chi.jpg" title="Chiikawa防塵蓋" price="$30" />
+            <ShowcaseCardMini img="/tba1.jpg" title="TBA" price="$30" />
         </div>
+
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '25px' }}>
             <a href="https://www.instagram.com/p/DW9hjFeEtjL/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🎨 睇客制顏色選項</a>
             <a href="https://www.instagram.com/p/DW3pJ1zkuY4/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🛡️ 點解要加防塵蓋？</a>
@@ -132,7 +137,7 @@ export default function NurseForgeFinalV22() {
         <div style={formCardStyle}>
           <Section title="📦 第一區：膠紙座系列" badge="可選平郵" badgeColor="#2E7D32">
             <Row name="🤍 白色 White ($58)" count={items.tapeWhite} onAdd={() => update('tapeWhite', 1)} onSub={() => update('tapeWhite', -1)} />
-            <Row name="🩶 灰色 Grey ($58)" count={items.tapeGrey} onAdd={() => update('tapeGrey', 1)} onSub={() => update('tapeGrey', -1)} />
+            <Row name="🩶 灰色 Grey ($58)" count={items.tapeGrey} onAdd={() => update('tapeGrey', -1)} onSub={() => update('tapeGrey', -1)} />
             <div style={specialRowStyle}>
                <div><span style={specialTagStyle}>APRIL SPECIAL</span><span style={{ fontSize: '14px', fontWeight: '900' }}>🌊 海洋藍 ($68)</span></div>
                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
@@ -150,6 +155,7 @@ export default function NurseForgeFinalV22() {
               </div>
             </div>
             <div style={{ marginTop: '20px', borderTop: '2px dashed #eee', paddingTop: '15px' }}>
+              <Row name="🐹 Chiikawa防塵蓋 $30" count={items.coverChiikawa} onAdd={() => update('coverChiikawa', 1)} onSub={() => update('coverChiikawa', -1)} />
               <Row name="隨座加購防塵蓋 $10" count={items.coverAddon} onAdd={() => update('coverAddon', 1)} onSub={() => update('coverAddon', -1)} />
               <Row name="補買防塵蓋 $15" count={items.coverSingle} onAdd={() => update('coverSingle', 1)} onSub={() => update('coverSingle', -1)} />
             </div>
@@ -181,13 +187,7 @@ export default function NurseForgeFinalV22() {
               <input placeholder="IG 帳號" style={inputStyle} value={shipping.igName} onChange={e => setShipping({...shipping, igName: e.target.value})} />
             </div>
             <input placeholder="聯絡電話" style={inputStyle} value={shipping.phone} onChange={e => setShipping({...shipping, phone: e.target.value})} />
-            <textarea placeholder="地址 / 順豐代碼 / 住宅地址" style={{...inputStyle, height: '80px'} as any} value={shipping.address} onChange={e => setShipping({...shipping, address: e.target.value})} />
-            
-            <div style={sfLinkAreaStyle}>
-              <a href="https://ucmp-x.sf-express.com/v2/hk/network/home?" target="_blank" rel="noreferrer" style={sfLinkStyle}>
-                🔍 按此搜尋順豐站代碼 / 地址
-              </a>
-            </div>
+            <textarea placeholder="順豐代碼及地址 / 住宅地址" style={{...inputStyle, height: '80px'} as any} value={shipping.address} onChange={e => setShipping({...shipping, address: e.target.value})} />
 
             <input placeholder="備註 (Remarks)" style={{...inputStyle, border: '2px solid #77815C'} as any} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
             
@@ -210,10 +210,10 @@ export default function NurseForgeFinalV22() {
       </div>
 
       <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: '100px' }}>
-        <div style={capNoticeStyle}>📸 請截圖，然後 Send 俾店主</div>
+        <div style={capNoticeStyle}>📸 請將以下訂單圖及PayMe付款截圖, 然後send俾店主</div>
         <div style={orderDraftStyle}>
           <div style={orderHeaderStyle}>
-            <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#77815C' }}>NurseForgeHK</h2>
+            <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#77815C' }}>NurseForgeHK訂單圖</h2>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#666' }}><span>ID: {orderId}</span><span>DATE: {today}</span></div>
           </div>
           <div style={orderInfoBoxStyle}>
@@ -268,7 +268,8 @@ export default function NurseForgeFinalV22() {
           
           <p style={{ textAlign: 'center', fontSize: '12px', color: '#888', fontWeight: 'bold', lineHeight: '1.5' }}>
             📸 記得截圖執貨單 send 俾店主呀！<br/>
-            關閉網頁，即可返回 Instagram
+            關閉網頁，即可返回 Instagram<br/>
+            <span style={{ fontSize: '10px', opacity: 0.6, fontWeight: 'normal' }}>呢個網站係我自己寫㗎:D</span>
           </p>
         </div>
       </div>
@@ -276,7 +277,7 @@ export default function NurseForgeFinalV22() {
   );
 }
 
-// 樣式組件
+// 樣式部分保持不變...
 const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', padding: '12px 18px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '3px solid #77815C', boxShadow: '0 6px 20px rgba(0,0,0,0.2)', zIndex: 1100, fontSize: '12px' };
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
@@ -299,8 +300,6 @@ const igLinkBtnStyle: any = { flex: 1, padding: '10px', borderRadius: '12px', ba
 const privacyNoticeStyle: any = { fontSize: '11px', color: '#666', marginBottom: '10px' };
 const addonCardStyle: any = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: '#FFF5F7', borderRadius: '15px', border: '2px solid #FFD1DC', marginTop: '15px' };
 const diffBtnStyle: any = { width: '35px', height: '35px', border: '2px solid #D63384', backgroundColor: '#fff', color: '#D63384', borderRadius: '10px', fontWeight: 'bold' };
-const sfLinkAreaStyle: any = { marginBottom: '15px', padding: '8px', backgroundColor: '#FFF9E6', borderRadius: '10px', border: '1px solid #FFCC00', textAlign: 'center' };
-const sfLinkStyle: any = { fontSize: '13px', color: '#997404', textDecoration: 'none', fontWeight: 'bold', display: 'block' };
 
 function ShowcaseCardMini({ img, title, price }: any) { return ( <div style={{ backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' } as any}><img src={img} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' } as any} alt={title} /><div style={{ padding: '8px' }}><div style={{ fontSize: '12px', fontWeight: 'bold', color: '#000' }}>{title}</div><div style={{ fontSize: '14px', color: '#77815C', fontWeight: '900' }}>{price}</div></div></div> ); }
 function Section({ title, badge, badgeColor, children }: any) { return ( <div style={{ marginBottom: '10px' }}><h3 style={{ fontSize: '16px', fontWeight: '900', color: '#77815C', marginBottom: '12px', borderLeft: '5px solid #77815C', paddingLeft: '10px', display: 'flex', alignItems: 'center' } as any}>{title} {badge && <span style={{ fontSize: '10px', backgroundColor: badgeColor, color: '#fff', padding: '2px 8px', borderRadius: '10px', marginLeft: '8px' }}>{badge}</span>}</h3>{children}</div> ); }
