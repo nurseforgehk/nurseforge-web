@@ -62,17 +62,17 @@ export default function NurseForgeFinalV22() {
   ].reduce((acc, curr) => acc + (curr.qty * curr.p), 0);
 
   const customColors = [
-    { k: 'tapeBlack', n: '🖤 黑色膠紙座' }, { k: 'tapeRed', n: '❤️ 深紅膠紙座' }, 
-    { k: 'tapeYellow', n: '💛 暖黃膠紙座' }, { k: 'tapeOrange', n: '🧡 橙色膠紙座' },
-    { k: 'tapePurple', n: '💜 紫色膠紙座' }, { k: 'tapeGreen', n: '💚 綠色膠紙座' }, 
-    { k: 'tapePink', n: '🌸 櫻花粉膠紙座' }, { k: 'tapeDesertYellow', n: '🏜️ 沙漠黃膠紙座' }
+    { k: 'Black', n: '🖤 黑色' }, { k: 'Red', n: '❤️ 深紅' }, 
+    { k: 'Yellow', n: '💛 暖黃' }, { k: 'Orange', n: '🧡 橙色' },
+    { k: 'Purple', n: '💜 紫色' }, { k: 'Green', n: '💚 綠色' }, 
+    { k: 'Pink', n: '🌸 櫻花粉' }, { k: 'DesertYellow', n: '🏜️ 沙漠黃' }
   ];
 
   const activeProducts: any[] = [
     { name: '白色膠紙座', qty: items.tapeWhite, price: 58 },
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
     { name: '4月限定色 (海洋藍)', qty: items.tapeMonthly, price: 68 },
-    ...customColors.map(c => ({ name: c.n, qty: (items as any)[c.k], price: 78 })),
+    ...customColors.map(c => ({ name: c.n + '膠紙座', qty: (items as any)[`tape${c.k}`], price: 78 })),
     { name: 'Chiikawa防塵蓋', qty: items.coverChiikawa, price: 30 },
     { name: 'Usagi防塵蓋', qty: items.coverUsagi, price: 30 },
     { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10 },
@@ -84,10 +84,7 @@ export default function NurseForgeFinalV22() {
     { name: '不想上班鎖匙扣', qty: items.keyringNoWork, price: 28 },
     { name: '如意吉場鎖匙扣', qty: items.keyringLucky, price: 28 },
     { name: '💰 補錢湊數', qty: 1, price: items.addonDiff }
-  ].filter(p => {
-    if (p.name === '💰 補錢湊數') return p.price > 0;
-    return p.qty > 0;
-  });
+  ].filter(p => (p.name === '💰 補錢湊數' ? p.price > 0 : p.qty > 0));
 
   const isFreeSF = total >= 120;
   const methodMap: any = { 
@@ -104,10 +101,10 @@ export default function NurseForgeFinalV22() {
   if (!mounted) return null;
 
   return (
-    <div style={{ padding: '20px 20px 300px 20px', backgroundColor: '#77815C', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
+    <div style={{ padding: '20px 20px 350px 20px', backgroundColor: '#77815C', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
       
       <button type="button" onClick={() => orderSectionRef.current?.scrollIntoView({ behavior: 'smooth' })} style={fabStyle}>
-        我已經諗到買咩，<br/>直接帶我去揀商品 🛒
+        直接帶我去揀商品 🛒
       </button>
 
       <div style={{ textAlign: 'center', marginBottom: '30px', color: '#fff', paddingTop: '60px' }}>
@@ -116,16 +113,13 @@ export default function NurseForgeFinalV22() {
       </div>
 
       <div style={{ maxWidth: '500px', margin: '0 auto 30px auto' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px', textAlign: 'left' }}>產品預覽</h2>
-        
+        <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>產品預覽</h2>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
             <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
             <ShowcaseCardMini img="/greytape.jpg" title="灰色膠紙座" price="$58" />
             <ShowcaseCardMini img="/chi.jpg" title="Chiikawa防塵蓋" price="$30" />
-            {/* 已更新：將 TBA 改為 Usagi */}
             <ShowcaseCardMini img="/us.jpg" title="Usagi防塵蓋" price="$30" />
         </div>
-
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '25px' }}>
             <a href="https://www.instagram.com/p/DW9hjFeEtjL/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🎨 睇客制顏色選項</a>
             <a href="https://www.instagram.com/p/DW3pJ1zkuY4/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🛡️ 點解要加防塵蓋？</a>
@@ -153,7 +147,7 @@ export default function NurseForgeFinalV22() {
             <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '15px' }}>
               <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#77815C', marginBottom: '10px' }}>🎨 其他訂造顏色 ($78):</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                {[{k:'Black',n:'🖤 黑色'},{k:'Red',n:'❤️ 深紅'},{k:'Yellow',n:'💛 暖黃'},{k:'Orange',n:'🧡 橙色'},{k:'Purple',n:'💜 紫色'},{k:'Green',n:'💚 綠色'},{k:'Pink',n:'🌸 櫻花粉'},{k:'DesertYellow',n:'🏜️ 沙漠黃'}].map(c => (
+                {customColors.map(c => (
                   <RowMini key={c.k} name={c.n} count={(items as any)[`tape${c.k}`]} onAdd={() => update(`tape${c.k}`, 1)} onSub={() => update(`tape${c.k}`, -1)} />
                 ))}
               </div>
@@ -166,7 +160,7 @@ export default function NurseForgeFinalV22() {
             </div>
           </Section>
         </div>
-        
+
         <div style={formCardStyle}>
           <Section title="🔔 第二區：Clicker 系列" badge="❌ 不設平郵" badgeColor="#dc3545">
             <Row name="🌸 粉紅白吉床 ($58)" count={items.clickerLuckyPink} onAdd={() => update('clickerLuckyPink', 1)} onSub={() => update('clickerLuckyPink', -1)} />
@@ -176,7 +170,6 @@ export default function NurseForgeFinalV22() {
           </Section>
         </div>
 
-        {/* 其餘組件維持不變 */}
         <div style={formCardStyle}>
           <Section title="🎁 第三區：鎖匙扣系列 ($28)" badge="可選平郵" badgeColor="#2E7D32">
             <Row name="🚫 不想上班" count={items.keyringNoWork} onAdd={() => update('keyringNoWork', 1)} onSub={() => update('keyringNoWork', -1)} />
@@ -186,7 +179,7 @@ export default function NurseForgeFinalV22() {
 
         <div style={formCardStyle}>
           <Section title="🚚 第四區：配送及個人資訊">
-            <p style={privacyNoticeStyle}>🛡️ <b>隱私聲明：</b>呢個網站唔會儲存任何個人資料。</p>
+            <p style={privacyNoticeStyle}>🛡️ 呢個網站唔會儲存任何個人資料。</p>
             {hasClicker && <p style={{ color: '#dc3545', fontSize: '11px', fontWeight: 'bold', marginBottom: '8px' }}>⚠️ 由於選購了 Clicker，只能選順豐。</p>}
             <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
               <input placeholder="收件人姓名" style={inputStyle} value={shipping.name} onChange={e => setShipping({...shipping, name: e.target.value})} />
@@ -200,21 +193,38 @@ export default function NurseForgeFinalV22() {
               {!hasClicker && <Radio label="本地平郵 (包郵)" active={shipping.method === 'post'} onClick={() => setShipping({...shipping, method: 'post'})} />}
               <Radio label={isFreeSF ? "順豐站 (免運)" : "順豐站 (到付)"} active={shipping.method === 'sf_station'} onClick={() => setShipping({...shipping, method: 'sf_station'})} />
               <Radio label={isFreeSF ? "智能櫃 (免運)" : "智能櫃 (到付)"} active={shipping.method === 'sf_locker'} onClick={() => setShipping({...shipping, method: 'sf_locker'})} />
-              <Radio label="合作便利店 (到付)" active={shipping.method === 'sf_store'} onClick={() => setShipping({...shipping, method: 'sf_store'})} />
+              <Radio label="便利店 (到付)" active={shipping.method === 'sf_store'} onClick={() => setShipping({...shipping, method: 'sf_store'})} />
               <Radio label="送上門 (到付)" active={shipping.method === 'sf_direct'} onClick={() => setShipping({...shipping, method: 'sf_direct'})} />
+            </div>
+            <div style={addonCardStyle}>
+              <span style={{ fontSize: '15px', fontWeight: '900', color: '#D63384' }}>💰 補錢湊數：${items.addonDiff}</span>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="button" onClick={() => update('addonDiff', -1)} style={diffBtnStyle}>-1</button>
+                <button type="button" onClick={() => update('addonDiff', 1)} style={diffBtnStyle}>+1</button>
+              </div>
             </div>
           </Section>
         </div>
       </div>
 
-      <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: '100px' }}>
-        <div style={capNoticeStyle}>📸 請將以下訂單圖及PayMe付款截圖, 然後send俾店主</div>
+      <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={capNoticeStyle}>📸 請將以下訂單圖及 PayMe 截圖 send 俾店主</div>
         <div style={orderDraftStyle}>
           <div style={orderHeaderStyle}>
-            <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#77815C' }}>NurseForgeHK訂單圖</h2>
+            <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#77815C' }}>NurseForgeHK 執貨單</h2>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#666' }}><span>ID: {orderId}</span><span>DATE: {today}</span></div>
           </div>
-          {/* 訂單圖剩餘內容... */}
+          <div style={orderInfoBoxStyle}>
+             <div><strong>IG:</strong> @{shipping.igName || '---'} | <strong>Name:</strong> {shipping.name || '---'}</div>
+             <div><strong>Tel:</strong> {shipping.phone || '---'}</div>
+             <div><strong>Ship:</strong> {methodMap[shipping.method]}</div>
+             <p style={addressPreviewStyle}><strong>Addr:</strong> {shipping.address || '未填寫'}</p>
+             {shipping.remarks && (
+               <div style={{ marginTop: '5px', padding: '5px', backgroundColor: '#FFF5F7', borderRadius: '4px', borderLeft: '3px solid #D63384', fontSize: '11px', color: '#000' }}>
+                 <strong>備註:</strong> {shipping.remarks}
+               </div>
+             )}
+          </div>
           <div style={{ minHeight: '40px' }}>
             {activeProducts.map((p, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '3px' }}>
@@ -226,32 +236,76 @@ export default function NurseForgeFinalV22() {
           <div style={orderTotalAreaStyle}><div style={{ fontSize: '24px', fontWeight: '900', color: '#77815C' }}>Total: HKD ${total}</div></div>
           <div style={quoteAreaStyle}>✨ {randomQuote}</div>
         </div>
+
+        <div style={agreementBoxStyle}>
+          <label style={{ display: 'flex', gap: '12px', cursor: 'pointer', alignItems: 'flex-start' }}>
+            <input type="checkbox" checked={agreed} onChange={() => setAgreed(!agreed)} style={{ width: '24px', height: '24px', marginTop: '2px' }} />
+            <div style={{ fontSize: '13px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.6' }}>
+              <p style={{ margin: '0 0 4px 0' }}>1. 我確認以上購買項目及物流資料正確無誤</p>
+              <p style={{ margin: '0 0 4px 0' }}>2. 我明白 3D 打印貨品不設退換</p>
+              <p style={{ margin: 0 }}>3. 我知悉如選擇本地平郵，寄失風險自付</p>
+            </div>
+          </label>
+        </div>
       </div>
-      {/* Footer 保持不變... */}
+
+      <div style={footerStyle}>
+        <div style={{ width: '100%', maxWidth: '480px' }}>
+          <div style={bottomTotalCardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+               <div>
+                 <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#666' }}>總額：</span>
+                 <div style={{ fontSize: '24px', fontWeight: '900', color: '#77815C' }}>HKD ${total}</div>
+               </div>
+               <button type="button" onClick={clearAll} style={clearBtnStyle}>🗑️ 清空</button>
+            </div>
+          </div>
+          
+          <div style={{ transition: 'all 0.3s ease' }}>
+            {agreed ? (
+              <a href="https://payme.hsbc/nfhk" target="_blank" rel="noreferrer" style={paymeBtnStyle}>
+                立即 PayMe 付款
+              </a>
+            ) : (
+              <div style={paymeBtnDisabledStyle}>請先剔選上方聲明</div>
+            )}
+          </div>
+          
+          <p style={{ textAlign: 'center', fontSize: '12px', color: '#888', marginTop: '10px', fontWeight: 'bold' }}>📸 記得截圖執貨單 send 俾店主呀！</p>
+          {/* 自豪聲明 */}
+          <p style={{ textAlign: 'center', fontSize: '10px', color: '#aaa', marginTop: '15px' }}>呢個網頁係我自己寫㗎 :D</p>
+        </div>
+      </div>
     </div>
   );
 }
 
-// 樣式函數保持不變
+const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', padding: '12px 18px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '3px solid #77815C', boxShadow: '0 6px 20px rgba(0,0,0,0.2)', zIndex: 1100, fontSize: '12px' };
+const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
+const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
+const btnStyle: any = { width: '32px', height: '32px', borderRadius: '50%', border: 'none', backgroundColor: '#f0f0f0', fontWeight: 'bold' };
+const footerStyle: any = { position: 'fixed', bottom: '0', left: '0', width: '100%', backgroundColor: '#fff', padding: '15px 20px 35px 20px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', zIndex: 1000, boxShadow: '0 -5px 25px rgba(0,0,0,0.08)' };
+const bottomTotalCardStyle: any = { backgroundColor: '#fff', padding: '10px 15px', borderRadius: '16px', border: '2px solid #77815C', marginBottom: '12px' };
+const clearBtnStyle: any = { padding: '6px 12px', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' };
+const paymeBtnStyle: any = { display: 'block', width: '100%', padding: '15px', backgroundColor: '#FF002B', color: '#fff', textDecoration: 'none', borderRadius: '40px', textAlign: 'center', fontWeight: '900', fontSize: '18px', boxShadow: '0 4px 15px rgba(255, 0, 43, 0.3)' };
+const paymeBtnDisabledStyle: any = { display: 'block', width: '100%', padding: '15px', backgroundColor: '#ccc', color: '#666', borderRadius: '40px', textAlign: 'center', fontWeight: '900', fontSize: '18px', cursor: 'not-allowed' };
+const capNoticeStyle: any = { backgroundColor: '#FFED4A', padding: '10px 20px', borderRadius: '10px', marginBottom: '15px', border: '2px solid #000', textAlign: 'center', fontSize: '16px', fontWeight: '900', color: '#000' };
+const orderDraftStyle: any = { backgroundColor: '#fff', padding: '15px', width: '95%', maxWidth: '380px', border: '4px solid #77815C', color: '#000' };
+const orderHeaderStyle: any = { borderBottom: '2px solid #77815C', paddingBottom: '8px', marginBottom: '10px', textAlign: 'center' };
+const orderInfoBoxStyle: any = { fontSize: '12px', marginBottom: '10px', lineHeight: '1.4', backgroundColor: '#f9f9f9', padding: '10px', borderRadius: '8px' };
+const addressPreviewStyle: any = { fontSize: '11px', backgroundColor: '#fff', padding: '4px', borderRadius: '4px', border: '1px solid #f0f0f0', display: 'block', marginTop: '4px' };
+const orderTotalAreaStyle: any = { borderTop: '2px dashed #eee', marginTop: '10px', paddingTop: '8px', textAlign: 'right' };
+const quoteAreaStyle: any = { marginTop: '10px', padding: '8px 5px', borderTop: '1px solid #eee', fontSize: '11px', color: '#77815C', fontWeight: 'bold', textAlign: 'center' };
+const agreementBoxStyle: any = { width: '95%', maxWidth: '380px', marginTop: '20px', padding: '18px', backgroundColor: '#FFF9E6', borderRadius: '16px', border: '2px solid #FFCC00' };
+const specialRowStyle: any = { margin: '15px 0', padding: '15px', backgroundColor: '#E0F2F1', borderRadius: '15px', border: '2px solid #00897B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
+const specialTagStyle: any = { fontSize: '11px', fontWeight: 'bold', color: '#00897B', display: 'block' };
+const igLinkBtnStyle: any = { flex: 1, padding: '10px', borderRadius: '12px', background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', color: '#fff', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', textAlign: 'center' };
+const privacyNoticeStyle: any = { fontSize: '11px', color: '#666', marginBottom: '10px' };
+const addonCardStyle: any = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: '#FFF5F7', borderRadius: '15px', border: '2px solid #FFD1DC', marginTop: '15px' };
+const diffBtnStyle: any = { width: '35px', height: '35px', border: '2px solid #D63384', backgroundColor: '#fff', color: '#D63384', borderRadius: '10px', fontWeight: 'bold' };
+
 function ShowcaseCardMini({ img, title, price }: any) { return ( <div style={{ backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' } as any}><img src={img} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' } as any} alt={title} /><div style={{ padding: '8px' }}><div style={{ fontSize: '12px', fontWeight: 'bold', color: '#000' }}>{title}</div><div style={{ fontSize: '14px', color: '#77815C', fontWeight: '900' }}>{price}</div></div></div> ); }
 function Section({ title, badge, badgeColor, children }: any) { return ( <div style={{ marginBottom: '10px' }}><h3 style={{ fontSize: '16px', fontWeight: '900', color: '#77815C', marginBottom: '12px', borderLeft: '5px solid #77815C', paddingLeft: '10px', display: 'flex', alignItems: 'center' } as any}>{title} {badge && <span style={{ fontSize: '10px', backgroundColor: badgeColor, color: '#fff', padding: '2px 8px', borderRadius: '10px', marginLeft: '8px' }}>{badge}</span>}</h3>{children}</div> ); }
 function Row({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f2f2f2' } as any}><span style={{ fontSize: '14px', color: '#000', fontWeight: '600' }}>{name}</span><div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}><button type="button" onClick={onSub} style={btnStyle}>−</button><span style={{ fontSize: '16px', fontWeight: '900', minWidth: '18px', textAlign: 'center' }}>{count}</span><button type="button" onClick={onAdd} style={btnStyle}>+</button></div></div> ); }
 function RowMini({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #eee' } as any}><span style={{ fontSize: '12px', color: '#000', fontWeight: 'bold' }}>{name}</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button type="button" onClick={onSub} style={{...btnStyle, width: '22px', height: '22px'}}>−</button><span style={{ fontSize: '14px', fontWeight: '900' }}>{count}</span><button type="button" onClick={onAdd} style={{...btnStyle, width: '22px', height: '22px'}}>+</button></div></div> ); }
 function Radio({ label, active, onClick }: any) { return ( <div onClick={onClick} style={{ padding: '8px 12px', borderRadius: '15px', border: `2px solid ${active ? '#77815C' : '#eee'}`, backgroundColor: active ? '#77815C' : '#fff', color: active ? '#fff' : '#000', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' } as any}>{label}</div> ); }
-
-// 其他樣式常數 (fabStyle, formCardStyle 等) 均與上版本完全一致...
-const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', padding: '12px 18px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '3px solid #77815C', boxShadow: '0 6px 20px rgba(0,0,0,0.2)', zIndex: 1100, fontSize: '12px' };
-const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
-const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
-const btnStyle: any = { width: '32px', height: '32px', borderRadius: '50%', border: 'none', backgroundColor: '#f0f0f0', fontWeight: 'bold' };
-const specialRowStyle: any = { margin: '15px 0', padding: '15px', backgroundColor: '#E0F2F1', borderRadius: '15px', border: '2px solid #00897B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
-const specialTagStyle: any = { fontSize: '11px', fontWeight: 'bold', color: '#00897B', display: 'block' };
-const orderDraftStyle: any = { backgroundColor: '#fff', padding: '15px', width: '95%', maxWidth: '380px', border: '4px solid #77815C', color: '#000' };
-const orderHeaderStyle: any = { borderBottom: '2px solid #77815C', paddingBottom: '8px', marginBottom: '10px', textAlign: 'center' };
-const orderInfoBoxStyle: any = { fontSize: '12px', marginBottom: '10px', lineHeight: '1.4', backgroundColor: '#f9f9f9', padding: '10px', borderRadius: '8px' };
-const addressPreviewStyle: any = { fontSize: '11px', backgroundColor: '#fff', padding: '4px', borderRadius: '4px', border: '1px solid #f0f0f0', display: 'block' };
-const orderTotalAreaStyle: any = { borderTop: '2px dashed #eee', marginTop: '10px', paddingTop: '8px', textAlign: 'right' };
-const quoteAreaStyle: any = { marginTop: '10px', padding: '8px 5px', borderTop: '1px solid #eee', fontSize: '11px', color: '#77815C', fontWeight: 'bold', textAlign: 'center' };
-const capNoticeStyle: any = { backgroundColor: '#FFED4A', padding: '10px 20px', borderRadius: '10px', marginBottom: '15px', border: '2px solid #000', textAlign: 'center', fontSize: '16px', fontWeight: '900', color: '#000' };
-const igLinkBtnStyle: any = { flex: 1, padding: '10px', borderRadius: '12px', background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', color: '#fff', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', textAlign: 'center' };
-const privacyNoticeStyle: any = { fontSize: '11px', color: '#666', marginBottom: '10px' };
