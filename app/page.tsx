@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 export default function NurseForgeFinalV22() {
   const [mounted, setMounted] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [applyDiscount, setApplyDiscount] = useState(false); // Discount toggle
   const [orderId, setOrderId] = useState(''); 
   const [today, setToday] = useState('');
   const [randomQuote, setRandomQuote] = useState('');
@@ -19,7 +20,7 @@ export default function NurseForgeFinalV22() {
   const initialItems = {
     tapeWhite: 0, tapeGrey: 0, tapeMonthly: 0, 
     tapeBlack: 0, tapeRed: 0, tapeYellow: 0, tapeOrange: 0, tapePurple: 0, tapeGreen: 0,
-    tapePink: 0, tapeDesertYellow: 0, 
+    tapePink: 0, tapeDesertYellow: 0, tapeOceanBlue: 0, 
     coverChiikawa: 0, coverUsagi: 0, coverAddon: 0, coverSingle: 0, 
     keyringNoWork: 0, keyringLucky: 0,
     clickerLuckyPink: 0, clickerLuckyBlue: 0, clickerShutUp: 0, clickerCombo: 0, addonDiff: 0 
@@ -50,9 +51,10 @@ export default function NurseForgeFinalV22() {
     }
   }, [hasClicker]);
 
-  const total = [
+  // Calculate Raw Total
+  const rawTotal = [
     { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 }, { qty: items.tapeMonthly, p: 68 },
-    { qty: items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow, p: 78 },
+    { qty: items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue, p: 78 },
     { qty: items.coverChiikawa + items.coverUsagi, p: 30 }, 
     { qty: items.coverAddon, p: 10 }, { qty: items.coverSingle, p: 15 },
     { qty: items.clickerLuckyPink, p: 58 }, { qty: items.clickerLuckyBlue, p: 58 },
@@ -61,17 +63,24 @@ export default function NurseForgeFinalV22() {
     { qty: 1, p: items.addonDiff }
   ].reduce((acc, curr) => acc + (curr.qty * curr.p), 0);
 
+  // Apply 10% off and round down to integer
+  const total = applyDiscount ? Math.floor(rawTotal * 0.9) : rawTotal;
+
+  // Free shipping logic linked to the FINAL total
+  const isFreeSF = total >= 120;
+
   const customColors = [
     { k: 'Black', n: '🖤 黑色' }, { k: 'Red', n: '❤️ 深紅' }, 
     { k: 'Yellow', n: '💛 暖黃' }, { k: 'Orange', n: '🧡 橙色' },
     { k: 'Purple', n: '💜 紫色' }, { k: 'Green', n: '💚 綠色' }, 
-    { k: 'Pink', n: '🌸 櫻花粉' }, { k: 'DesertYellow', n: '🏜️ 沙漠黃' }
+    { k: 'Pink', n: '🌸 櫻花粉' }, { k: 'DesertYellow', n: '🏜️ 沙漠黃' },
+    { k: 'OceanBlue', n: '🌊 海洋藍' }
   ];
 
   const activeProducts: any[] = [
     { name: '白色膠紙座', qty: items.tapeWhite, price: 58 },
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
-    { name: '4月限定色 (海洋藍)', qty: items.tapeMonthly, price: 68 },
+    { name: '5月限定色 (冰藍)', qty: items.tapeMonthly, price: 68 },
     ...customColors.map(c => ({ name: c.n + '膠紙座', qty: (items as any)[`tape${c.k}`], price: 78 })),
     { name: 'Chiikawa防塵蓋', qty: items.coverChiikawa, price: 30 },
     { name: 'Usagi防塵蓋', qty: items.coverUsagi, price: 30 },
@@ -86,7 +95,6 @@ export default function NurseForgeFinalV22() {
     { name: '💰 補錢湊數', qty: 1, price: items.addonDiff }
   ].filter(p => (p.name === '💰 補錢湊數' ? p.price > 0 : p.qty > 0));
 
-  const isFreeSF = total >= 120;
   const methodMap: any = { 
     post: "本地平郵 (包郵)", 
     sf_station: isFreeSF ? "順豐站 (免運)" : "順豐站 (到付)", 
@@ -96,7 +104,7 @@ export default function NurseForgeFinalV22() {
   };
 
   const update = (f: string, d: number) => setItems(p => ({ ...p, [f]: Math.max(0, (p as any)[f] + d) }));
-  const clearAll = () => { if(confirm("確定要清除所有已選商品？")) setItems(initialItems); };
+  const clearAll = () => { if(confirm("確定要清除所有已選商品？")) { setItems(initialItems); setApplyDiscount(false); } };
 
   if (!mounted) return null;
 
@@ -114,6 +122,12 @@ export default function NurseForgeFinalV22() {
 
       <div style={{ maxWidth: '500px', margin: '0 auto 30px auto' }}>
         <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>產品預覽</h2>
+        
+        {/* Large Square Ice Blue Feature */}
+        <div style={{ marginBottom: '15px' }}>
+            <ShowcaseCardMini img="/ice.jpg" title="❄️ 五月限定色：冰藍膠紙座" price="$68" isLarge={true} />
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
             <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
             <ShowcaseCardMini img="/greytape.jpg" title="灰色膠紙座" price="$58" />
@@ -137,7 +151,7 @@ export default function NurseForgeFinalV22() {
             <Row name="🤍 白色 White ($58)" count={items.tapeWhite} onAdd={() => update('tapeWhite', 1)} onSub={() => update('tapeWhite', -1)} />
             <Row name="🩶 灰色 Grey ($58)" count={items.tapeGrey} onAdd={() => update('tapeGrey', 1)} onSub={() => update('tapeGrey', -1)} />
             <div style={specialRowStyle}>
-               <div><span style={specialTagStyle}>APRIL SPECIAL</span><span style={{ fontSize: '14px', fontWeight: '900' }}>🌊 海洋藍 ($68)</span></div>
+               <div><span style={specialTagStyle}>五月限定顏色</span><span style={{ fontSize: '14px', fontWeight: '900' }}>❄️ 冰藍 ($68)</span></div>
                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                  <button type="button" onClick={() => update('tapeMonthly', -1)} style={btnStyle}>−</button>
                  <span style={{ fontSize: '18px', fontWeight: '900' }}>{items.tapeMonthly}</span>
@@ -175,6 +189,31 @@ export default function NurseForgeFinalV22() {
             <Row name="🚫 不想上班" count={items.keyringNoWork} onAdd={() => update('keyringNoWork', 1)} onSub={() => update('keyringNoWork', -1)} />
             <Row name="🍊 如意吉場" count={items.keyringLucky} onAdd={() => update('keyringLucky', 1)} onSub={() => update('keyringLucky', -1)} />
           </Section>
+        </div>
+
+        {/* DISCOUNT SECTION with Instructions */}
+        <div style={{ ...formCardStyle, backgroundColor: '#FFF9E6', border: '2px solid #FFD700' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', marginBottom: '10px' }}>
+            <input 
+              type="checkbox" 
+              checked={applyDiscount} 
+              onChange={() => setApplyDiscount(!applyDiscount)} 
+              style={{ width: '22px', height: '22px' }}
+            />
+            <div>
+              <span style={{ fontSize: '16px', fontWeight: '900', color: '#856404' }}>🩺 使用五月護士節九折優惠</span>
+            </div>
+          </label>
+          
+          <div style={{ padding: '12px', backgroundColor: '#fff', borderRadius: '12px', fontSize: '12px', color: '#555', border: '1px solid #FFE082' }}>
+            <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: '#856404' }}>優惠使用方法：</p>
+            <ol style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.6' }}>
+              <li>到 <b>@nurseforgehk</b> 搜尋「五月護士節九折優惠」Post</li>
+              <li>於 Post 留言區 <b>Tag 兩位朋友</b></li>
+              <li><b>Share Post</b> 到自己 Story</li>
+            </ol>
+            <p style={{ margin: '8px 0 0 0', fontSize: '10px', color: '#dc3545', fontWeight: 'bold' }}>* 注意：折扣後總額低於 $120 將無法享有順豐免運</p>
+          </div>
         </div>
 
         <div style={formCardStyle}>
@@ -219,6 +258,7 @@ export default function NurseForgeFinalV22() {
              <div><strong>Tel:</strong> {shipping.phone || '---'}</div>
              <div><strong>Ship:</strong> {methodMap[shipping.method]}</div>
              <p style={addressPreviewStyle}><strong>Addr:</strong> {shipping.address || '未填寫'}</p>
+             {applyDiscount && <div style={{ marginTop: '5px', color: '#856404', fontWeight: 'bold', fontSize: '11px' }}>🚩 已套用：五月護士節九折優惠</div>}
              {shipping.remarks && (
                <div style={{ marginTop: '5px', padding: '5px', backgroundColor: '#FFF5F7', borderRadius: '4px', borderLeft: '3px solid #D63384', fontSize: '11px', color: '#000' }}>
                  <strong>備註:</strong> {shipping.remarks}
@@ -233,7 +273,10 @@ export default function NurseForgeFinalV22() {
               </div>
             ))}
           </div>
-          <div style={orderTotalAreaStyle}><div style={{ fontSize: '24px', fontWeight: '900', color: '#77815C' }}>Total: HKD ${total}</div></div>
+          <div style={orderTotalAreaStyle}>
+            {applyDiscount && <div style={{ fontSize: '12px', color: '#888', textDecoration: 'line-through' }}>原價: HKD ${rawTotal}</div>}
+            <div style={{ fontSize: '24px', fontWeight: '900', color: '#77815C' }}>Total: HKD ${total}</div>
+          </div>
           <div style={quoteAreaStyle}>✨ {randomQuote}</div>
         </div>
 
@@ -272,7 +315,6 @@ export default function NurseForgeFinalV22() {
           </div>
           
           <p style={{ textAlign: 'center', fontSize: '12px', color: '#888', marginTop: '10px', fontWeight: 'bold' }}>📸 記得截圖執貨單 send 俾店主呀！</p>
-          {/* 自豪聲明 */}
           <p style={{ textAlign: 'center', fontSize: '10px', color: '#aaa', marginTop: '15px' }}>呢個網頁係我自己寫㗎 :D</p>
         </div>
       </div>
@@ -280,6 +322,7 @@ export default function NurseForgeFinalV22() {
   );
 }
 
+// STYLES
 const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', padding: '12px 18px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '3px solid #77815C', boxShadow: '0 6px 20px rgba(0,0,0,0.2)', zIndex: 1100, fontSize: '12px' };
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
@@ -304,7 +347,18 @@ const privacyNoticeStyle: any = { fontSize: '11px', color: '#666', marginBottom:
 const addonCardStyle: any = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: '#FFF5F7', borderRadius: '15px', border: '2px solid #FFD1DC', marginTop: '15px' };
 const diffBtnStyle: any = { width: '35px', height: '35px', border: '2px solid #D63384', backgroundColor: '#fff', color: '#D63384', borderRadius: '10px', fontWeight: 'bold' };
 
-function ShowcaseCardMini({ img, title, price }: any) { return ( <div style={{ backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' } as any}><img src={img} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' } as any} alt={title} /><div style={{ padding: '8px' }}><div style={{ fontSize: '12px', fontWeight: 'bold', color: '#000' }}>{title}</div><div style={{ fontSize: '14px', color: '#77815C', fontWeight: '900' }}>{price}</div></div></div> ); }
+// COMPONENTS
+function ShowcaseCardMini({ img, title, price, isLarge }: any) { 
+  return ( 
+    <div style={{ backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' } as any}>
+      <img src={img} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' } as any} alt={title} />
+      <div style={{ padding: isLarge ? '15px' : '8px' }}>
+        <div style={{ fontSize: isLarge ? '16px' : '12px', fontWeight: 'bold', color: '#000' }}>{title}</div>
+        <div style={{ fontSize: isLarge ? '18px' : '14px', color: '#77815C', fontWeight: '900' }}>{price}</div>
+      </div>
+    </div> 
+  ); 
+}
 function Section({ title, badge, badgeColor, children }: any) { return ( <div style={{ marginBottom: '10px' }}><h3 style={{ fontSize: '16px', fontWeight: '900', color: '#77815C', marginBottom: '12px', borderLeft: '5px solid #77815C', paddingLeft: '10px', display: 'flex', alignItems: 'center' } as any}>{title} {badge && <span style={{ fontSize: '10px', backgroundColor: badgeColor, color: '#fff', padding: '2px 8px', borderRadius: '10px', marginLeft: '8px' }}>{badge}</span>}</h3>{children}</div> ); }
 function Row({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f2f2f2' } as any}><span style={{ fontSize: '14px', color: '#000', fontWeight: '600' }}>{name}</span><div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}><button type="button" onClick={onSub} style={btnStyle}>−</button><span style={{ fontSize: '16px', fontWeight: '900', minWidth: '18px', textAlign: 'center' }}>{count}</span><button type="button" onClick={onAdd} style={btnStyle}>+</button></div></div> ); }
 function RowMini({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #eee' } as any}><span style={{ fontSize: '12px', color: '#000', fontWeight: 'bold' }}>{name}</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button type="button" onClick={onSub} style={{...btnStyle, width: '22px', height: '22px'}}>−</button><span style={{ fontSize: '14px', fontWeight: '900' }}>{count}</span><button type="button" onClick={onAdd} style={{...btnStyle, width: '22px', height: '22px'}}>+</button></div></div> ); }
