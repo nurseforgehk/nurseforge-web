@@ -121,6 +121,21 @@ export default function NurseForgeFinalV22() {
       </div>
 
       <div style={{ maxWidth: '500px', margin: '0 auto 30px auto' }}>
+        
+        {/* 專業公告位置 */}
+        <div style={announcementStyle}>
+          <span style={{ fontSize: '24px' }}>✈️</span>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '900', color: '#856404' }}>店主公告</h3>
+            <p style={{ margin: '2px 0 0 0', fontSize: '14px', color: '#664d03', fontWeight: 'bold' }}>
+              店主 5月19日 至 5月25日 不在香港
+            </p>
+            <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#856404', opacity: 0.8 }}>
+              期間訂單將於 5月26日 起依序處理，敬請見諒。
+            </p>
+          </div>
+        </div>
+
         <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>產品預覽</h2>
         
         {/* Large Square Ice Blue Feature */}
@@ -323,6 +338,7 @@ export default function NurseForgeFinalV22() {
 }
 
 // STYLES
+const announcementStyle: any = { backgroundColor: '#FFF9E6', border: '2px solid #FFCC00', borderRadius: '16px', padding: '15px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', color: '#000' };
 const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', padding: '12px 18px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '3px solid #77815C', boxShadow: '0 6px 20px rgba(0,0,0,0.2)', zIndex: 1100, fontSize: '12px' };
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
