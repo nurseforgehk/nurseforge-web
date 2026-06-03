@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from 'react';
 export default function NurseForgeFinalV22() {
   const [mounted, setMounted] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  const [applyDiscount, setApplyDiscount] = useState(false); // Discount toggle
   const [orderId, setOrderId] = useState(''); 
   const [today, setToday] = useState('');
   const [randomQuote, setRandomQuote] = useState('');
@@ -18,9 +17,9 @@ export default function NurseForgeFinalV22() {
   ];
 
   const initialItems = {
-    tapeWhite: 0, tapeGrey: 0, tapeMonthly: 0, 
+    tapeWhite: 0, tapeGrey: 0, 
     tapeBlack: 0, tapeRed: 0, tapeYellow: 0, tapeOrange: 0, tapePurple: 0, tapeGreen: 0,
-    tapePink: 0, tapeDesertYellow: 0, tapeOceanBlue: 0, 
+    tapePink: 0, tapeDesertYellow: 0, tapeOceanBlue: 0, tapeIceBlue: 0, 
     coverChiikawa: 0, coverUsagi: 0, coverAddon: 0, coverSingle: 0, 
     keyringNoWork: 0, keyringLucky: 0,
     clickerLuckyPink: 0, clickerLuckyBlue: 0, clickerShutUp: 0, clickerCombo: 0, addonDiff: 0 
@@ -51,10 +50,10 @@ export default function NurseForgeFinalV22() {
     }
   }, [hasClicker]);
 
-  // Calculate Raw Total
-  const rawTotal = [
-    { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 }, { qty: items.tapeMonthly, p: 68 },
-    { qty: items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue, p: 78 },
+  // Calculate Total
+  const total = [
+    { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 },
+    { qty: items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue + items.tapeIceBlue, p: 78 },
     { qty: items.coverChiikawa + items.coverUsagi, p: 30 }, 
     { qty: items.coverAddon, p: 10 }, { qty: items.coverSingle, p: 15 },
     { qty: items.clickerLuckyPink, p: 58 }, { qty: items.clickerLuckyBlue, p: 58 },
@@ -63,10 +62,7 @@ export default function NurseForgeFinalV22() {
     { qty: 1, p: items.addonDiff }
   ].reduce((acc, curr) => acc + (curr.qty * curr.p), 0);
 
-  // Apply 10% off and round down to integer
-  const total = applyDiscount ? Math.floor(rawTotal * 0.9) : rawTotal;
-
-  // Free shipping logic linked to the FINAL total
+  // Free shipping logic linked to the total
   const isFreeSF = total >= 120;
 
   const customColors = [
@@ -74,13 +70,13 @@ export default function NurseForgeFinalV22() {
     { k: 'Yellow', n: '💛 暖黃' }, { k: 'Orange', n: '🧡 橙色' },
     { k: 'Purple', n: '💜 紫色' }, { k: 'Green', n: '💚 綠色' }, 
     { k: 'Pink', n: '🌸 櫻花粉' }, { k: 'DesertYellow', n: '🏜️ 沙漠黃' },
-    { k: 'OceanBlue', n: '🌊 海洋藍' }
+    { k: 'OceanBlue', n: '🌊 海洋藍' },
+    { k: 'IceBlue', n: '❄️ 冰藍' }
   ];
 
   const activeProducts: any[] = [
     { name: '白色膠紙座', qty: items.tapeWhite, price: 58 },
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
-    { name: '5月限定色 (冰藍)', qty: items.tapeMonthly, price: 68 },
     ...customColors.map(c => ({ name: c.n + '膠紙座', qty: (items as any)[`tape${c.k}`], price: 78 })),
     { name: 'Chiikawa防塵蓋', qty: items.coverChiikawa, price: 30 },
     { name: 'Usagi防塵蓋', qty: items.coverUsagi, price: 30 },
@@ -104,7 +100,7 @@ export default function NurseForgeFinalV22() {
   };
 
   const update = (f: string, d: number) => setItems(p => ({ ...p, [f]: Math.max(0, (p as any)[f] + d) }));
-  const clearAll = () => { if(confirm("確定要清除所有已選商品？")) { setItems(initialItems); setApplyDiscount(false); } };
+  const clearAll = () => { if(confirm("確定要清除所有已選商品？")) { setItems(initialItems); } };
 
   if (!mounted) return null;
 
@@ -122,26 +118,18 @@ export default function NurseForgeFinalV22() {
 
       <div style={{ maxWidth: '500px', margin: '0 auto 30px auto' }}>
         
-        {/* 專業公告位置 */}
+        {/* 店主公告位置 */}
         <div style={announcementStyle}>
-          <span style={{ fontSize: '24px' }}>✈️</span>
+          <span style={{ fontSize: '24px' }}>📢</span>
           <div style={{ flex: 1 }}>
             <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '900', color: '#856404' }}>店主公告</h3>
             <p style={{ margin: '2px 0 0 0', fontSize: '14px', color: '#664d03', fontWeight: 'bold' }}>
-              店主 5月19日 至 5月25日 不在香港
-            </p>
-            <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#856404', opacity: 0.8 }}>
-              期間訂單將於 5月26日 起依序處理，敬請見諒。
+              沒有最新公告
             </p>
           </div>
         </div>
 
         <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>產品預覽</h2>
-        
-        {/* Large Square Ice Blue Feature */}
-        <div style={{ marginBottom: '15px' }}>
-            <ShowcaseCardMini img="/ice.jpg" title="❄️ 五月限定色：冰藍膠紙座" price="$68" isLarge={true} />
-        </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
             <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
@@ -165,14 +153,6 @@ export default function NurseForgeFinalV22() {
           <Section title="📦 第一區：膠紙座系列" badge="可選平郵" badgeColor="#2E7D32">
             <Row name="🤍 白色 White ($58)" count={items.tapeWhite} onAdd={() => update('tapeWhite', 1)} onSub={() => update('tapeWhite', -1)} />
             <Row name="🩶 灰色 Grey ($58)" count={items.tapeGrey} onAdd={() => update('tapeGrey', 1)} onSub={() => update('tapeGrey', -1)} />
-            <div style={specialRowStyle}>
-               <div><span style={specialTagStyle}>五月限定顏色</span><span style={{ fontSize: '14px', fontWeight: '900' }}>❄️ 冰藍 ($68)</span></div>
-               <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                 <button type="button" onClick={() => update('tapeMonthly', -1)} style={btnStyle}>−</button>
-                 <span style={{ fontSize: '18px', fontWeight: '900' }}>{items.tapeMonthly}</span>
-                 <button type="button" onClick={() => update('tapeMonthly', 1)} style={btnStyle}>+</button>
-               </div>
-            </div>
             <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '15px' }}>
               <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#77815C', marginBottom: '10px' }}>🎨 其他訂造顏色 ($78):</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -204,31 +184,6 @@ export default function NurseForgeFinalV22() {
             <Row name="🚫 不想上班" count={items.keyringNoWork} onAdd={() => update('keyringNoWork', 1)} onSub={() => update('keyringNoWork', -1)} />
             <Row name="🍊 如意吉場" count={items.keyringLucky} onAdd={() => update('keyringLucky', 1)} onSub={() => update('keyringLucky', -1)} />
           </Section>
-        </div>
-
-        {/* DISCOUNT SECTION with Instructions */}
-        <div style={{ ...formCardStyle, backgroundColor: '#FFF9E6', border: '2px solid #FFD700' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', marginBottom: '10px' }}>
-            <input 
-              type="checkbox" 
-              checked={applyDiscount} 
-              onChange={() => setApplyDiscount(!applyDiscount)} 
-              style={{ width: '22px', height: '22px' }}
-            />
-            <div>
-              <span style={{ fontSize: '16px', fontWeight: '900', color: '#856404' }}>🩺 使用五月護士節九折優惠</span>
-            </div>
-          </label>
-          
-          <div style={{ padding: '12px', backgroundColor: '#fff', borderRadius: '12px', fontSize: '12px', color: '#555', border: '1px solid #FFE082' }}>
-            <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: '#856404' }}>優惠使用方法：</p>
-            <ol style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.6' }}>
-              <li>到 <b>@nurseforgehk</b> 搜尋「五月護士節九折優惠」Post</li>
-              <li>於 Post 留言區 <b>Tag 兩位朋友</b></li>
-              <li><b>Share Post</b> 到自己 Story</li>
-            </ol>
-            <p style={{ margin: '8px 0 0 0', fontSize: '10px', color: '#dc3545', fontWeight: 'bold' }}>* 注意：折扣後總額低於 $120 將無法享有順豐免運</p>
-          </div>
         </div>
 
         <div style={formCardStyle}>
@@ -273,7 +228,6 @@ export default function NurseForgeFinalV22() {
              <div><strong>Tel:</strong> {shipping.phone || '---'}</div>
              <div><strong>Ship:</strong> {methodMap[shipping.method]}</div>
              <p style={addressPreviewStyle}><strong>Addr:</strong> {shipping.address || '未填寫'}</p>
-             {applyDiscount && <div style={{ marginTop: '5px', color: '#856404', fontWeight: 'bold', fontSize: '11px' }}>🚩 已套用：五月護士節九折優惠</div>}
              {shipping.remarks && (
                <div style={{ marginTop: '5px', padding: '5px', backgroundColor: '#FFF5F7', borderRadius: '4px', borderLeft: '3px solid #D63384', fontSize: '11px', color: '#000' }}>
                  <strong>備註:</strong> {shipping.remarks}
@@ -289,7 +243,6 @@ export default function NurseForgeFinalV22() {
             ))}
           </div>
           <div style={orderTotalAreaStyle}>
-            {applyDiscount && <div style={{ fontSize: '12px', color: '#888', textDecoration: 'line-through' }}>原價: HKD ${rawTotal}</div>}
             <div style={{ fontSize: '24px', fontWeight: '900', color: '#77815C' }}>Total: HKD ${total}</div>
           </div>
           <div style={quoteAreaStyle}>✨ {randomQuote}</div>
@@ -343,7 +296,7 @@ const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', paddin
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
 const btnStyle: any = { width: '32px', height: '32px', borderRadius: '50%', border: 'none', backgroundColor: '#f0f0f0', fontWeight: 'bold' };
-const footerStyle: any = { position: 'fixed', bottom: '0', left: '0', width: '100%', backgroundColor: '#fff', padding: '15px 20px 35px 20px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', zIndex: 1000, boxShadow: '0 -5px 25px rgba(0,0,0,0.08)' };
+const footerStyle: any = { position: 'fixed', bottom: '0', left: '0', width: '100%', backgroundColor: '#fff', padding: '15px 20px 35px 20px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', zIndex: 1000, boxShadow: '0 - -5px 25px rgba(0,0,0,0.08)' };
 const bottomTotalCardStyle: any = { backgroundColor: '#fff', padding: '10px 15px', borderRadius: '16px', border: '2px solid #77815C', marginBottom: '12px' };
 const clearBtnStyle: any = { padding: '6px 12px', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' };
 const paymeBtnStyle: any = { display: 'block', width: '100%', padding: '15px', backgroundColor: '#FF002B', color: '#fff', textDecoration: 'none', borderRadius: '40px', textAlign: 'center', fontWeight: '900', fontSize: '18px', boxShadow: '0 4px 15px rgba(255, 0, 43, 0.3)' };
@@ -356,8 +309,6 @@ const addressPreviewStyle: any = { fontSize: '11px', backgroundColor: '#fff', pa
 const orderTotalAreaStyle: any = { borderTop: '2px dashed #eee', marginTop: '10px', paddingTop: '8px', textAlign: 'right' };
 const quoteAreaStyle: any = { marginTop: '10px', padding: '8px 5px', borderTop: '1px solid #eee', fontSize: '11px', color: '#77815C', fontWeight: 'bold', textAlign: 'center' };
 const agreementBoxStyle: any = { width: '95%', maxWidth: '380px', marginTop: '20px', padding: '18px', backgroundColor: '#FFF9E6', borderRadius: '16px', border: '2px solid #FFCC00' };
-const specialRowStyle: any = { margin: '15px 0', padding: '15px', backgroundColor: '#E0F2F1', borderRadius: '15px', border: '2px solid #00897B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
-const specialTagStyle: any = { fontSize: '11px', fontWeight: 'bold', color: '#00897B', display: 'block' };
 const igLinkBtnStyle: any = { flex: 1, padding: '10px', borderRadius: '12px', background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', color: '#fff', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', textAlign: 'center' };
 const privacyNoticeStyle: any = { fontSize: '11px', color: '#666', marginBottom: '10px' };
 const addonCardStyle: any = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: '#FFF5F7', borderRadius: '15px', border: '2px solid #FFD1DC', marginTop: '15px' };
