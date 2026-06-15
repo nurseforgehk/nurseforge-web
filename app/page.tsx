@@ -132,8 +132,11 @@ export default function NurseForgeFinalV22() {
           <span style={{ fontSize: '24px' }}>📢</span>
           <div style={{ flex: 1 }}>
             <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '900', color: '#856404' }}>店主公告</h3>
-            <p style={{ margin: '2px 0 0 0', fontSize: '14px', color: '#664d03', fontWeight: 'bold' }}>
-              沒有最新公告
+            <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.6' }}>
+              🔥 <b>新貨上架</b> 🔥<br />
+              想享受吓瘋狂撳 Call Bell？🛎️<br />
+              想感受吓病人亂咁用 Call Bell 嘅快感？🤪<br />
+              現時推出咗最新嘅 <b>Call Bell Clicker</b> 啦，快啲下單啦！🚀
             </p>
           </div>
         </div>
