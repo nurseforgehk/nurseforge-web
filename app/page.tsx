@@ -22,7 +22,10 @@ export default function NurseForgeFinalV22() {
     tapePink: 0, tapeDesertYellow: 0, tapeOceanBlue: 0, tapeIceBlue: 0, 
     coverChiikawa: 0, coverUsagi: 0, coverAddon: 0, coverSingle: 0, 
     keyringNoWork: 0, keyringLucky: 0,
-    clickerLuckyPink: 0, clickerLuckyBlue: 0, clickerShutUp: 0, clickerCombo: 0, addonDiff: 0 
+    clickerLuckyPink: 0, clickerLuckyBlue: 0, clickerShutUp: 0, clickerCombo: 0, 
+    clickerCallbellNormal: 0, clickerCallbellFinger: 0, 
+    clickerCallcarNormal: 0, clickerCallcarFinger: 0, 
+    addonDiff: 0 
   };
 
   const [items, setItems] = useState(initialItems);
@@ -42,7 +45,7 @@ export default function NurseForgeFinalV22() {
     setRandomQuote(quotes[Math.floor(Math.random() * quotes.length)]);
   }, []);
 
-  const hasClicker = items.clickerLuckyPink > 0 || items.clickerLuckyBlue > 0 || items.clickerShutUp > 0 || items.clickerCombo > 0;
+  const hasClicker = items.clickerLuckyPink > 0 || items.clickerLuckyBlue > 0 || items.clickerShutUp > 0 || items.clickerCombo > 0 || items.clickerCallbellNormal > 0 || items.clickerCallbellFinger > 0 || items.clickerCallcarNormal > 0 || items.clickerCallcarFinger > 0;
 
   useEffect(() => {
     if (hasClicker && shipping.method === 'post') {
@@ -56,6 +59,8 @@ export default function NurseForgeFinalV22() {
     { qty: items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue + items.tapeIceBlue, p: 78 },
     { qty: items.coverChiikawa + items.coverUsagi, p: 30 }, 
     { qty: items.coverAddon, p: 10 }, { qty: items.coverSingle, p: 15 },
+    { qty: items.clickerCallbellNormal + items.clickerCallbellFinger, p: 68 }, 
+    { qty: items.clickerCallcarNormal + items.clickerCallcarFinger, p: 125 },
     { qty: items.clickerLuckyPink, p: 58 }, { qty: items.clickerLuckyBlue, p: 58 },
     { qty: items.clickerCombo, p: 110 }, { qty: items.clickerShutUp, p: 68 },
     { qty: items.keyringNoWork, p: 28 }, { qty: items.keyringLucky, p: 28 },
@@ -82,6 +87,10 @@ export default function NurseForgeFinalV22() {
     { name: 'Usagi防塵蓋', qty: items.coverUsagi, price: 30 },
     { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10 },
     { name: '獨立防塵蓋', qty: items.coverSingle, price: 15 },
+    { name: '叫人鐘 (正常版本)', qty: items.clickerCallbellNormal, price: 68 },
+    { name: '叫人鐘 (舉中指版本)', qty: items.clickerCallbellFinger, price: 68 },
+    { name: '叫人鐘收聲先 (正常版本)', qty: items.clickerCallcarNormal, price: 125 },
+    { name: '叫人鐘收聲先 (舉中指版本)', qty: items.clickerCallcarFinger, price: 125 },
     { name: '粉紅白吉床', qty: items.clickerLuckyPink, price: 58 },
     { name: '藍白吉床', qty: items.clickerLuckyBlue, price: 58 },
     { name: '吉床套裝 (粉紅+藍)', qty: items.clickerCombo, price: 110 },
@@ -131,6 +140,12 @@ export default function NurseForgeFinalV22() {
 
         <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>產品預覽</h2>
 
+        {/* 叫人鐘系列 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+            <ShowcaseCardMini img="/callbell.jpg" title="叫人鐘" price="$68" />
+            <ShowcaseCardMini img="/callcar.jpg" title="叫人鐘收聲先" price="$125" />
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
             <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
             <ShowcaseCardMini img="/greytape.jpg" title="灰色膠紙座" price="$58" />
@@ -172,6 +187,10 @@ export default function NurseForgeFinalV22() {
 
         <div style={formCardStyle}>
           <Section title="🔔 第二區：Clicker 系列" badge="❌ 不設平郵" badgeColor="#dc3545">
+            <Row name="🛎️ 叫人鐘 (正常版本) ($68)" count={items.clickerCallbellNormal} onAdd={() => update('clickerCallbellNormal', 1)} onSub={() => update('clickerCallbellNormal', -1)} />
+            <Row name="🛎️ 叫人鐘 (舉中指版本) ($68)" count={items.clickerCallbellFinger} onAdd={() => update('clickerCallbellFinger', 1)} onSub={() => update('clickerCallbellFinger', -1)} />
+            <Row name="🚑 叫人鐘收聲先 (正常版本) ($125)" count={items.clickerCallcarNormal} onAdd={() => update('clickerCallcarNormal', 1)} onSub={() => update('clickerCallcarNormal', -1)} />
+            <Row name="🚑 叫人鐘收聲先 (舉中指版本) ($125)" count={items.clickerCallcarFinger} onAdd={() => update('clickerCallcarFinger', 1)} onSub={() => update('clickerCallcarFinger', -1)} />
             <Row name="🌸 粉紅白吉床 ($58)" count={items.clickerLuckyPink} onAdd={() => update('clickerLuckyPink', 1)} onSub={() => update('clickerLuckyPink', -1)} />
             <Row name="💎 藍白吉床 ($58)" count={items.clickerLuckyBlue} onAdd={() => update('clickerLuckyBlue', 1)} onSub={() => update('clickerLuckyBlue', -1)} />
             <Row name="✨ 吉床套裝 ($110)" count={items.clickerCombo} onAdd={() => update('clickerCombo', 1)} onSub={() => update('clickerCombo', -1)} />
@@ -296,7 +315,7 @@ const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', paddin
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
 const btnStyle: any = { width: '32px', height: '32px', borderRadius: '50%', border: 'none', backgroundColor: '#f0f0f0', fontWeight: 'bold' };
-const footerStyle: any = { position: 'fixed', bottom: '0', left: '0', width: '100%', backgroundColor: '#fff', padding: '15px 20px 35px 20px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', zIndex: 1000, boxShadow: '0 - -5px 25px rgba(0,0,0,0.08)' };
+const footerStyle: any = { position: 'fixed', bottom: '0', left: '0', width: '100%', backgroundColor: '#fff', padding: '15px 20px 35px 20px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', zIndex: 1000, boxShadow: '0 -5px 25px rgba(0,0,0,0.08)' };
 const bottomTotalCardStyle: any = { backgroundColor: '#fff', padding: '10px 15px', borderRadius: '16px', border: '2px solid #77815C', marginBottom: '12px' };
 const clearBtnStyle: any = { padding: '6px 12px', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' };
 const paymeBtnStyle: any = { display: 'block', width: '100%', padding: '15px', backgroundColor: '#FF002B', color: '#fff', textDecoration: 'none', borderRadius: '40px', textAlign: 'center', fontWeight: '900', fontSize: '18px', boxShadow: '0 4px 15px rgba(255, 0, 43, 0.3)' };
