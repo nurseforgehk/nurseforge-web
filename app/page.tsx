@@ -67,8 +67,8 @@ export default function NurseForgeFinalV22() {
     { qty: 1, p: items.addonDiff }
   ].reduce((acc, curr) => acc + (curr.qty * curr.p), 0);
 
-  // Free shipping logic linked to the total
-  const isFreeSF = total >= 120;
+  // Free shipping threshold
+  const isFreeSF = total >= 200;
 
   const customColors = [
     { k: 'Black', n: '🖤 黑色' }, { k: 'Red', n: '❤️ 深紅' }, 
@@ -127,12 +127,14 @@ export default function NurseForgeFinalV22() {
 
       <div style={{ maxWidth: '500px', margin: '0 auto 30px auto' }}>
         
-        {/* 店主公告位置 */}
+        {/* 位置 1：店主公告增設免運費提示 */}
         <div style={announcementStyle}>
           <span style={{ fontSize: '24px' }}>📢</span>
           <div style={{ flex: 1 }}>
             <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '900', color: '#856404' }}>店主公告</h3>
             <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.6' }}>
+              ✨ <b>【限時優惠】全店滿 $200 即享順豐站/智能櫃免運費！</b> 📦<br />
+              --------------------------------------------<br />
               🔥 <b>新貨上架</b> 🔥<br />
               想享受吓瘋狂撳 Call Bell？🛎️<br />
               想感受吓病人亂咁用 Call Bell 嘅快感？🤪<br />
@@ -282,8 +284,10 @@ export default function NurseForgeFinalV22() {
         </div>
       </div>
 
+      {/* 位置 2：底部固定計價欄增加「動態免運費提示」，引導加購 */}
       <div style={footerStyle}>
         <div style={{ width: '100%', maxWidth: '480px' }}>
+          
           <div style={bottomTotalCardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                <div>
@@ -291,6 +295,19 @@ export default function NurseForgeFinalV22() {
                  <div style={{ fontSize: '24px', fontWeight: '900', color: '#77815C' }}>HKD ${total}</div>
                </div>
                <button type="button" onClick={clearAll} style={clearBtnStyle}>🗑️ 清空</button>
+            </div>
+            
+            {/* 動態計算免運費進度條/文字提示 */}
+            <div style={{ borderTop: '1px dashed #eee', marginTop: '8px', paddingTop: '6px', textAlign: 'center' }}>
+              {!isFreeSF ? (
+                <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#b97a00' }}>
+                  💡 再買多 <b style={{ fontSize: '14px', color: '#dc3545' }}>${200 - total}</b> 即可享順豐站/智能櫃免運費！
+                </span>
+              ) : (
+                <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#2E7D32' }}>
+                  🎉 已滿 $200！已成功享有順豐站/智能櫃免運費優惠！
+                </span>
+              )}
             </div>
           </div>
           
@@ -319,7 +336,7 @@ const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRad
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
 const btnStyle: any = { width: '32px', height: '32px', borderRadius: '50%', border: 'none', backgroundColor: '#f0f0f0', fontWeight: 'bold' };
 const footerStyle: any = { position: 'fixed', bottom: '0', left: '0', width: '100%', backgroundColor: '#fff', padding: '15px 20px 35px 20px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', zIndex: 1000, boxShadow: '0 -5px 25px rgba(0,0,0,0.08)' };
-const bottomTotalCardStyle: any = { backgroundColor: '#fff', padding: '10px 15px', borderRadius: '16px', border: '2px solid #77815C', marginBottom: '12px' };
+const bottomTotalCardStyle: any = { backgroundColor: '#fff', padding: '12px 15px', borderRadius: '16px', border: '2px solid #77815C', marginBottom: '12px' };
 const clearBtnStyle: any = { padding: '6px 12px', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' };
 const paymeBtnStyle: any = { display: 'block', width: '100%', padding: '15px', backgroundColor: '#FF002B', color: '#fff', textDecoration: 'none', borderRadius: '40px', textAlign: 'center', fontWeight: '900', fontSize: '18px', boxShadow: '0 4px 15px rgba(255, 0, 43, 0.3)' };
 const paymeBtnDisabledStyle: any = { display: 'block', width: '100%', padding: '15px', backgroundColor: '#ccc', color: '#666', borderRadius: '40px', textAlign: 'center', fontWeight: '900', fontSize: '18px', cursor: 'not-allowed' };
