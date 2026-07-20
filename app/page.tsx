@@ -198,7 +198,7 @@ export default function NurseForgeFinalV25() {
               { img: 'white', name: '白色' }, { img: 'grey', name: '灰色' }, { img: 'black', name: '黑色' },
               { img: 'red', name: '深紅' }, { img: 'warmyellow', name: '暖黃' }, { img: 'orange', name: '橙色' },
               { img: 'purple', name: '紫色' }, { img: 'green', name: '綠色' }, { img: 'pink', name: '櫻花粉' },
-              { img: 'usagiyellow', name: '沙漠黃 (Usagi黃)' }, { img: 'seaglue', name: '海洋藍' }, { img: 'iceblue', name: '冰藍' }
+              { img: 'usagiyellow', name: '沙漠黃 (Usagi黃)' }, { img: 'seablue', name: '海洋藍' }, { img: 'iceblue', name: '冰藍' }
             ].map((color, idx) => (
               <ColorShowcaseMini key={idx} img={`/${color.img}.jpg`} title={color.name} />
             ))}
