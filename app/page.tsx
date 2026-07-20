@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function NurseForgeFinalV22() {
+export default function NurseForgeFinalV25() {
   const [mounted, setMounted] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [orderId, setOrderId] = useState(''); 
@@ -10,7 +10,7 @@ export default function NurseForgeFinalV22() {
 
   const quotes = [
     "祝你準時收工！🕒", "見字飲水呀同事！💧", "記得去廁所，人工包埋㗎！🚽", 
-    "祝你生意淡薄，越淡越好！🛌", "祝你日日返工靚腳靚場！✨", 
+    "祝你生意淡薄，越淡好！🛌", "祝你日日返工靚腳靚場！✨", 
     "收工未呢？收工去食返餐好嘅！🍱", "祝你如意吉場，場場清空！🍊", 
     "祝你所有病人都 nil active c/o！😴", "返 night 同病人齊齊 sleep well！💤",
     "今日辛苦晒，NurseForge 撐住你！💪"
@@ -53,6 +53,32 @@ export default function NurseForgeFinalV22() {
     }
   }, [hasClicker]);
 
+
+  // ======= ⚙️ 智能防塵蓋提示邏輯 =======
+
+  // 1. 計算所有膠紙座的總數量，以及到底揀咗幾多「種」唔同嘅顏色
+  const tapeColorQuantities = [
+    items.tapeWhite, items.tapeGrey, items.tapeBlack, items.tapeRed, 
+    items.tapeYellow, items.tapeOrange, items.tapePurple, items.tapeGreen, 
+    items.tapePink, items.tapeDesertYellow, items.tapeOceanBlue, items.tapeIceBlue
+  ];
+  
+  const totalTapeCount = tapeColorQuantities.reduce((acc, curr) => acc + curr, 0);
+  const distinctColorsCount = tapeColorQuantities.filter(qty => qty > 0).length;
+
+  // 2. 計算防塵蓋的總數量
+  const totalCoverCount = items.coverChiikawa + items.coverUsagi + items.coverAddon + items.coverSingle;
+
+  // 3. 判斷是否需要彈出溫馨提示：
+  // 條件：買咗多過一種色嘅膠紙座 且 防塵蓋同膠紙座總數不相等
+  const showCoverRemarkNotice = distinctColorsCount >= 2 && totalCoverCount > 0 && totalCoverCount !== totalTapeCount;
+
+  // ===================================
+
+
+  // 驗證基本出貨資料及聲明是否都有填好
+  const isFormValid = agreed && shipping.name.trim() !== '' && shipping.phone.trim() !== '' && shipping.igName.trim() !== '' && shipping.address.trim() !== '';
+
   // Calculate Total
   const total = [
     { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 },
@@ -67,14 +93,13 @@ export default function NurseForgeFinalV22() {
     { qty: 1, p: items.addonDiff }
   ].reduce((acc, curr) => acc + (curr.qty * curr.p), 0);
 
-  // Free shipping threshold
   const isFreeSF = total >= 200;
 
   const customColors = [
     { k: 'Black', n: '🖤 黑色' }, { k: 'Red', n: '❤️ 深紅' }, 
     { k: 'Yellow', n: '💛 暖黃' }, { k: 'Orange', n: '🧡 橙色' },
     { k: 'Purple', n: '💜 紫色' }, { k: 'Green', n: '💚 綠色' }, 
-    { k: 'Pink', n: '🌸 櫻花粉' }, { k: 'DesertYellow', n: '🏜️ 沙漠黃' },
+    { k: 'Pink', n: '🌸 櫻花粉' }, { k: 'DesertYellow', n: '🏜️ 沙漠黃 (Usagi黃)' },
     { k: 'OceanBlue', n: '🌊 海洋藍' },
     { k: 'IceBlue', n: '❄️ 冰藍' }
   ];
@@ -116,6 +141,21 @@ export default function NurseForgeFinalV22() {
   return (
     <div style={{ padding: '20px 20px 350px 20px', backgroundColor: '#77815C', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
       
+      <style>{`
+        @keyframes unlockWobble {
+          0% { transform: scale(1); }
+          15% { transform: scale(1.04) rotate(-1deg); }
+          30% { transform: scale(1.04) rotate(1deg); }
+          45% { transform: scale(1.04) rotate(-1deg); }
+          60% { transform: scale(1.04) rotate(1deg); }
+          75% { transform: scale(1.04) rotate(0deg); }
+          100% { transform: scale(1); }
+        }
+        .payme-active-btn {
+          animation: unlockWobble 0.5s ease-in-out;
+        }
+      `}</style>
+
       <button type="button" onClick={() => orderSectionRef.current?.scrollIntoView({ behavior: 'smooth' })} style={fabStyle}>
         直接帶我去揀商品 🛒
       </button>
@@ -126,44 +166,57 @@ export default function NurseForgeFinalV22() {
       </div>
 
       <div style={{ maxWidth: '500px', margin: '0 auto 30px auto' }}>
-        
-        {/* 位置 1：店主公告增設免運費提示 */}
         <div style={announcementStyle}>
           <span style={{ fontSize: '24px' }}>📢</span>
           <div style={{ flex: 1 }}>
             <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '900', color: '#856404' }}>店主公告</h3>
             <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.6' }}>
-              ✨ <b>【限時優惠】全店滿 $200 即享順豐站/智能櫃免運費！</b> 📦<br />
-              --------------------------------------------<br />
-              🔥 <b>新貨上架</b> 🔥<br />
-              想享受吓瘋狂撳 Call Bell？🛎️<br />
-              想感受吓病人亂咁用 Call Bell 嘅快感？🤪<br />
-              現時推出咗最新嘅 <b>Call Bell Clicker</b> 啦，快啲下單啦！🚀
+              ✨ <b>全店滿 $200 即享順豐站/智能櫃免運費！</b><br />
+              🔥 <b>新貨上架：</b>想感受吓病人亂咁用 Call Bell 嘅快感？🤪 現時推出咗最新嘅 <b>Call Bell Clicker</b> 啦，快啲下單啦！
             </p>
           </div>
         </div>
 
-        <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>產品預覽</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>產品預覽 (點擊圖片可放大/縮小)</h2>
 
-        {/* 叫人鐘系列 */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-            <ShowcaseCardMini img="/callbell.jpg" title="叫人鐘" price="$68" />
-            <ShowcaseCardMini img="/callcar.jpg" title="叫人鐘收聲先" price="$125" />
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '15px' }}>
             <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
             <ShowcaseCardMini img="/greytape.jpg" title="灰色膠紙座" price="$58" />
             <ShowcaseCardMini img="/chi.jpg" title="Chiikawa防塵蓋" price="$30" />
             <ShowcaseCardMini img="/us.jpg" title="Usagi防塵蓋" price="$30" />
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '25px' }}>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
             <a href="https://www.instagram.com/p/DW9hjFeEtjL/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🎨 睇客制顏色選項</a>
             <a href="https://www.instagram.com/p/DW3pJ1zkuY4/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🛡️ 點解要加防塵蓋？</a>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-          {['pbed', 'bbed', 'twobed', 'cm', 'sick', 'kc'].map((img, idx) => (
-            <ShowcaseCardMini key={idx} img={`/${img}.jpg`} title={["粉紅白吉床", "藍白吉床", "吉床套裝", "收聲先", "不想上班", "如意吉場"][idx]} price={["$58","$58","$110","$68","$28","$28"][idx]} />
+
+        <div style={{ backgroundColor: 'rgba(255,255,255,0.15)', padding: '10px', borderRadius: '15px', marginBottom: '25px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', marginBottom: '8px', textAlign: 'center' }}>🎨 3D打印材料顏色預覽 (點擊可放大)</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px' }}>
+            {[
+              { img: 'white', name: '白色' }, { img: 'grey', name: '灰色' }, { img: 'black', name: '黑色' },
+              { img: 'red', name: '深紅' }, { img: 'warmyellow', name: '暖黃' }, { img: 'orange', name: '橙色' },
+              { img: 'purple', name: '紫色' }, { img: 'green', name: '綠色' }, { img: 'pink', name: '櫻花粉' },
+              { img: 'usagiyellow', name: '沙漠黃 (Usagi黃)' }, { img: 'seaglue', name: '海洋藍' }, { img: 'iceblue', name: '冰藍' }
+            ].map((color, idx) => (
+              <ColorShowcaseMini key={idx} img={`/${color.img}.jpg`} title={color.name} />
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+          {[
+            { img: 'pbed', title: '粉紅白吉床', price: '$58' },
+            { img: 'bbed', title: '藍白吉床', price: '$58' },
+            { img: 'twobed', title: '吉床套裝', price: '$110' },
+            { img: 'sick', title: '收聲先', price: '$68' },
+            { img: 'callbell', title: '叫人鐘', price: '$68' },
+            { img: 'callcar', title: '叫人鐘收聲先', price: '$125' },
+            { img: 'cm', title: '不想上班', price: '$28' },
+            { img: 'kc', title: '如意吉場', price: '$28' }
+          ].map((item, idx) => (
+            <ShowcaseCardMini key={idx} img={`/${item.img}.jpg`} title={item.title} price={item.price} />
           ))}
         </div>
       </div>
@@ -186,6 +239,13 @@ export default function NurseForgeFinalV22() {
               <Row name="🐰 Usagi防塵蓋 $30" count={items.coverUsagi} onAdd={() => update('coverUsagi', 1)} onSub={() => update('coverUsagi', -1)} />
               <Row name="隨座加購防塵蓋 $10" count={items.coverAddon} onAdd={() => update('coverAddon', 1)} onSub={() => update('coverAddon', -1)} />
               <Row name="補買防塵蓋 $15" count={items.coverSingle} onAdd={() => update('coverSingle', 1)} onSub={() => update('coverSingle', -1)} />
+              
+              {/* 智能精準提示：多過一隻色 且 數量不對等時才會顯示 */}
+              {showCoverRemarkNotice && (
+                <div style={{ marginTop: '12px', padding: '10px 12px', backgroundColor: '#FFF9E6', border: '1px dashed #FFCC00', borderRadius: '10px', fontSize: '12px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5' }}>
+                  ⚠️ 溫馨提示：由於你揀咗多款顏色嘅膠紙座，請記得喺下方「第四區」備註欄寫低防塵蓋分別想要咩顏色 / 配邊個座呀，多謝合作 ❤️
+                </div>
+              )}
             </div>
           </Section>
         </div>
@@ -199,7 +259,7 @@ export default function NurseForgeFinalV22() {
             <Row name="🌸 粉紅白吉床 ($58)" count={items.clickerLuckyPink} onAdd={() => update('clickerLuckyPink', 1)} onSub={() => update('clickerLuckyPink', -1)} />
             <Row name="💎 藍白吉床 ($58)" count={items.clickerLuckyBlue} onAdd={() => update('clickerLuckyBlue', 1)} onSub={() => update('clickerLuckyBlue', -1)} />
             <Row name="✨ 吉床套裝 ($110)" count={items.clickerCombo} onAdd={() => update('clickerCombo', 1)} onSub={() => update('clickerCombo', -1)} />
-            <Row name="🤫 收聲先 ($68)" count={items.clickerShutUp} onAdd={() => update('clickerShutUp', 1)} onSub={() => update('clickerShutUp', -1)} />
+            <Row name="🤫 收聲先 ($68)" count={items.clickerShutUp} onAdd={() => update('clickerShutUp', -1)} />
           </Section>
         </div>
 
@@ -214,13 +274,21 @@ export default function NurseForgeFinalV22() {
           <Section title="🚚 第四區：配送及個人資訊">
             <p style={privacyNoticeStyle}>🛡️ 呢個網站唔會儲存任何個人資料。</p>
             {hasClicker && <p style={{ color: '#dc3545', fontSize: '11px', fontWeight: 'bold', marginBottom: '8px' }}>⚠️ 由於選購了 Clicker，只能選順豐。</p>}
+            
             <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-              <input placeholder="收件人姓名" style={inputStyle} value={shipping.name} onChange={e => setShipping({...shipping, name: e.target.value})} />
-              <input placeholder="IG 帳號" style={inputStyle} value={shipping.igName} onChange={e => setShipping({...shipping, igName: e.target.value})} />
+              <input placeholder="收件人姓名 (必填)" style={inputStyle} value={shipping.name} onChange={e => setShipping({...shipping, name: e.target.value})} />
+              <input placeholder="IG 帳號 (必填，方便搵返你)" style={inputStyle} value={shipping.igName} onChange={e => setShipping({...shipping, igName: e.target.value})} />
             </div>
-            <input placeholder="聯絡電話" style={inputStyle} value={shipping.phone} onChange={e => setShipping({...shipping, phone: e.target.value})} />
-            <textarea placeholder="順豐代碼及地址 / 住宅地址" style={{...inputStyle, height: '80px'} as any} value={shipping.address} onChange={e => setShipping({...shipping, address: e.target.value})} />
-            <input placeholder="備註 (Remarks)" style={{...inputStyle, border: '2px solid #77815C'} as any} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
+            <input placeholder="聯絡電話 (必填)" style={inputStyle} value={shipping.phone} onChange={e => setShipping({...shipping, phone: e.target.value})} />
+            
+            <textarea 
+              placeholder="🏠 請輸入順豐點碼 (如: 852XXX) 及詳細地址（方便店主直接對賬，唔使上網慢慢查返地址呀，麻煩晒 ❤️）" 
+              style={{...inputStyle, height: '80px'} as any} 
+              value={shipping.address} 
+              onChange={e => setShipping({...shipping, address: e.target.value})} 
+            />
+            
+            <input placeholder="備註 (Remarks) (例如：防塵蓋要灰色 / 配邊款座)" style={{...inputStyle, border: showCoverRemarkNotice ? '2px solid #FFCC00' : '2px solid #77815C', backgroundColor: showCoverRemarkNotice ? '#FFF9E6' : '#fff'} as any} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
             
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px' }}>
               {!hasClicker && <Radio label="本地平郵 (包郵)" active={shipping.method === 'post'} onClick={() => setShipping({...shipping, method: 'post'})} />}
@@ -284,7 +352,6 @@ export default function NurseForgeFinalV22() {
         </div>
       </div>
 
-      {/* 位置 2：底部固定計價欄增加「動態免運費提示」，引導加購 */}
       <div style={footerStyle}>
         <div style={{ width: '100%', maxWidth: '480px' }}>
           
@@ -297,7 +364,6 @@ export default function NurseForgeFinalV22() {
                <button type="button" onClick={clearAll} style={clearBtnStyle}>🗑️ 清空</button>
             </div>
             
-            {/* 動態計算免運費進度條/文字提示 */}
             <div style={{ borderTop: '1px dashed #eee', marginTop: '8px', paddingTop: '6px', textAlign: 'center' }}>
               {!isFreeSF ? (
                 <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#b97a00' }}>
@@ -312,12 +378,20 @@ export default function NurseForgeFinalV22() {
           </div>
           
           <div style={{ transition: 'all 0.3s ease' }}>
-            {agreed ? (
-              <a href="https://payme.hsbc/nfhk" target="_blank" rel="noreferrer" style={paymeBtnStyle}>
-                立即 PayMe 付款
+            {isFormValid ? (
+              <a 
+                href="https://payme.hsbc/nfhk" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="payme-active-btn"
+                style={paymeBtnStyle}
+              >
+                🌟 立即 PayMe 付款
               </a>
             ) : (
-              <div style={paymeBtnDisabledStyle}>請先剔選上方聲明</div>
+              <div style={paymeBtnDisabledStyle}>
+                {!agreed ? "請先剔選上方聲明" : "請填妥姓名/IG/電話/詳細地址"}
+              </div>
             )}
           </div>
           
@@ -339,7 +413,7 @@ const footerStyle: any = { position: 'fixed', bottom: '0', left: '0', width: '10
 const bottomTotalCardStyle: any = { backgroundColor: '#fff', padding: '12px 15px', borderRadius: '16px', border: '2px solid #77815C', marginBottom: '12px' };
 const clearBtnStyle: any = { padding: '6px 12px', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' };
 const paymeBtnStyle: any = { display: 'block', width: '100%', padding: '15px', backgroundColor: '#FF002B', color: '#fff', textDecoration: 'none', borderRadius: '40px', textAlign: 'center', fontWeight: '900', fontSize: '18px', boxShadow: '0 4px 15px rgba(255, 0, 43, 0.3)' };
-const paymeBtnDisabledStyle: any = { display: 'block', width: '100%', padding: '15px', backgroundColor: '#ccc', color: '#666', borderRadius: '40px', textAlign: 'center', fontWeight: '900', fontSize: '18px', cursor: 'not-allowed' };
+const paymeBtnDisabledStyle: any = { display: 'block', width: '100%', padding: '15px', backgroundColor: '#ccc', color: '#666', borderRadius: '40px', textAlign: 'center', fontWeight: '900', fontSize: '14px', cursor: 'not-allowed' };
 const capNoticeStyle: any = { backgroundColor: '#FFED4A', padding: '10px 20px', borderRadius: '10px', marginBottom: '15px', border: '2px solid #000', textAlign: 'center', fontSize: '16px', fontWeight: '900', color: '#000' };
 const orderDraftStyle: any = { backgroundColor: '#fff', padding: '15px', width: '95%', maxWidth: '380px', border: '4px solid #77815C', color: '#000' };
 const orderHeaderStyle: any = { borderBottom: '2px solid #77815C', paddingBottom: '8px', marginBottom: '10px', textAlign: 'center' };
@@ -354,17 +428,43 @@ const addonCardStyle: any = { display: 'flex', justifyContent: 'space-between', 
 const diffBtnStyle: any = { width: '35px', height: '35px', border: '2px solid #D63384', backgroundColor: '#fff', color: '#D63384', borderRadius: '10px', fontWeight: 'bold' };
 
 // COMPONENTS
-function ShowcaseCardMini({ img, title, price, isLarge }: any) { 
+function ShowcaseCardMini({ img, title, price }: any) { 
+  const [isZoomed, setIsZoomed] = useState(false);
   return ( 
-    <div style={{ backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' } as any}>
-      <img src={img} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' } as any} alt={title} />
-      <div style={{ padding: isLarge ? '15px' : '8px' }}>
-        <div style={{ fontSize: isLarge ? '16px' : '12px', fontWeight: 'bold', color: '#000' }}>{title}</div>
-        <div style={{ fontSize: isLarge ? '18px' : '14px', color: '#77815C', fontWeight: '900' }}>{price}</div>
+    <div 
+      onClick={() => setIsZoomed(!isZoomed)}
+      style={{ 
+        backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'all 0.3s ease', gridColumn: isZoomed ? 'span 4' : 'auto', zIndex: isZoomed ? 10 : 1
+      } as any}
+    >
+      <img src={img} style={{ width: '100%', aspectRatio: isZoomed ? 'auto' : '1/1', maxHeight: isZoomed ? '400px' : 'none', objectFit: 'cover', transition: 'all 0.3s ease' } as any} alt={title} />
+      <div style={{ padding: isZoomed ? '12px' : '6px' }}>
+        <div style={{ fontSize: isZoomed ? '15px' : '11px', fontWeight: 'bold', color: '#000' }}>{title}</div>
+        <div style={{ fontSize: isZoomed ? '16px' : '12px', color: '#77815C', fontWeight: '900' }}>{price}</div>
+        {isZoomed && <div style={{ fontSize: '11px', color: '#dc3545', fontWeight: 'bold', marginTop: '6px', backgroundColor: '#fff3cd', padding: '2px 6px', borderRadius: '4px', display: 'inline-block' }}>💡 再點擊圖片可縮小 ⬆️</div>}
       </div>
     </div> 
   ); 
 }
+
+function ColorShowcaseMini({ img, title }: any) {
+  const [isZoomed, setIsZoomed] = useState(false);
+  return (
+    <div 
+      onClick={() => setIsZoomed(!isZoomed)}
+      style={{
+        backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', textAlign: 'center', border: '1px solid #ddd', cursor: 'pointer', transition: 'all 0.25s ease', gridColumn: isZoomed ? 'span 6' : 'auto', zIndex: isZoomed ? 20 : 1, boxShadow: isZoomed ? '0 8px 25px rgba(0,0,0,0.3)' : 'none'
+      } as any}
+    >
+      <img src={img} style={{ width: '100%', aspectRatio: isZoomed ? 'auto' : '1/1', maxHeight: isZoomed ? '320px' : 'none', objectFit: 'cover' } as any} alt={title} />
+      <div style={{ padding: '4px 2px', fontSize: isZoomed ? '14px' : '10px', color: '#333', fontWeight: 'bold' }}>
+        {title}
+        {isZoomed && <div style={{ fontSize: '11px', color: '#dc3545', fontWeight: 'bold', marginTop: '6px', backgroundColor: '#fff3cd', padding: '2px 4px', borderRadius: '4px', display: 'block' }}>💡 再點擊圖片可縮小 ⬆️</div>}
+      </div>
+    </div>
+  );
+}
+
 function Section({ title, badge, badgeColor, children }: any) { return ( <div style={{ marginBottom: '10px' }}><h3 style={{ fontSize: '16px', fontWeight: '900', color: '#77815C', marginBottom: '12px', borderLeft: '5px solid #77815C', paddingLeft: '10px', display: 'flex', alignItems: 'center' } as any}>{title} {badge && <span style={{ fontSize: '10px', backgroundColor: badgeColor, color: '#fff', padding: '2px 8px', borderRadius: '10px', marginLeft: '8px' }}>{badge}</span>}</h3>{children}</div> ); }
 function Row({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f2f2f2' } as any}><span style={{ fontSize: '14px', color: '#000', fontWeight: '600' }}>{name}</span><div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}><button type="button" onClick={onSub} style={btnStyle}>−</button><span style={{ fontSize: '16px', fontWeight: '900', minWidth: '18px', textAlign: 'center' }}>{count}</span><button type="button" onClick={onAdd} style={btnStyle}>+</button></div></div> ); }
 function RowMini({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #eee' } as any}><span style={{ fontSize: '12px', color: '#000', fontWeight: 'bold' }}>{name}</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button type="button" onClick={onSub} style={{...btnStyle, width: '22px', height: '22px'}}>−</button><span style={{ fontSize: '14px', fontWeight: '900' }}>{count}</span><button type="button" onClick={onAdd} style={{...btnStyle, width: '22px', height: '22px'}}>+</button></div></div> ); }
