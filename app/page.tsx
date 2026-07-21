@@ -259,10 +259,10 @@ export default function NurseForgeFinalV25() {
             { img: 'pbed', title: '粉紅白吉床', price: '$58' },
             { img: 'bbed', title: '藍白吉床', price: '$58' },
             { img: 'twobed', title: '吉床套裝', price: '$110' },
-            { img: 'sick', title: '收聲先', price: '$68' },
+            { img: 'cm', title: '收聲先', price: '$68' },
             { img: 'callbell', title: '叫人鐘', price: '$68' },
             { img: 'callcar', title: '叫人鐘收聲先', price: '$125' },
-            { img: 'cm', title: '不想上班', price: '$28' },
+            { img: 'sick', title: '不想上班', price: '$28' },
             { img: 'kc', title: '如意吉場', price: '$28' }
           ].map((item, idx) => (
             <ShowcaseCardMini key={idx} img={`/${item.img}.jpg`} title={item.title} price={item.price} />
@@ -342,7 +342,7 @@ export default function NurseForgeFinalV25() {
               onChange={e => setShipping({...shipping, address: e.target.value})} 
             />
             
-            <input placeholder="備註 (Remarks) (例如：防塵蓋要灰色 / 配邊款座)" style={{...inputStyle, border: showCoverRemarkNotice ? '2px solid #FFCC00' : '2px solid #77815C', backgroundColor: showCoverRemarkNotice ? '#FFF9E6' : '#fff'} as any} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
+            <input placeholder="備註 (Remarks) (例如：防塵蓋要灰色 / 配邊個座)" style={{...inputStyle, border: showCoverRemarkNotice ? '2px solid #FFCC00' : '2px solid #77815C', backgroundColor: showCoverRemarkNotice ? '#FFF9E6' : '#fff'} as any} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
             
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px' }}>
               {!hasClicker && <Radio label="本地平郵 (包郵)" active={shipping.method === 'post'} onClick={() => setShipping({...shipping, method: 'post'})} />}
