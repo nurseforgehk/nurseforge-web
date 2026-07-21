@@ -99,9 +99,9 @@ export default function NurseForgeFinalV25() {
     { k: 'Black', n: '🖤 黑色' }, { k: 'Red', n: '❤️ 深紅' }, 
     { k: 'Yellow', n: '💛 暖黃' }, { k: 'Orange', n: '🧡 橙色' },
     { k: 'Purple', n: '💜 紫色' }, { k: 'Green', n: '💚 綠色' }, 
-    { k: 'Pink', n: '🌸 櫻花粉' }, { k: 'DesertYellow', n: '🏜️ 沙漠黃 (Usagi黃)' },
-    { k: 'OceanBlue', n: '🌊 海洋藍' },
-    { k: 'IceBlue', n: '❄️ 冰藍' }
+    { k: 'Pink', n: '🌸 櫻花粉 (Matte)' }, { k: 'DesertYellow', n: '🏜️ 沙漠黃/Usagi黃 (Matte)' },
+    { k: 'OceanBlue', n: '🌊 海洋藍 (Matte)' },
+    { k: 'IceBlue', n: '❄️ 冰藍 (Matte)' }
   ];
 
   const activeProducts: any[] = [
@@ -157,7 +157,7 @@ export default function NurseForgeFinalV25() {
       `}</style>
 
       <button type="button" onClick={() => orderSectionRef.current?.scrollIntoView({ behavior: 'smooth' })} style={fabStyle}>
-        直接帶我去揀商品 🛒
+        直接帶 me 去揀商品 🛒
       </button>
 
       <div style={{ textAlign: 'center', marginBottom: '30px', color: '#fff', paddingTop: '60px' }}>
@@ -167,13 +167,34 @@ export default function NurseForgeFinalV25() {
 
       <div style={{ maxWidth: '500px', margin: '0 auto 30px auto' }}>
         <div style={announcementStyle}>
-          <span style={{ fontSize: '24px' }}>📢</span>
-          <div style={{ flex: 1 }}>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '900', color: '#856404' }}>店主公告</h3>
-            <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.6' }}>
-              ✨ <b>全店滿 $200 即享順豐站/智能櫃免運費！</b><br />
-              🔥 <b>新貨上架：</b>想感受吓病人亂咁用 Call Bell 嘅快感？🤪 現時推出咗最新嘅 <b>Call Bell Clicker</b> 啦，快啲下單啦！
-            </p>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            <span style={{ fontSize: '24px', lineHeight: '1' }}>📢</span>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '900', color: '#856404', borderBottom: '2px solid #FFE8A3', paddingBottom: '4px' }}>
+                店主公告
+              </h3>
+              
+              <div style={{ fontSize: '14px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div>✨ <b>全店滿 $200 即享順豐站/智能櫃免運費！</b></div>
+                
+                <div>🔥 <b>新貨上架：</b>想感受下病人亂咁用 Call Bell 嘅快感？🤪 現時推出咗最新嘅 <b>Call Bell Clicker</b> 啦，快啲下單啦！</div>
+                
+                <div style={{ marginTop: '4px', paddingTop: '8px', borderTop: '1px dashed #E6C200' }}>
+                  ⚙️ <b>品質全面升級：</b><br />
+                  由即日起，所有膠紙座（不論任何顏色），旋轉中軸將會統一改用 <b>白色 PLA Tough 物料</b>，大幅增加耐用度同強度！💪
+                </div>
+              </div>
+            </div>
+
+            {/* 旋轉中軸圖片 (middle.jpg) */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '70px' }}>
+              <img 
+                src="/middle.jpg" 
+                alt="白色PLA Tough中軸" 
+                style={{ width: '65px', height: '65px', objectFit: 'cover', borderRadius: '10px', border: '2px solid #E6C200', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }} 
+              />
+              <span style={{ fontSize: '10px', color: '#856404', fontWeight: 'bold', marginTop: '4px', textAlign: 'center' }}>PLA Tough<br/>中軸升級</span>
+            </div>
           </div>
         </div>
 
@@ -191,21 +212,49 @@ export default function NurseForgeFinalV25() {
             <a href="https://www.instagram.com/p/DW3pJ1zkuY4/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🛡️ 點解要加防塵蓋？</a>
         </div>
 
-        <div style={{ backgroundColor: 'rgba(255,255,255,0.15)', padding: '10px', borderRadius: '15px', marginBottom: '25px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', marginBottom: '8px', textAlign: 'center' }}>🎨 3D打印材料顏色預覽 (點擊可放大)</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px' }}>
-            {[
-              { img: 'white', name: '白色' }, { img: 'grey', name: '灰色' }, { img: 'black', name: '黑色' },
-              { img: 'red', name: '深紅' }, { img: 'warmyellow', name: '暖黃' }, { img: 'orange', name: '橙色' },
-              { img: 'purple', name: '紫色' }, { img: 'green', name: '綠色' }, { img: 'pink', name: '櫻花粉' },
-              { img: 'usagiyellow', name: '沙漠黃 (Usagi黃)' }, { img: 'seablue', name: '海洋藍' }, { img: 'iceblue', name: '冰藍' }
-            ].map((color, idx) => (
-              <ColorShowcaseMini key={idx} img={`/${color.img}.jpg`} title={color.name} />
-            ))}
+        {/* 🎨 分類顏色預覽區 */}
+        <div style={{ backgroundColor: 'rgba(255,255,255,0.15)', padding: '12px', borderRadius: '18px', marginBottom: '25px', color: '#fff' }}>
+          <div style={{ fontSize: '13px', fontWeight: '900', marginBottom: '10px', textAlign: 'center' }}>🎨 3D打印材料顏色預覽 (點擊可放大)</div>
+          
+          {/* PLA Matta 啞光物料區 */}
+          <div style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px', marginBottom: '10px' }}>
+            <div style={{ fontSize: '11px', fontWeight: '900', color: '#FFE8A3', marginBottom: '4px' }}>
+              ✨ PLA Matta (啞光物料)
+            </div>
+            <div style={{ fontSize: '10px', color: '#fff', marginBottom: '8px', opacity: 0.9 }}>
+              💡 註：選用此物料的膠紙座，<b>底部將會配搭白色</b>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+              {[
+                { img: 'pink', name: '櫻花粉' },
+                { img: 'seablue', name: '海洋藍' },
+                { img: 'iceblue', name: '冰藍' },
+                { img: 'usagiyellow', name: 'Usagi黃' }
+              ].map((color, idx) => (
+                <ColorShowcaseMini key={idx} img={`/${color.img}.jpg`} title={color.name} sub="白底" />
+              ))}
+            </div>
+          </div>
+
+          {/* PLA Basic 區 */}
+          <div style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '12px' }}>
+            <div style={{ fontSize: '11px', fontWeight: '900', color: '#fff', marginBottom: '8px' }}>
+              🔹 PLA Basic (標準光面物料)
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+              {[
+                { img: 'white', name: '白色' }, { img: 'grey', name: '灰色' }, 
+                { img: 'black', name: '黑色' }, { img: 'red', name: '深紅' }, 
+                { img: 'warmyellow', name: '暖黃' }, { img: 'orange', name: '橙色' },
+                { img: 'purple', name: '紫色' }, { img: 'green', name: '綠色' }
+              ].map((color, idx) => (
+                <ColorShowcaseMini key={idx} img={`/${color.img}.jpg`} title={color.name} />
+              ))}
+            </div>
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '15px' }}>
           {[
             { img: 'pbed', title: '粉紅白吉床', price: '$58' },
             { img: 'bbed', title: '藍白吉床', price: '$58' },
@@ -218,6 +267,11 @@ export default function NurseForgeFinalV25() {
           ].map((item, idx) => (
             <ShowcaseCardMini key={idx} img={`/${item.img}.jpg`} title={item.title} price={item.price} />
           ))}
+        </div>
+
+        {/* 💡 產品預覽最底部自訂顏色提示 */}
+        <div style={{ backgroundColor: '#FFF9E6', border: '2px dashed #FFCC00', borderRadius: '12px', padding: '10px 14px', textAlign: 'center', fontSize: '13px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5' }}>
+          💡 鎖匙扣或者解壓神器都可以獨立訂造顏色，詳情另外諮詢 📩
         </div>
       </div>
 
@@ -404,7 +458,7 @@ export default function NurseForgeFinalV25() {
 }
 
 // STYLES
-const announcementStyle: any = { backgroundColor: '#FFF9E6', border: '2px solid #FFCC00', borderRadius: '16px', padding: '15px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', color: '#000' };
+const announcementStyle: any = { backgroundColor: '#FFF9E6', border: '2px solid #FFCC00', borderRadius: '16px', padding: '15px', marginBottom: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', color: '#000' };
 const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', padding: '12px 18px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '3px solid #77815C', boxShadow: '0 6px 20px rgba(0,0,0,0.2)', zIndex: 1100, fontSize: '12px' };
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
@@ -447,25 +501,26 @@ function ShowcaseCardMini({ img, title, price }: any) {
   ); 
 }
 
-function ColorShowcaseMini({ img, title }: any) {
+function ColorShowcaseMini({ img, title, sub }: any) {
   const [isZoomed, setIsZoomed] = useState(false);
   return (
     <div 
       onClick={() => setIsZoomed(!isZoomed)}
       style={{
-        backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', textAlign: 'center', border: '1px solid #ddd', cursor: 'pointer', transition: 'all 0.25s ease', gridColumn: isZoomed ? 'span 6' : 'auto', zIndex: isZoomed ? 20 : 1, boxShadow: isZoomed ? '0 8px 25px rgba(0,0,0,0.3)' : 'none'
+        backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', textAlign: 'center', border: '1px solid #ddd', cursor: 'pointer', transition: 'all 0.25s ease', gridColumn: isZoomed ? 'span 4' : 'auto', zIndex: isZoomed ? 20 : 1, boxShadow: isZoomed ? '0 8px 25px rgba(0,0,0,0.3)' : 'none'
       } as any}
     >
       <img src={img} style={{ width: '100%', aspectRatio: isZoomed ? 'auto' : '1/1', maxHeight: isZoomed ? '320px' : 'none', objectFit: 'cover' } as any} alt={title} />
-      <div style={{ padding: '4px 2px', fontSize: isZoomed ? '14px' : '10px', color: '#333', fontWeight: 'bold' }}>
+      <div style={{ padding: '4px 2px', fontSize: isZoomed ? '13px' : '10px', color: '#333', fontWeight: 'bold' }}>
         {title}
-        {isZoomed && <div style={{ fontSize: '11px', color: '#dc3545', fontWeight: 'bold', marginTop: '6px', backgroundColor: '#fff3cd', padding: '2px 4px', borderRadius: '4px', display: 'block' }}>💡 再點擊圖片可縮小 ⬆️</div>}
+        {sub && <span style={{ fontSize: '9px', color: '#77815C', display: 'block' }}>({sub})</span>}
+        {isZoomed && <div style={{ fontSize: '10px', color: '#dc3545', fontWeight: 'bold', marginTop: '4px', backgroundColor: '#fff3cd', padding: '2px 4px', borderRadius: '4px', display: 'block' }}>💡 點擊縮小 ⬆️</div>}
       </div>
     </div>
   );
 }
 
 function Section({ title, badge, badgeColor, children }: any) { return ( <div style={{ marginBottom: '10px' }}><h3 style={{ fontSize: '16px', fontWeight: '900', color: '#77815C', marginBottom: '12px', borderLeft: '5px solid #77815C', paddingLeft: '10px', display: 'flex', alignItems: 'center' } as any}>{title} {badge && <span style={{ fontSize: '10px', backgroundColor: badgeColor, color: '#fff', padding: '2px 8px', borderRadius: '10px', marginLeft: '8px' }}>{badge}</span>}</h3>{children}</div> ); }
-function Row({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f2f2f2' } as any}><span style={{ fontSize: '14px', color: '#000', fontWeight: '600' }}>{name}</span><div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}><button type="button" onClick={onSub} style={btnStyle}>−</button><span style={{ fontSize: '16px', fontWeight: '900', minWidth: '18px', textAlign: 'center' }}>{count}</span><button type="button" onClick={onAdd} style={btnStyle}>+</button></div></div> ); }
+function Row({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f2f2f2' } as any}><span style={{ fontSize: '14px', color: '#000', fontWeight: '600' }}>{name}</span><div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}><button type="button" onClick={onSub} style={btnStyle}>−</button><span style={{ fontSize: '16px', fontWeight: '900', minWidth: '18px', textAlign: 'center' }}>{count}</span><button type="button" onClick={onAdd} style={btnStyle}>+</button></div></div> ); }
 function RowMini({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #eee' } as any}><span style={{ fontSize: '12px', color: '#000', fontWeight: 'bold' }}>{name}</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button type="button" onClick={onSub} style={{...btnStyle, width: '22px', height: '22px'}}>−</button><span style={{ fontSize: '14px', fontWeight: '900' }}>{count}</span><button type="button" onClick={onAdd} style={{...btnStyle, width: '22px', height: '22px'}}>+</button></div></div> ); }
 function Radio({ label, active, onClick }: any) { return ( <div onClick={onClick} style={{ padding: '8px 12px', borderRadius: '15px', border: `2px solid ${active ? '#77815C' : '#eee'}`, backgroundColor: active ? '#77815C' : '#fff', color: active ? '#fff' : '#000', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' } as any}>{label}</div> ); }
