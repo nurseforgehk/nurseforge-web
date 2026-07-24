@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
+import html2canvas from 'html2canvas';
 
 export default function NurseForgeFinalV25() {
   const [mounted, setMounted] = useState(false);
@@ -7,6 +8,12 @@ export default function NurseForgeFinalV25() {
   const [orderId, setOrderId] = useState(''); 
   const [today, setToday] = useState('');
   const [randomQuote, setRandomQuote] = useState('');
+  const [promoCode, setPromoCode] = useState('');
+  const [showFireworks, setShowFireworks] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
+
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const orderCardRef = useRef<HTMLDivElement | null>(null);
 
   const quotes = [
     "祝你準時收工！🕒", "見字飲水呀同事！💧", "記得去廁所，人工包埋㗎！🚽", 
@@ -53,10 +60,92 @@ export default function NurseForgeFinalV25() {
     }
   }, [hasClicker]);
 
+  // 優惠碼驗證邏輯
+  const isPromoApplied = promoCode.trim().toUpperCase() === "MEMENFHK";
+
+  // 🎇 煙花效果 (觸發 1 秒)
+  useEffect(() => {
+    if (isPromoApplied) {
+      setShowFireworks(true);
+      const timer = setTimeout(() => {
+        setShowFireworks(false);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowFireworks(false);
+    }
+  }, [isPromoApplied]);
+
+  // 🎆 Canvas 煙花繪製邏輯
+  useEffect(() => {
+    if (!showFireworks || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let particles: Array<{
+      x: number; y: number; vx: number; vy: number;
+      color: string; alpha: number; size: number;
+    }> = [];
+
+    const colors = ['#FF0055', '#FFDD00', '#00FFCC', '#FF00FF', '#00FF66', '#FFAA00'];
+
+    for (let fireworkCount = 0; fireworkCount < 5; fireworkCount++) {
+      const cx = Math.random() * canvas.width * 0.8 + canvas.width * 0.1;
+      const cy = Math.random() * canvas.height * 0.5 + canvas.height * 0.1;
+      for (let i = 0; i < 50; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 8 + 2;
+        particles.push({
+          x: cx,
+          y: cy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: 1,
+          size: Math.random() * 4 + 2
+        });
+      }
+    }
+
+    let animationFrameId: number;
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p, index) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.1;
+        p.alpha -= 0.02;
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        if (p.alpha <= 0) {
+          particles.splice(index, 1);
+        }
+      });
+
+      if (particles.length > 0) {
+        animationFrameId = requestAnimationFrame(render);
+      }
+    };
+
+    render();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [showFireworks]);
 
   // ======= ⚙️ 智能防塵蓋提示邏輯 =======
-
-  // 1. 計算所有膠紙座的總數量，以及到底揀咗幾多「種」唔同嘅顏色
   const tapeColorQuantities = [
     items.tapeWhite, items.tapeGrey, items.tapeBlack, items.tapeRed, 
     items.tapeYellow, items.tapeOrange, items.tapePurple, items.tapeGreen, 
@@ -65,22 +154,12 @@ export default function NurseForgeFinalV25() {
   
   const totalTapeCount = tapeColorQuantities.reduce((acc, curr) => acc + curr, 0);
   const distinctColorsCount = tapeColorQuantities.filter(qty => qty > 0).length;
-
-  // 2. 計算防塵蓋的總數量
   const totalCoverCount = items.coverChiikawa + items.coverUsagi + items.coverAddon + items.coverSingle;
-
-  // 3. 判斷是否需要彈出溫馨提示：
-  // 條件：買咗多過一種色嘅膠紙座 且 防塵蓋同膠紙座總數不相等
   const showCoverRemarkNotice = distinctColorsCount >= 2 && totalCoverCount > 0 && totalCoverCount !== totalTapeCount;
 
-  // ===================================
-
-
-  // 驗證基本出貨資料及聲明是否都有填好
   const isFormValid = agreed && shipping.name.trim() !== '' && shipping.phone.trim() !== '' && shipping.igName.trim() !== '' && shipping.address.trim() !== '';
 
-  // Calculate Total
-  const total = [
+  const rawTotal = [
     { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 },
     { qty: items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue + items.tapeIceBlue, p: 78 },
     { qty: items.coverChiikawa + items.coverUsagi, p: 30 }, 
@@ -93,6 +172,7 @@ export default function NurseForgeFinalV25() {
     { qty: 1, p: items.addonDiff }
   ].reduce((acc, curr) => acc + (curr.qty * curr.p), 0);
 
+  const total = isPromoApplied ? Math.round(rawTotal * 0.9) : rawTotal;
   const isFreeSF = total >= 200;
 
   const customColors = [
@@ -136,11 +216,76 @@ export default function NurseForgeFinalV25() {
   const update = (f: string, d: number) => setItems(p => ({ ...p, [f]: Math.max(0, (p as any)[f] + d) }));
   const clearAll = () => { if(confirm("確定要清除所有已選商品？")) { setItems(initialItems); } };
 
+  // 📸 截圖 / 分享執貨單邏輯 (針對 iPhone 原生分享優化)
+  const handleCaptureOrder = async () => {
+    if (!orderCardRef.current || isCapturing) return;
+    setIsCapturing(true);
+
+    try {
+      const canvas = await html2canvas(orderCardRef.current, {
+        scale: 2, // 提高清晰度
+        backgroundColor: '#ffffff',
+        useCORS: true
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          alert('截圖失敗，請手動 Screen Cap 呀！');
+          setIsCapturing(false);
+          return;
+        }
+
+        const file = new File([blob], `NurseForge_Order_${orderId}.png`, { type: 'image/png' });
+
+        // 📱 手機端 (支持 Web Share API)
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'NurseForgeHK 執貨單',
+              text: '我的 NurseForgeHK 訂單詳情'
+            });
+          } catch (shareError) {
+            // 用戶手動取消分享不需報錯
+          }
+        } else {
+          // 💻 電腦端或不支援 Native Share 的瀏覽器：直接下載
+          const link = document.createElement('a');
+          link.href = canvas.toDataURL('image/png');
+          link.download = `NurseForge_Order_${orderId}.png`;
+          link.click();
+        }
+        setIsCapturing(false);
+      }, 'image/png');
+
+    } catch (error) {
+      console.error(error);
+      alert('截圖出現少少問題，請手動截圖 send 俾店主呀！');
+      setIsCapturing(false);
+    }
+  };
+
   if (!mounted) return null;
 
   return (
     <div style={{ padding: '20px 20px 350px 20px', backgroundColor: '#77815C', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
       
+      {/* 🎆 全螢幕煙花 Canvas */}
+      {showFireworks && (
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            pointerEvents: 'none',
+            zIndex: 9999
+          }}
+        />
+      )}
+
       <style>{`
         @keyframes unlockWobble {
           0% { transform: scale(1); }
@@ -153,6 +298,27 @@ export default function NurseForgeFinalV25() {
         }
         .payme-active-btn {
           animation: unlockWobble 0.5s ease-in-out;
+        }
+
+        /* 🔘 按鈕實體按壓動感樣式 */
+        .btn-3d {
+          box-shadow: 0 2px 0 #d0d0d0, 0 3px 5px rgba(0,0,0,0.1);
+          transition: all 0.08s ease;
+          user-select: none;
+        }
+        .btn-3d:active {
+          transform: translateY(1.5px);
+          box-shadow: 0 0.5px 0 #d0d0d0, 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .btn-3d-diff {
+          box-shadow: 0 2.5px 0 #b02065, 0 3px 6px rgba(0,0,0,0.1);
+          transition: all 0.08s ease;
+          user-select: none;
+        }
+        .btn-3d-diff:active {
+          transform: translateY(1.5px);
+          box-shadow: 0 0.5px 0 #b02065, 0 1px 2px rgba(0,0,0,0.1);
         }
       `}</style>
 
@@ -174,19 +340,20 @@ export default function NurseForgeFinalV25() {
                 店主公告
               </h3>
               
-              <div style={{ fontSize: '14px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div>✨ <b>全店滿 $200 即享順豐站/智能櫃免運費！</b></div>
+              <div style={{ fontSize: '14px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div>1. 🏬 <b>實體體驗店籌備中：</b>我哋開咗實體體驗店啦！門店暫時未有現貨，但擺咗解壓神器同埋鎖匙扣嘅樣本（膠紙座暫時未有），大家經過可以去撳幾下試試手感！門店現場仲特別擺咗<b>門店限定優惠碼</b>添！</div>
                 
-                <div>🔥 <b>新貨上架：</b>想感受下病人亂咁用 Call Bell 嘅快感？🤪 現時推出咗最新嘅 <b>Call Bell Clicker</b> 啦，快啲下單啦！</div>
+                <div>2. ✨ <b>全店滿 $200 即享順豐站/智能櫃免運費！</b></div>
+                
+                <div>3. 🔥 <b>新貨上架：</b>想感受下病人亂咁用 Call Bell 嘅快感？🤪 現時推出咗最新嘅 Call Bell Clicker 啦，快啲下單啦！</div>
                 
                 <div style={{ marginTop: '4px', paddingTop: '8px', borderTop: '1px dashed #E6C200' }}>
-                  ⚙️ <b>品質全面升級：</b><br />
+                  4. ⚙️ <b>品質全面升級：</b><br />
                   由即日起，所有膠紙座（不論任何顏色），旋轉中軸將會統一改用 <b>白色 PLA Tough 物料</b>，大幅增加耐用度同強度！💪
                 </div>
               </div>
             </div>
 
-            {/* 旋轉中軸圖片 (middle.jpg) */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '70px' }}>
               <img 
                 src="/middle.jpg" 
@@ -212,11 +379,9 @@ export default function NurseForgeFinalV25() {
             <a href="https://www.instagram.com/p/DW3pJ1zkuY4/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🛡️ 點解要加防塵蓋？</a>
         </div>
 
-        {/* 🎨 分類顏色預覽區 */}
         <div style={{ backgroundColor: 'rgba(255,255,255,0.15)', padding: '12px', borderRadius: '18px', marginBottom: '25px', color: '#fff' }}>
           <div style={{ fontSize: '13px', fontWeight: '900', marginBottom: '10px', textAlign: 'center' }}>🎨 3D打印材料顏色預覽 (點擊可放大)</div>
           
-          {/* PLA Matta 啞光物料區 */}
           <div style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px', marginBottom: '10px' }}>
             <div style={{ fontSize: '11px', fontWeight: '900', color: '#FFE8A3', marginBottom: '4px' }}>
               ✨ PLA Matta (啞光物料)
@@ -236,7 +401,6 @@ export default function NurseForgeFinalV25() {
             </div>
           </div>
 
-          {/* PLA Basic 區 */}
           <div style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '12px' }}>
             <div style={{ fontSize: '11px', fontWeight: '900', color: '#fff', marginBottom: '8px' }}>
               🔹 PLA Basic (標準光面物料)
@@ -269,7 +433,6 @@ export default function NurseForgeFinalV25() {
           ))}
         </div>
 
-        {/* 💡 產品預覽最底部自訂顏色提示 */}
         <div style={{ backgroundColor: '#FFF9E6', border: '2px dashed #FFCC00', borderRadius: '12px', padding: '10px 14px', textAlign: 'center', fontSize: '13px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5' }}>
           💡 鎖匙扣或者解壓神器都可以獨立訂造顏色，詳情另外諮詢 📩
         </div>
@@ -294,7 +457,6 @@ export default function NurseForgeFinalV25() {
               <Row name="隨座加購防塵蓋 $10" count={items.coverAddon} onAdd={() => update('coverAddon', 1)} onSub={() => update('coverAddon', -1)} />
               <Row name="補買防塵蓋 $15" count={items.coverSingle} onAdd={() => update('coverSingle', 1)} onSub={() => update('coverSingle', -1)} />
               
-              {/* 智能精準提示：多過一隻色 且 數量不對等時才會顯示 */}
               {showCoverRemarkNotice && (
                 <div style={{ marginTop: '12px', padding: '10px 12px', backgroundColor: '#FFF9E6', border: '1px dashed #FFCC00', borderRadius: '10px', fontSize: '12px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5' }}>
                   ⚠️ 溫馨提示：由於你揀咗多款顏色嘅膠紙座，請記得喺下方「第四區」備註欄寫低防塵蓋分別想要咩顏色 / 配邊個座呀，多謝合作 ❤️
@@ -344,6 +506,27 @@ export default function NurseForgeFinalV25() {
             
             <input placeholder="備註 (Remarks) (例如：防塵蓋要灰色 / 配邊個座)" style={{...inputStyle, border: showCoverRemarkNotice ? '2px solid #FFCC00' : '2px solid #77815C', backgroundColor: showCoverRemarkNotice ? '#FFF9E6' : '#fff'} as any} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
             
+            <div style={{ marginTop: '12px', padding: '12px', backgroundColor: '#F4F6F0', borderRadius: '12px', border: '1px solid #77815C' }}>
+              <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#77815C', display: 'block', marginBottom: '6px' }}>
+                🎟️ 優惠碼 (請輸入大楷字母):
+              </label>
+              <input 
+                placeholder="輸入優惠碼" 
+                style={{...inputStyle, marginBottom: '0', textTransform: 'uppercase'}} 
+                value={promoCode} 
+                onChange={e => setPromoCode(e.target.value.toUpperCase())} 
+              />
+              {isPromoApplied ? (
+                <div style={{ marginTop: '6px', fontSize: '12px', color: '#2E7D32', fontWeight: 'bold' }}>
+                  🎉 已成功獲得九折優惠！
+                </div>
+              ) : promoCode.trim() !== '' ? (
+                <div style={{ marginTop: '6px', fontSize: '12px', color: '#dc3545', fontWeight: 'bold' }}>
+                  ❌ 優惠碼無效，請確認是否為全大楷
+                </div>
+              ) : null}
+            </div>
+
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px' }}>
               {!hasClicker && <Radio label="本地平郵 (包郵)" active={shipping.method === 'post'} onClick={() => setShipping({...shipping, method: 'post'})} />}
               <Radio label={isFreeSF ? "順豐站 (免運)" : "順豐站 (到付)"} active={shipping.method === 'sf_station'} onClick={() => setShipping({...shipping, method: 'sf_station'})} />
@@ -354,8 +537,8 @@ export default function NurseForgeFinalV25() {
             <div style={addonCardStyle}>
               <span style={{ fontSize: '15px', fontWeight: '900', color: '#D63384' }}>💰 補錢湊數：${items.addonDiff}</span>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button type="button" onClick={() => update('addonDiff', -1)} style={diffBtnStyle}>-1</button>
-                <button type="button" onClick={() => update('addonDiff', 1)} style={diffBtnStyle}>+1</button>
+                <button type="button" onClick={() => update('addonDiff', -1)} className="btn-3d-diff" style={diffBtnStyle}>-1</button>
+                <button type="button" onClick={() => update('addonDiff', 1)} className="btn-3d-diff" style={diffBtnStyle}>+1</button>
               </div>
             </div>
           </Section>
@@ -364,11 +547,41 @@ export default function NurseForgeFinalV25() {
 
       <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={capNoticeStyle}>📸 請將以下訂單圖及 PayMe 截圖 send 俾店主</div>
-        <div style={orderDraftStyle}>
+        
+        {/* 📸 截圖/分享功能按鈕 */}
+        <button
+          type="button"
+          onClick={handleCaptureOrder}
+          disabled={isCapturing}
+          style={{
+            marginBottom: '15px',
+            padding: '12px 20px',
+            backgroundColor: isCapturing ? '#aaa' : '#77815C',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '12px',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            cursor: isCapturing ? 'wait' : 'pointer',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          {isCapturing ? '⌛ 正在生成截圖...' : '📸 一鍵截圖 / 分享執貨單'}
+        </button>
+
+        <div ref={orderCardRef} style={orderDraftStyle}>
           <div style={orderHeaderStyle}>
             <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#77815C' }}>NurseForgeHK 執貨單</h2>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#666' }}><span>ID: {orderId}</span><span>DATE: {today}</span></div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#666' }}>
+              <span>ID: {orderId}{isPromoApplied ? ' (MK)' : ''}</span>
+              <span>DATE: {today}</span>
+            </div>
           </div>
+
           <div style={orderInfoBoxStyle}>
              <div><strong>IG:</strong> @{shipping.igName || '---'} | <strong>Name:</strong> {shipping.name || '---'}</div>
              <div><strong>Tel:</strong> {shipping.phone || '---'}</div>
@@ -377,6 +590,11 @@ export default function NurseForgeFinalV25() {
              {shipping.remarks && (
                <div style={{ marginTop: '5px', padding: '5px', backgroundColor: '#FFF5F7', borderRadius: '4px', borderLeft: '3px solid #D63384', fontSize: '11px', color: '#000' }}>
                  <strong>備註:</strong> {shipping.remarks}
+               </div>
+             )}
+             {isPromoApplied && (
+               <div style={{ marginTop: '5px', padding: '5px', backgroundColor: '#E8F5E9', borderRadius: '4px', borderLeft: '3px solid #2E7D32', fontSize: '11px', color: '#2E7D32', fontWeight: 'bold' }}>
+                 <strong>優惠:</strong> 已套用九折優惠碼
                </div>
              )}
           </div>
@@ -389,6 +607,11 @@ export default function NurseForgeFinalV25() {
             ))}
           </div>
           <div style={orderTotalAreaStyle}>
+            {isPromoApplied && (
+              <div style={{ fontSize: '12px', color: '#888', textDecoration: 'line-through' }}>
+                原價: HKD ${rawTotal}
+              </div>
+            )}
             <div style={{ fontSize: '24px', fontWeight: '900', color: '#77815C' }}>Total: HKD ${total}</div>
           </div>
           <div style={quoteAreaStyle}>✨ {randomQuote}</div>
@@ -413,7 +636,9 @@ export default function NurseForgeFinalV25() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                <div>
                  <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#666' }}>總額：</span>
-                 <div style={{ fontSize: '24px', fontWeight: '900', color: '#77815C' }}>HKD ${total}</div>
+                 <div style={{ fontSize: '24px', fontWeight: '900', color: '#77815C' }}>
+                   HKD ${total} {isPromoApplied && <span style={{ fontSize: '12px', color: '#2E7D32', fontWeight: 'bold' }}>(已打 9 折)</span>}
+                 </div>
                </div>
                <button type="button" onClick={clearAll} style={clearBtnStyle}>🗑️ 清空</button>
             </div>
@@ -462,10 +687,24 @@ const announcementStyle: any = { backgroundColor: '#FFF9E6', border: '2px solid 
 const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', padding: '12px 18px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '3px solid #77815C', boxShadow: '0 6px 20px rgba(0,0,0,0.2)', zIndex: 1100, fontSize: '12px' };
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
-const btnStyle: any = { width: '32px', height: '32px', borderRadius: '50%', border: 'none', backgroundColor: '#f0f0f0', fontWeight: 'bold' };
+
+const btnStyle: any = { 
+  width: '32px', 
+  height: '32px', 
+  borderRadius: '10px', 
+  border: '1px solid #dcdcdc', 
+  backgroundColor: '#f8f9fa', 
+  fontWeight: 'bold', 
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '#444'
+};
+
 const footerStyle: any = { position: 'fixed', bottom: '0', left: '0', width: '100%', backgroundColor: '#fff', padding: '15px 20px 35px 20px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', zIndex: 1000, boxShadow: '0 -5px 25px rgba(0,0,0,0.08)' };
 const bottomTotalCardStyle: any = { backgroundColor: '#fff', padding: '12px 15px', borderRadius: '16px', border: '2px solid #77815C', marginBottom: '12px' };
-const clearBtnStyle: any = { padding: '6px 12px', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' };
+const clearBtnStyle: any = { padding: '6px 12px', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', backgroundColor: '#fff' };
 const paymeBtnStyle: any = { display: 'block', width: '100%', padding: '15px', backgroundColor: '#FF002B', color: '#fff', textDecoration: 'none', borderRadius: '40px', textAlign: 'center', fontWeight: '900', fontSize: '18px', boxShadow: '0 4px 15px rgba(255, 0, 43, 0.3)' };
 const paymeBtnDisabledStyle: any = { display: 'block', width: '100%', padding: '15px', backgroundColor: '#ccc', color: '#666', borderRadius: '40px', textAlign: 'center', fontWeight: '900', fontSize: '14px', cursor: 'not-allowed' };
 const capNoticeStyle: any = { backgroundColor: '#FFED4A', padding: '10px 20px', borderRadius: '10px', marginBottom: '15px', border: '2px solid #000', textAlign: 'center', fontSize: '16px', fontWeight: '900', color: '#000' };
@@ -479,7 +718,17 @@ const agreementBoxStyle: any = { width: '95%', maxWidth: '380px', marginTop: '20
 const igLinkBtnStyle: any = { flex: 1, padding: '10px', borderRadius: '12px', background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', color: '#fff', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', textAlign: 'center' };
 const privacyNoticeStyle: any = { fontSize: '11px', color: '#666', marginBottom: '10px' };
 const addonCardStyle: any = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: '#FFF5F7', borderRadius: '15px', border: '2px solid #FFD1DC', marginTop: '15px' };
-const diffBtnStyle: any = { width: '35px', height: '35px', border: '2px solid #D63384', backgroundColor: '#fff', color: '#D63384', borderRadius: '10px', fontWeight: 'bold' };
+
+const diffBtnStyle: any = { 
+  width: '35px', 
+  height: '35px', 
+  border: '1px solid #D63384', 
+  backgroundColor: '#fff', 
+  color: '#D63384', 
+  borderRadius: '10px', 
+  fontWeight: 'bold', 
+  cursor: 'pointer' 
+};
 
 // COMPONENTS
 function ShowcaseCardMini({ img, title, price }: any) { 
@@ -514,13 +763,71 @@ function ColorShowcaseMini({ img, title, sub }: any) {
       <div style={{ padding: '4px 2px', fontSize: isZoomed ? '13px' : '10px', color: '#333', fontWeight: 'bold' }}>
         {title}
         {sub && <span style={{ fontSize: '9px', color: '#77815C', display: 'block' }}>({sub})</span>}
-        {isZoomed && <div style={{ fontSize: '10px', color: '#dc3545', fontWeight: 'bold', marginTop: '4px', backgroundColor: '#fff3cd', padding: '2px 4px', borderRadius: '4px', display: 'block' }}>💡 點擊縮小 ⬆️</div>}
       </div>
     </div>
   );
 }
 
-function Section({ title, badge, badgeColor, children }: any) { return ( <div style={{ marginBottom: '10px' }}><h3 style={{ fontSize: '16px', fontWeight: '900', color: '#77815C', marginBottom: '12px', borderLeft: '5px solid #77815C', paddingLeft: '10px', display: 'flex', alignItems: 'center' } as any}>{title} {badge && <span style={{ fontSize: '10px', backgroundColor: badgeColor, color: '#fff', padding: '2px 8px', borderRadius: '10px', marginLeft: '8px' }}>{badge}</span>}</h3>{children}</div> ); }
-function Row({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f2f2f2' } as any}><span style={{ fontSize: '14px', color: '#000', fontWeight: '600' }}>{name}</span><div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}><button type="button" onClick={onSub} style={btnStyle}>−</button><span style={{ fontSize: '16px', fontWeight: '900', minWidth: '18px', textAlign: 'center' }}>{count}</span><button type="button" onClick={onAdd} style={btnStyle}>+</button></div></div> ); }
-function RowMini({ name, count, onAdd, onSub }: any) { return ( <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #eee' } as any}><span style={{ fontSize: '12px', color: '#000', fontWeight: 'bold' }}>{name}</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button type="button" onClick={onSub} style={{...btnStyle, width: '22px', height: '22px'}}>−</button><span style={{ fontSize: '14px', fontWeight: '900' }}>{count}</span><button type="button" onClick={onAdd} style={{...btnStyle, width: '22px', height: '22px'}}>+</button></div></div> ); }
-function Radio({ label, active, onClick }: any) { return ( <div onClick={onClick} style={{ padding: '8px 12px', borderRadius: '15px', border: `2px solid ${active ? '#77815C' : '#eee'}`, backgroundColor: active ? '#77815C' : '#fff', color: active ? '#fff' : '#000', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' } as any}>{label}</div> ); }
+function Section({ title, badge, badgeColor, children }: any) {
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: '#77815C' }}>{title}</h3>
+        {badge && (
+          <span style={{ backgroundColor: badgeColor || '#2E7D32', color: '#fff', padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold' }}>
+            {badge}
+          </span>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Row({ name, count, onAdd, onSub }: any) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+      <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#333' }}>{name}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <button type="button" onClick={onSub} className="btn-3d" style={btnStyle}>-</button>
+        <span style={{ fontSize: '15px', fontWeight: 'bold', minWidth: '20px', textAlign: 'center' }}>{count}</span>
+        <button type="button" onClick={onAdd} className="btn-3d" style={btnStyle}>+</button>
+      </div>
+    </div>
+  );
+}
+
+function RowMini({ name, count, onAdd, onSub }: any) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', backgroundColor: '#fff', padding: '8px', borderRadius: '10px', border: '1px solid #eee' }}>
+      <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#333' }}>{name}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <button type="button" onClick={onSub} className="btn-3d" style={{ ...btnStyle, width: '26px', height: '26px', fontSize: '12px' }}>-</button>
+        <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{count}</span>
+        <button type="button" onClick={onAdd} className="btn-3d" style={{ ...btnStyle, width: '26px', height: '26px', fontSize: '12px' }}>+</button>
+      </div>
+    </div>
+  );
+}
+
+function Radio({ label, active, onClick }: any) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        padding: '8px 14px',
+        borderRadius: '20px',
+        border: active ? '2px solid #77815C' : '2px solid #ddd',
+        backgroundColor: active ? '#77815C' : '#fff',
+        color: active ? '#fff' : '#666',
+        fontSize: '12px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease'
+      }}
+    >
+      {label}
+    </button>
+  );
+}
