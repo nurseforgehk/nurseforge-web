@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
-import html2canvas from 'html2canvas';
 
-export default function NurseForgeFinalV25() {
+export default function App() {
   const [mounted, setMounted] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [orderId, setOrderId] = useState(''); 
@@ -10,10 +9,8 @@ export default function NurseForgeFinalV25() {
   const [randomQuote, setRandomQuote] = useState('');
   const [promoCode, setPromoCode] = useState('');
   const [showFireworks, setShowFireworks] = useState(false);
-  const [isCapturing, setIsCapturing] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const orderCardRef = useRef<HTMLDivElement | null>(null);
 
   const quotes = [
     "祝你準時收工！🕒", "見字飲水呀同事！💧", "記得去廁所，人工包埋㗎！🚽", 
@@ -177,11 +174,11 @@ export default function NurseForgeFinalV25() {
 
   const customColors = [
     { k: 'Black', n: '🖤 黑色' }, { k: 'Red', n: '❤️ 深紅' }, 
-    { k: 'Yellow', n: '💛 暖黃' }, { k: 'Orange', n: '🧡 橙色' },
+    { k: 'Yellow', n: '💛 暖黃' }, { k: 'Orange', n: '🧡 橙色' }, 
     { k: 'Purple', n: '💜 紫色' }, { k: 'Green', n: '💚 綠色' }, 
-    { k: 'Pink', n: '🌸 櫻花粉 (Matte)' }, { k: 'DesertYellow', n: '🏜️ 沙漠黃/Usagi黃 (Matte)' },
-    { k: 'OceanBlue', n: '🌊 海洋藍 (Matte)' },
-    { k: 'IceBlue', n: '❄️ 冰藍 (Matte)' }
+    { k: 'Pink', n: '🌸 櫻花粉' }, { k: 'DesertYellow', n: '🏜️ 沙漠黃 (Usagi黃)' },
+    { k: 'OceanBlue', n: '🌊 海洋藍' },
+    { k: 'IceBlue', n: '❄️ 冰藍' }
   ];
 
   const activeProducts: any[] = [
@@ -215,55 +212,6 @@ export default function NurseForgeFinalV25() {
 
   const update = (f: string, d: number) => setItems(p => ({ ...p, [f]: Math.max(0, (p as any)[f] + d) }));
   const clearAll = () => { if(confirm("確定要清除所有已選商品？")) { setItems(initialItems); } };
-
-  // 📸 截圖 / 分享執貨單邏輯 (針對 iPhone 原生分享優化)
-  const handleCaptureOrder = async () => {
-    if (!orderCardRef.current || isCapturing) return;
-    setIsCapturing(true);
-
-    try {
-      const canvas = await html2canvas(orderCardRef.current, {
-        scale: 2, // 提高清晰度
-        backgroundColor: '#ffffff',
-        useCORS: true
-      });
-
-      canvas.toBlob(async (blob) => {
-        if (!blob) {
-          alert('截圖失敗，請手動 Screen Cap 呀！');
-          setIsCapturing(false);
-          return;
-        }
-
-        const file = new File([blob], `NurseForge_Order_${orderId}.png`, { type: 'image/png' });
-
-        // 📱 手機端 (支持 Web Share API)
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: 'NurseForgeHK 執貨單',
-              text: '我的 NurseForgeHK 訂單詳情'
-            });
-          } catch (shareError) {
-            // 用戶手動取消分享不需報錯
-          }
-        } else {
-          // 💻 電腦端或不支援 Native Share 的瀏覽器：直接下載
-          const link = document.createElement('a');
-          link.href = canvas.toDataURL('image/png');
-          link.download = `NurseForge_Order_${orderId}.png`;
-          link.click();
-        }
-        setIsCapturing(false);
-      }, 'image/png');
-
-    } catch (error) {
-      console.error(error);
-      alert('截圖出現少少問題，請手動截圖 send 俾店主呀！');
-      setIsCapturing(false);
-    }
-  };
 
   if (!mounted) return null;
 
@@ -332,6 +280,28 @@ export default function NurseForgeFinalV25() {
       </div>
 
       <div style={{ maxWidth: '500px', margin: '0 auto 30px auto' }}>
+        {/* 🏬 實體體驗店獨立公告卡片 */}
+        <div style={{ backgroundColor: '#FFF0F5', border: '2px solid #FFB6C1', borderRadius: '16px', padding: '16px', marginBottom: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', color: '#000' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+            <span style={{ fontSize: '24px' }}>🏬</span>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: '#B81D13', borderBottom: '2px solid #FFC0CB', paddingBottom: '4px', flex: 1 }}>
+              實體體驗店現已登場！
+            </h3>
+          </div>
+          
+          <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#555', fontWeight: 'bold', lineHeight: '1.5' }}>
+            我哋開咗實體體驗店啦！門店暫時未有現貨，但擺咗解壓神器同埋鎖匙扣嘅樣本（膠紙座暫時未有），大家經過可以去撳幾下試試手感！門店現場仲特別擺咗<b>門店限定優惠碼</b>添！
+          </p>
+
+          <div style={{ backgroundColor: '#fff', padding: '12px', borderRadius: '12px', border: '1px solid #FFD1DC', fontSize: '13px', color: '#333', lineHeight: '1.6', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '14px', color: '#D63384', fontWeight: '900', marginBottom: '6px' }}>📍 【門市地址同位置】</div>
+            <div>• <b>地點：</b>旺角中心 3 樓 T67 號舖（A44 格）</div>
+            <div>• <b>營業時間：</b>下午 2:00 - 夜晚 10:00</div>
+            <div>• <b>指路：</b>一入舖頭左手邊！就在 <span style={{ color: '#D63384', fontWeight: '900' }}>@hknurse_shop</span> 嘅正右手邊，超級好搵！</div>
+          </div>
+        </div>
+
+        {/* 📢 店主公告 */}
         <div style={announcementStyle}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
             <span style={{ fontSize: '24px', lineHeight: '1' }}>📢</span>
@@ -341,15 +311,13 @@ export default function NurseForgeFinalV25() {
               </h3>
               
               <div style={{ fontSize: '14px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div>1. 🏬 <b>實體體驗店籌備中：</b>我哋開咗實體體驗店啦！門店暫時未有現貨，但擺咗解壓神器同埋鎖匙扣嘅樣本（膠紙座暫時未有），大家經過可以去撳幾下試試手感！門店現場仲特別擺咗<b>門店限定優惠碼</b>添！</div>
+                <div>1. ✨ <b>全店滿 $200 即享順豐站/智能櫃免運費！</b></div>
                 
-                <div>2. ✨ <b>全店滿 $200 即享順豐站/智能櫃免運費！</b></div>
-                
-                <div>3. 🔥 <b>新貨上架：</b>想感受下病人亂咁用 Call Bell 嘅快感？🤪 現時推出咗最新嘅 Call Bell Clicker 啦，快啲下單啦！</div>
+                <div>2. 🔥 <b>新貨上架：</b>想感受下病人亂咁用 Call Bell 嘅快感？🤪 現時推出咗最新嘅 Call Bell Clicker 啦，快啲下單啦！</div>
                 
                 <div style={{ marginTop: '4px', paddingTop: '8px', borderTop: '1px dashed #E6C200' }}>
-                  4. ⚙️ <b>品質全面升級：</b><br />
-                  由即日起，所有膠紙座（不論任何顏色），旋轉中軸將會統一改用 <b>白色 PLA Tough 物料</b>，大幅增加耐用度同強度！💪
+                  3. ⚙️ <b>品質全面升級：</b><br />
+                  由即日起，所有膠紙座（不論任何顏色），旋轉中軸將會統一改用 <b>白色 PLA Tough 物力</b>，大幅增加耐用度同強度！💪
                 </div>
               </div>
             </div>
@@ -547,32 +515,7 @@ export default function NurseForgeFinalV25() {
 
       <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={capNoticeStyle}>📸 請將以下訂單圖及 PayMe 截圖 send 俾店主</div>
-        
-        {/* 📸 截圖/分享功能按鈕 */}
-        <button
-          type="button"
-          onClick={handleCaptureOrder}
-          disabled={isCapturing}
-          style={{
-            marginBottom: '15px',
-            padding: '12px 20px',
-            backgroundColor: isCapturing ? '#aaa' : '#77815C',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '12px',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            cursor: isCapturing ? 'wait' : 'pointer',
-            boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          {isCapturing ? '⌛ 正在生成截圖...' : '📸 一鍵截圖 / 分享執貨單'}
-        </button>
-
-        <div ref={orderCardRef} style={orderDraftStyle}>
+        <div style={orderDraftStyle}>
           <div style={orderHeaderStyle}>
             <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#77815C' }}>NurseForgeHK 執貨單</h2>
             
@@ -688,6 +631,7 @@ const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', paddin
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
 
+// 🔘 升級：低調而有質感的 3D 加減按鈕樣式
 const btnStyle: any = { 
   width: '32px', 
   height: '32px', 
@@ -719,6 +663,7 @@ const igLinkBtnStyle: any = { flex: 1, padding: '10px', borderRadius: '12px', ba
 const privacyNoticeStyle: any = { fontSize: '11px', color: '#666', marginBottom: '10px' };
 const addonCardStyle: any = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: '#FFF5F7', borderRadius: '15px', border: '2px solid #FFD1DC', marginTop: '15px' };
 
+// 🔘 升級：補錢湊數的立體按鈕樣式
 const diffBtnStyle: any = { 
   width: '35px', 
   height: '35px', 
