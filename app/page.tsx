@@ -36,8 +36,15 @@ export default function App() {
   const [shipping, setShipping] = useState({ 
     name: '', phone: '', igName: '', address: '', method: 'sf_station', remarks: ''
   });
+
+  // 💧 IV Drip Rate 計算器 State
+  const [ivVolume, setIvVolume] = useState<number | string>(100);
+  const [ivDropFactor, setIvDropFactor] = useState<number | string>(15);
+  const [ivTime, setIvTime] = useState<number | string>(30);
+  const [ivTimeUnit, setIvTimeUnit] = useState<'mins' | 'hrs'>('mins');
   
   const orderSectionRef = useRef<HTMLDivElement>(null);
+  const calcSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -210,6 +217,44 @@ export default function App() {
     sf_direct: "順豐送上門 (到付)" 
   };
 
+  // ======= 💧 IV Drip Rate 計算邏輯 =======
+  const numVol = typeof ivVolume === 'number' ? ivVolume : parseFloat(ivVolume) || 0;
+  const numDrop = typeof ivDropFactor === 'number' ? ivDropFactor : parseFloat(ivDropFactor) || 0;
+  const numTime = typeof ivTime === 'number' ? ivTime : parseFloat(ivTime) || 0;
+
+  const totalMins = ivTimeUnit === 'hrs' ? numTime * 60 : numTime;
+  const rawGttPerMin = totalMins > 0 ? (numVol * numDrop) / totalMins : 0;
+  const gttPerMin = Math.round(rawGttPerMin);
+  const dropsIn10Sec = Math.round(rawGttPerMin / 6);
+
+  const getClinicalRhythm = (rate: number) => {
+    if (!rate || rate <= 0) return { sec: 0, drops: 0, text: '---' };
+    
+    const dps = rate / 60; // drops per second
+    let best = { sec: 1, drops: 1, err: Infinity };
+
+    for (let drops = 1; drops <= 10; drops++) {
+      const exactSec = drops / dps;
+      const sec = Math.round(exactSec);
+      if (sec >= 1 && sec <= 60) {
+        const approxDps = drops / sec;
+        const err = Math.abs(approxDps - dps) / dps;
+        const score = err + (sec * 0.005) + (drops * 0.005);
+        if (score < best.err) {
+          best = { sec, drops, err: score };
+        }
+      }
+    }
+
+    return {
+      sec: best.sec,
+      drops: best.drops,
+      text: `約 ${best.sec} 秒 ${best.drops} 滴`
+    };
+  };
+
+  const rhythm = getClinicalRhythm(rawGttPerMin);
+
   const update = (f: string, d: number) => setItems(p => ({ ...p, [f]: Math.max(0, (p as any)[f] + d) }));
   const clearAll = () => { if(confirm("確定要清除所有已選商品？")) { setItems(initialItems); } };
 
@@ -269,6 +314,10 @@ export default function App() {
           box-shadow: 0 0.5px 0 #b02065, 0 1px 2px rgba(0,0,0,0.1);
         }
       `}</style>
+
+      <button type="button" onClick={() => calcSectionRef.current?.scrollIntoView({ behavior: 'smooth' })} style={fabLeftStyle}>
+        🔻 IV Drip Rate 計算器
+      </button>
 
       <button type="button" onClick={() => orderSectionRef.current?.scrollIntoView({ behavior: 'smooth' })} style={fabStyle}>
         直接帶 me 去揀商品 🛒
@@ -581,6 +630,207 @@ export default function App() {
         </div>
       </div>
 
+      {/* 💧 IV Drip Rate 直式計算器 Section */}
+      <div ref={calcSectionRef} style={{ width: '100%', maxWidth: '480px', margin: '35px auto 10px auto' }}>
+        <div style={{
+          backgroundColor: '#FFF8F0',
+          borderRadius: '24px',
+          padding: '20px 16px',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+          color: '#000',
+          border: '3.5px solid #DD6B20'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', borderBottom: '2px solid #FBD38D', paddingBottom: '10px' }}>
+            <span style={{ fontSize: '24px' }}>💧</span>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: '#DD6B20' }}>
+                IV Drip Rate 直式計算器
+              </h3>
+              <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#7B341E', fontWeight: 'bold' }}>
+                輸液滴速計算與臨床對滴節奏對照
+              </p>
+            </div>
+          </div>
+
+          {/* 直式分數結構 (Fraction Layout) */}
+          <div style={{
+            backgroundColor: '#FFFAF0',
+            border: '2px solid #FBD38D',
+            borderRadius: '16px',
+            padding: '16px 12px',
+            marginBottom: '16px'
+          }}>
+            <div style={{ fontSize: '12px', color: '#7B341E', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>
+              ✏️ 直式算式（直接輸入數字即時計算）：
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              {/* 分子 (Numerator): Volume x Drop Factor */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#9C4221', fontWeight: 'bold', marginBottom: '2px' }}>容量 Volume</span>
+                  <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff', border: '2px solid #DD6B20', borderRadius: '10px', padding: '2px 6px' }}>
+                    <input
+                      type="number"
+                      value={ivVolume}
+                      onChange={e => setIvVolume(e.target.value === '' ? '' : Number(e.target.value))}
+                      style={{ width: '65px', fontSize: '16px', fontWeight: 'bold', textAlign: 'center', border: 'none', outline: 'none' }}
+                    />
+                    <span style={{ fontSize: '12px', color: '#7B341E', fontWeight: 'bold' }}>mL</span>
+                  </div>
+                </div>
+
+                <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#9C4221', marginTop: '14px' }}>×</span>
+
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#9C4221', fontWeight: 'bold', marginBottom: '2px' }}>滴數係數 Drop Factor</span>
+                  <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff', border: '2px solid #DD6B20', borderRadius: '10px', padding: '2px 6px' }}>
+                    <input
+                      type="number"
+                      value={ivDropFactor}
+                      onChange={e => setIvDropFactor(e.target.value === '' ? '' : Number(e.target.value))}
+                      style={{ width: '55px', fontSize: '16px', fontWeight: 'bold', textAlign: 'center', border: 'none', outline: 'none' }}
+                    />
+                    <span style={{ fontSize: '11px', color: '#7B341E', fontWeight: 'bold' }}>gtt/mL</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 分數線 (Fraction Divider Line) */}
+              <div style={{ width: '85%', maxWidth: '280px', height: '3px', backgroundColor: '#DD6B20', borderRadius: '2px', margin: '4px 0' }} />
+
+              {/* 分母 (Denominator): Time x Unit Toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#9C4221', fontWeight: 'bold', marginBottom: '2px' }}>時間 Time</span>
+                  <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff', border: '2px solid #DD6B20', borderRadius: '10px', padding: '2px 6px' }}>
+                    <input
+                      type="number"
+                      value={ivTime}
+                      onChange={e => setIvTime(e.target.value === '' ? '' : Number(e.target.value))}
+                      style={{ width: '60px', fontSize: '16px', fontWeight: 'bold', textAlign: 'center', border: 'none', outline: 'none' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#9C4221', fontWeight: 'bold', marginBottom: '2px' }}>單位 Unit</span>
+                  <button
+                    type="button"
+                    onClick={() => setIvTimeUnit(u => u === 'mins' ? 'hrs' : 'mins')}
+                    style={{
+                      backgroundColor: '#DD6B20',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '10px',
+                      padding: '6px 12px',
+                      fontSize: '13px',
+                      fontWeight: '900',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 4px rgba(221,107,32,0.3)',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {ivTimeUnit === 'mins' ? '⏱️ 分鐘 (mins)' : '⏳ 小時 (hrs)'} 🔄
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 計算結果區塊 (Results Display) */}
+          <div style={{
+            backgroundColor: '#FFEDD5',
+            border: '2px solid #F97316',
+            borderRadius: '16px',
+            padding: '14px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '12px', color: '#9A3412', fontWeight: 'bold', marginBottom: '8px' }}>
+              📊 即時計算結果：
+            </div>
+
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              alignItems: 'center'
+            }}>
+              {/* 1. 標準滴速 */}
+              <div style={{
+                backgroundColor: '#fff',
+                border: '1.5px solid #DD6B20',
+                borderRadius: '12px',
+                padding: '8px 16px',
+                width: '100%',
+                maxWidth: '320px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+              }}>
+                <span style={{ fontSize: '12px', color: '#7B341E', fontWeight: 'bold' }}>🎯 標準滴速：</span>
+                <span style={{ fontSize: '22px', fontWeight: '900', color: '#C05621', marginLeft: '6px' }}>
+                  {gttPerMin}
+                </span>
+                <span style={{ fontSize: '13px', color: '#C05621', fontWeight: 'bold', marginLeft: '4px' }}>gtt/min</span>
+              </div>
+
+              {/* 2. 臨床對滴節奏 */}
+              <div style={{
+                backgroundColor: '#FEFCBF',
+                border: '1.5px solid #D69E2E',
+                borderRadius: '12px',
+                padding: '8px 16px',
+                width: '100%',
+                maxWidth: '320px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+              }}>
+                <span style={{ fontSize: '12px', color: '#744210', fontWeight: 'bold' }}>⏱️ 臨床對滴節奏：</span>
+                <span style={{ fontSize: '17px', fontWeight: '900', color: '#B7791F', marginLeft: '6px' }}>
+                  {rhythm.text}
+                </span>
+              </div>
+
+              {/* 3. 10 秒速查 */}
+              <div style={{
+                backgroundColor: '#FFF5EB',
+                border: '1.5px solid #F97316',
+                borderRadius: '12px',
+                padding: '8px 16px',
+                width: '100%',
+                maxWidth: '320px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+              }}>
+                <span style={{ fontSize: '12px', color: '#9A3412', fontWeight: 'bold' }}>⚡ 10 秒速查：</span>
+                <span style={{ fontSize: '16px', fontWeight: '900', color: '#C2410C', marginLeft: '6px' }}>
+                  10 秒約走 {dropsIn10Sec} 滴
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 底部返回頂部按鈕 */}
+          <button
+            type="button"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            style={{
+              marginTop: '16px',
+              width: '100%',
+              padding: '12px',
+              backgroundColor: '#DD6B20',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '30px',
+              fontSize: '14px',
+              fontWeight: '900',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(221,107,32,0.3)',
+              textAlign: 'center'
+            }}
+          >
+            🔝 返回網頁最頂 / 查看商品
+          </button>
+        </div>
+      </div>
+
       <div style={footerStyle}>
         <div style={{ width: '100%', maxWidth: '480px' }}>
           
@@ -639,7 +889,8 @@ export default function App() {
 
 // STYLES
 const announcementStyle: any = { backgroundColor: '#FFF9E6', border: '1.5px solid #FFCC00', borderRadius: '14px', padding: '12px 14px', marginBottom: '16px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', color: '#000' };
-const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', padding: '12px 18px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '3px solid #77815C', boxShadow: '0 6px 20px rgba(0,0,0,0.2)', zIndex: 1100, fontSize: '12px' };
+const fabLeftStyle: any = { position: 'absolute', left: '10px', top: '12px', padding: '10px 12px', borderRadius: '20px', backgroundColor: '#fff', color: '#DD6B20', fontWeight: '900', border: '2.5px solid #DD6B20', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1100, fontSize: '11px', cursor: 'pointer' };
+const fabStyle: any = { position: 'absolute', right: '10px', top: '12px', padding: '10px 12px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '2.5px solid #77815C', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1100, fontSize: '11px', cursor: 'pointer' };
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
 
