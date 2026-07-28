@@ -14,7 +14,7 @@ export default function App() {
 
   const quotes = [
     "祝你準時收工！🕒", "見字飲水呀同事！💧", "記得去廁所，人工包埋㗎！🚽", 
-    "祝你生意淡薄，越淡好！🛌", "祝你日日返工靚腳靚場！✨", 
+    "祝你生意淡薄，越淡越好！🛌", "祝你日日返工靚腳靚場！✨", 
     "收工未呢？收工去食返餐好嘅！🍱", "祝你如意吉場，場場清空！🍊", 
     "祝你所有病人都 nil active c/o！😴", "返 night 同病人齊齊 sleep well！💤",
     "今日辛苦晒，NurseForge 撐住你！💪"
@@ -216,7 +216,7 @@ export default function App() {
   if (!mounted) return null;
 
   return (
-    <div style={{ padding: '20px 20px 350px 20px', backgroundColor: '#77815C', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
+    <div style={{ padding: '20px 15px 160px 15px', backgroundColor: '#77815C', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
       
       {/* 🎆 全螢幕煙花 Canvas */}
       {showFireworks && (
@@ -274,61 +274,70 @@ export default function App() {
         直接帶 me 去揀商品 🛒
       </button>
 
-      <div style={{ textAlign: 'center', marginBottom: '30px', color: '#fff', paddingTop: '60px' }}>
-        <h1 style={{ fontSize: '38px', fontWeight: '900', margin: '0' }}>NurseForgeHK</h1>
-        <p style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '5px', opacity: 0.9 }}>by @nursingmeme_hk</p>
+      <div style={{ textAlign: 'center', marginBottom: '20px', color: '#fff', paddingTop: '50px' }}>
+        <h1 style={{ fontSize: '34px', fontWeight: '900', margin: '0' }}>NurseForgeHK</h1>
+        <p style={{ fontSize: '13px', fontWeight: 'bold', marginTop: '4px', opacity: 0.9 }}>by @nursingmeme_hk</p>
       </div>
 
-      <div style={{ maxWidth: '500px', margin: '0 auto 30px auto' }}>
+      <div style={{ maxWidth: '500px', margin: '0 auto 20px auto' }}>
         {/* 🏬 實體體驗店獨立公告卡片 */}
-        <div style={{ backgroundColor: '#FFF0F5', border: '2px solid #FFB6C1', borderRadius: '16px', padding: '16px', marginBottom: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', color: '#000' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-            <span style={{ fontSize: '24px' }}>🏬</span>
-            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: '#B81D13', borderBottom: '2px solid #FFC0CB', paddingBottom: '4px', flex: 1 }}>
+        <div style={{ backgroundColor: '#FFF0F5', border: '1.5px solid #FFB6C1', borderRadius: '14px', padding: '12px 14px', marginBottom: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', color: '#000' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', borderBottom: '1.5px solid #FFC0CB', paddingBottom: '4px' }}>
+            <span style={{ fontSize: '20px' }}>🏬</span>
+            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '900', color: '#B81D13', flex: 1 }}>
               實體體驗店現已登場！
             </h3>
           </div>
-          
-          <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#555', fontWeight: 'bold', lineHeight: '1.5' }}>
-            我哋開咗實體體驗店啦！門店暫時未有現貨，但擺咗解壓神器同埋鎖匙扣嘅樣本（膠紙座暫時未有），大家經過可以去撳幾下試試手感！門店現場仲特別擺咗<b>門店限定優惠碼</b>添！
-          </p>
 
-          <div style={{ backgroundColor: '#fff', padding: '12px', borderRadius: '12px', border: '1px solid #FFD1DC', fontSize: '13px', color: '#333', lineHeight: '1.6', fontWeight: 'bold' }}>
-            <div style={{ fontSize: '14px', color: '#D63384', fontWeight: '900', marginBottom: '6px' }}>📍 【門市地址同位置】</div>
-            <div>• <b>地點：</b>旺角中心 3 樓 T67 號舖（A44 格）</div>
-            <div>• <b>營業時間：</b>下午 2:00 - 夜晚 10:00</div>
-            <div>• <b>指路：</b>一入舖頭左手邊！就在 <span style={{ color: '#D63384', fontWeight: '900' }}>@hknurse_shop</span> 嘅正右手邊，超級好搵！</div>
+          <div style={{ fontSize: '12.5px', color: '#333', lineHeight: '1.5', fontWeight: '600', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+            <div>📍 <b>地點：</b>旺角中心 3 樓 T67 號舖（A44 格）</div>
+            <div>⏰ <b>營業時間：</b>14:00 - 22:00</div>
+            <div>🚶 <b>指路：</b>一入鋪頭左手邊（<span style={{ color: '#D63384', fontWeight: '800' }}>@hknurse_shop</span> 正右手邊）</div>
+            <div style={{ marginTop: '2px', color: '#D63384', backgroundColor: '#fff', padding: '6px 8px', borderRadius: '8px', border: '1px solid #FFD1DC', fontSize: '12px', fontWeight: 'bold' }}>
+              🎁 現場擺有解壓神器及鑰匙扣樣本，附<b>門市限定優惠碼</b>！
+            </div>
           </div>
         </div>
 
         {/* 📢 店主公告 */}
         <div style={announcementStyle}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-            <span style={{ fontSize: '24px', lineHeight: '1' }}>📢</span>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+            <span style={{ fontSize: '20px', lineHeight: '1.2' }}>📢</span>
             <div style={{ flex: 1 }}>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '900', color: '#856404', borderBottom: '2px solid #FFE8A3', paddingBottom: '4px' }}>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: '900', color: '#856404', borderBottom: '1.5px solid #FFE8A3', paddingBottom: '4px' }}>
                 店主公告
               </h3>
               
-              <div style={{ fontSize: '14px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div>1. ✨ <b>全店滿 $200 即享順豐站/智能櫃免運費！</b></div>
+              <div style={{ fontSize: '12.5px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div>1. ✨ <b>全店滿 $200 即包順豐站/智能櫃運費！</b></div>
                 
-                <div>2. 🔥 <b>新貨上架：</b>想感受下病人亂咁用 Call Bell 嘅快感？🤪 現時推出咗最新嘅 Call Bell Clicker 啦，快啲下單啦！</div>
+                <div>2. 🔥 <b>新貨上架：</b>Call Bell Clicker 鎖匙扣登場，讓你隨時享受亂撳 Call Bell 嘅快感！</div>
                 
-                <div style={{ marginTop: '4px', paddingTop: '8px', borderTop: '1px dashed #E6C200' }}>
-                  3. ⚙️ <b>品質全面升級：</b><br />
-                  由即日起，所有膠紙座（不論任何顏色），旋轉中軸將會統一改用 <b>白色 PLA Tough 物力</b>，大幅增加耐用度同強度！💪
+                <div style={{ paddingTop: '5px', borderTop: '1px dashed #E6C200' }}>
+                  3. ⚙️ <b>品質全面升級：</b>所有膠紙座旋轉中軸已統一改用<b>白色 PETG 物料</b>，大幅增加耐用度與強度！
+                </div>
+
+                <div style={{ paddingTop: '5px', borderTop: '1px dashed #E6C200' }}>
+                  4. 📦 <b>膠紙座出貨說明：</b>
+                  <div style={{ paddingLeft: '4px', marginTop: '2px', fontSize: '12px', fontWeight: '600' }}>
+                    🚚 <b>順豐速遞：</b>完整組裝好（連螺絲扭緊）先寄出，加購防塵蓋一併入盒，收到即刻用得！<br />
+                    ✉️ <b>本地平郵：</b>受郵政厚度限制，會以零件（散件）寄出。
+                  </div>
+                </div>
+
+                <div style={{ paddingTop: '5px', borderTop: '1px dashed #E6C200', color: '#b91c1c' }}>
+                  5. 💡 <b>溫馨提示：</b>全店產品將於 9 月起調整價格，想入手嘅同事建議把握現價落單～
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '70px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '60px' }}>
               <img 
                 src="/middle.jpg" 
-                alt="白色PLA Tough中軸" 
-                style={{ width: '65px', height: '65px', objectFit: 'cover', borderRadius: '10px', border: '2px solid #E6C200', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }} 
+                alt="白色PETG中軸" 
+                style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '8px', border: '2px solid #E6C200', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} 
               />
-              <span style={{ fontSize: '10px', color: '#856404', fontWeight: 'bold', marginTop: '4px', textAlign: 'center' }}>PLA Tough<br/>中軸升級</span>
+              <span style={{ fontSize: '9.5px', color: '#856404', fontWeight: 'bold', marginTop: '3px', textAlign: 'center' }}>PETG<br/>中軸升級</span>
             </div>
           </div>
         </div>
@@ -576,30 +585,31 @@ export default function App() {
         <div style={{ width: '100%', maxWidth: '480px' }}>
           
           <div style={bottomTotalCardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-               <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' }}>
+               <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
                  <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#666' }}>總額：</span>
-                 <div style={{ fontSize: '24px', fontWeight: '900', color: '#77815C' }}>
-                   HKD ${total} {isPromoApplied && <span style={{ fontSize: '12px', color: '#2E7D32', fontWeight: 'bold' }}>(已打 9 折)</span>}
-                 </div>
+                 <span style={{ fontSize: '18px', fontWeight: '900', color: '#77815C' }}>
+                   HKD ${total}
+                 </span>
+                 {isPromoApplied && <span style={{ fontSize: '10px', color: '#2E7D32', fontWeight: 'bold' }}>(已打9折)</span>}
                </div>
                <button type="button" onClick={clearAll} style={clearBtnStyle}>🗑️ 清空</button>
             </div>
             
-            <div style={{ borderTop: '1px dashed #eee', marginTop: '8px', paddingTop: '6px', textAlign: 'center' }}>
+            <div style={{ borderTop: '1px dashed #e2e8f0', marginTop: '5px', paddingTop: '4px', textAlign: 'center', lineHeight: '1.2' }}>
               {!isFreeSF ? (
-                <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#b97a00' }}>
-                  💡 再買多 <b style={{ fontSize: '14px', color: '#dc3545' }}>${200 - total}</b> 即可享順豐站/智能櫃免運費！
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#b97a00' }}>
+                  💡 再買多 <b style={{ fontSize: '12px', color: '#dc3545' }}>${200 - total}</b> 享順豐站/智能櫃免運費！
                 </span>
               ) : (
-                <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#2E7D32' }}>
-                  🎉 已滿 $200！已成功享有順豐站/智能櫃免運費優惠！
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#2E7D32' }}>
+                  🎉 已滿 $200！已享順豐站/智能櫃免運費！
                 </span>
               )}
             </div>
           </div>
           
-          <div style={{ transition: 'all 0.3s ease' }}>
+          <div>
             {isFormValid ? (
               <a 
                 href="https://payme.hsbc/nfhk" 
@@ -617,8 +627,10 @@ export default function App() {
             )}
           </div>
           
-          <p style={{ textAlign: 'center', fontSize: '12px', color: '#888', marginTop: '10px', fontWeight: 'bold' }}>📸 記得截圖執貨單 send 俾店主呀！</p>
-          <p style={{ textAlign: 'center', fontSize: '10px', color: '#aaa', marginTop: '15px' }}>呢個網頁係我自己寫㗎 :D</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', padding: '0 2px' }}>
+            <span style={{ fontSize: '10px', color: '#888', fontWeight: 'bold' }}>📸 記得截圖執貨單 send 俾店主呀！</span>
+            <span style={{ fontSize: '9px', color: '#aaa' }}>by @nursingmeme_hk</span>
+          </div>
         </div>
       </div>
     </div>
@@ -626,7 +638,7 @@ export default function App() {
 }
 
 // STYLES
-const announcementStyle: any = { backgroundColor: '#FFF9E6', border: '2px solid #FFCC00', borderRadius: '16px', padding: '15px', marginBottom: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', color: '#000' };
+const announcementStyle: any = { backgroundColor: '#FFF9E6', border: '1.5px solid #FFCC00', borderRadius: '14px', padding: '12px 14px', marginBottom: '16px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', color: '#000' };
 const fabStyle: any = { position: 'absolute', right: '15px', top: '15px', padding: '12px 18px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '3px solid #77815C', boxShadow: '0 6px 20px rgba(0,0,0,0.2)', zIndex: 1100, fontSize: '12px' };
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
@@ -646,11 +658,11 @@ const btnStyle: any = {
   color: '#444'
 };
 
-const footerStyle: any = { position: 'fixed', bottom: '0', left: '0', width: '100%', backgroundColor: '#fff', padding: '15px 20px 35px 20px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', zIndex: 1000, boxShadow: '0 -5px 25px rgba(0,0,0,0.08)' };
-const bottomTotalCardStyle: any = { backgroundColor: '#fff', padding: '12px 15px', borderRadius: '16px', border: '2px solid #77815C', marginBottom: '12px' };
-const clearBtnStyle: any = { padding: '6px 12px', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', backgroundColor: '#fff' };
-const paymeBtnStyle: any = { display: 'block', width: '100%', padding: '15px', backgroundColor: '#FF002B', color: '#fff', textDecoration: 'none', borderRadius: '40px', textAlign: 'center', fontWeight: '900', fontSize: '18px', boxShadow: '0 4px 15px rgba(255, 0, 43, 0.3)' };
-const paymeBtnDisabledStyle: any = { display: 'block', width: '100%', padding: '15px', backgroundColor: '#ccc', color: '#666', borderRadius: '40px', textAlign: 'center', fontWeight: '900', fontSize: '14px', cursor: 'not-allowed' };
+const footerStyle: any = { position: 'fixed', bottom: '0', left: '0', width: '100%', backgroundColor: '#fff', padding: '8px 12px 12px 12px', borderTop: '1px solid #e5e5e5', display: 'flex', justifyContent: 'center', zIndex: 1000, boxShadow: '0 -4px 18px rgba(0,0,0,0.08)' };
+const bottomTotalCardStyle: any = { backgroundColor: '#F9FAF6', padding: '6px 10px', borderRadius: '12px', border: '1.5px solid #77815C', marginBottom: '6px' };
+const clearBtnStyle: any = { padding: '3px 8px', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', backgroundColor: '#fff' };
+const paymeBtnStyle: any = { display: 'block', width: '100%', padding: '10px 12px', backgroundColor: '#FF002B', color: '#fff', textDecoration: 'none', borderRadius: '30px', textAlign: 'center', fontWeight: '900', fontSize: '15px', boxShadow: '0 3px 10px rgba(255, 0, 43, 0.25)' };
+const paymeBtnDisabledStyle: any = { display: 'block', width: '100%', padding: '10px 12px', backgroundColor: '#e0e0e0', color: '#666', borderRadius: '30px', textAlign: 'center', fontWeight: '900', fontSize: '12px', cursor: 'not-allowed' };
 const capNoticeStyle: any = { backgroundColor: '#FFED4A', padding: '10px 20px', borderRadius: '10px', marginBottom: '15px', border: '2px solid #000', textAlign: 'center', fontSize: '16px', fontWeight: '900', color: '#000' };
 const orderDraftStyle: any = { backgroundColor: '#fff', padding: '15px', width: '95%', maxWidth: '380px', border: '4px solid #77815C', color: '#000' };
 const orderHeaderStyle: any = { borderBottom: '2px solid #77815C', paddingBottom: '8px', marginBottom: '10px', textAlign: 'center' };
