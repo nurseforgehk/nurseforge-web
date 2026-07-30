@@ -21,7 +21,7 @@ export default function App() {
   ];
 
   const initialItems = {
-    tapeWhite: 0, tapeGrey: 0, 
+    tapeWhite: 0, tapeGrey: 0, tapeMarble: 0,
     tapeBlack: 0, tapeRed: 0, tapeYellow: 0, tapeOrange: 0, tapePurple: 0, tapeGreen: 0,
     tapePink: 0, tapeDesertYellow: 0, tapeOceanBlue: 0, tapeIceBlue: 0, 
     coverChiikawa: 0, coverUsagi: 0, coverAddon: 0, coverSingle: 0, 
@@ -151,7 +151,7 @@ export default function App() {
 
   // ======= ⚙️ 智能防塵蓋提示邏輯 =======
   const tapeColorQuantities = [
-    items.tapeWhite, items.tapeGrey, items.tapeBlack, items.tapeRed, 
+    items.tapeWhite, items.tapeGrey, items.tapeMarble, items.tapeBlack, items.tapeRed, 
     items.tapeYellow, items.tapeOrange, items.tapePurple, items.tapeGreen, 
     items.tapePink, items.tapeDesertYellow, items.tapeOceanBlue, items.tapeIceBlue
   ];
@@ -165,6 +165,7 @@ export default function App() {
 
   const rawTotal = [
     { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 },
+    { qty: items.tapeMarble, p: 68 },
     { qty: items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue + items.tapeIceBlue, p: 78 },
     { qty: items.coverChiikawa + items.coverUsagi, p: 30 }, 
     { qty: items.coverAddon, p: 10 }, { qty: items.coverSingle, p: 15 },
@@ -191,6 +192,7 @@ export default function App() {
   const activeProducts: any[] = [
     { name: '白色膠紙座', qty: items.tapeWhite, price: 58 },
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
+    { name: '八月限定大理石膠紙座', qty: items.tapeMarble, price: 68 },
     ...customColors.map(c => ({ name: c.n + '膠紙座', qty: (items as any)[`tape${c.k}`], price: 78 })),
     { name: 'Chiikawa防塵蓋', qty: items.coverChiikawa, price: 30 },
     { name: 'Usagi防塵蓋', qty: items.coverUsagi, price: 30 },
@@ -400,6 +402,56 @@ export default function App() {
             <ShowcaseCardMini img="/us.jpg" title="Usagi防塵蓋" price="$30" />
         </div>
 
+        {/* 🏛️ 八月限定顏色大圖展示 */}
+        <div style={{
+          backgroundColor: '#fff',
+          borderRadius: '20px',
+          overflow: 'hidden',
+          boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
+          border: '3px solid #D69E2E',
+          marginBottom: '15px',
+          color: '#000'
+        }}>
+          <div style={{
+            backgroundColor: '#FEFCBF',
+            padding: '10px 14px',
+            borderBottom: '2px solid #D69E2E',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '18px' }}>🏛️</span>
+              <span style={{ fontSize: '15px', fontWeight: '900', color: '#744210' }}>
+                【八月限定顏色】大理石膠紙座
+              </span>
+            </div>
+            <span style={{ fontSize: '12px', backgroundColor: '#D69E2E', color: '#fff', padding: '2px 8px', borderRadius: '10px', fontWeight: '900' }}>
+              $68 / 個
+            </span>
+          </div>
+
+          <div style={{ position: 'relative' }}>
+            <img 
+              src="/marble.jpg" 
+              alt="八月限定大理石膠紙座" 
+              style={{
+                width: '100%',
+                aspectRatio: '3 / 4',
+                objectFit: 'cover',
+                display: 'block'
+              }} 
+            />
+          </div>
+
+          <div style={{ padding: '12px 14px', backgroundColor: '#FFFAF0', fontSize: '12.5px', color: '#744210', fontWeight: 'bold', lineHeight: '1.5' }}>
+            ✨ 典雅大理石紋理色澤！<b>$68/個</b>（不包防塵蓋，防塵蓋加 <b>+$10</b>）<br />
+            <span style={{ color: '#B7791F', fontSize: '11.5px', fontWeight: '800', marginTop: '4px', display: 'block' }}>
+              💎 註：呢隻物料比起 PLA Basic 更加稀有同具備獨特質感！
+            </span>
+          </div>
+        </div>
+
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
             <a href="https://www.instagram.com/p/DW9hjFeEtjL/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🎨 睇客制顏色選項</a>
             <a href="https://www.instagram.com/p/DW3pJ1zkuY4/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🛡️ 點解要加防塵蓋？</a>
@@ -469,6 +521,26 @@ export default function App() {
           <Section title="📦 第一區：膠紙座系列" badge="可選平郵" badgeColor="#2E7D32">
             <Row name="🤍 白色 White ($58)" count={items.tapeWhite} onAdd={() => update('tapeWhite', 1)} onSub={() => update('tapeWhite', -1)} />
             <Row name="🩶 灰色 Grey ($58)" count={items.tapeGrey} onAdd={() => update('tapeGrey', 1)} onSub={() => update('tapeGrey', -1)} />
+            
+            {/* 🏛️ 八月限定大理石膠紙座 */}
+            <div style={{ margin: '10px 0', padding: '12px', backgroundColor: '#FFFDF0', border: '2px solid #D69E2E', borderRadius: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: '900', color: '#744210', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>🏛️ 八月限定：大理石膠紙座 ($68)</span>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#9C4221', fontWeight: 'bold', marginTop: '3px' }}>
+                    💡 唔包防塵蓋，防塵蓋加 $10 (於下方選購)<br />
+                    💎 註：呢隻物料比 PLA Basic 更加稀有！
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <button type="button" onClick={() => update('tapeMarble', -1)} className="btn-3d" style={btnStyle}>-</button>
+                  <span style={{ fontSize: '15px', fontWeight: 'bold', minWidth: '20px', textAlign: 'center' }}>{items.tapeMarble}</span>
+                  <button type="button" onClick={() => update('tapeMarble', 1)} className="btn-3d" style={btnStyle}>+</button>
+                </div>
+              </div>
+            </div>
             <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '15px' }}>
               <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#77815C', marginBottom: '10px' }}>🎨 其他訂造顏色 ($78):</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
