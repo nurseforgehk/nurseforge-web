@@ -9,6 +9,7 @@ export default function App() {
   const [randomQuote, setRandomQuote] = useState('');
   const [promoCode, setPromoCode] = useState('');
   const [showFireworks, setShowFireworks] = useState(false);
+  const [showColorPreview, setShowColorPreview] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -326,6 +327,7 @@ export default function App() {
       </button>
 
       <div style={{ textAlign: 'center', marginBottom: '20px', color: '#fff', paddingTop: '50px' }}>
+        <div style={{ fontSize: '16px', fontWeight: '900', letterSpacing: '2px', marginBottom: '2px', opacity: 0.95 }}>護士鍛造工場</div>
         <h1 style={{ fontSize: '34px', fontWeight: '900', margin: '0' }}>NurseForgeHK</h1>
         <p style={{ fontSize: '13px', fontWeight: 'bold', marginTop: '4px', opacity: 0.9 }}>by @nursingmeme_hk</p>
       </div>
@@ -351,7 +353,7 @@ export default function App() {
             </span>
           </div>
           <div style={{ fontSize: '13px', fontWeight: 'bold', lineHeight: '1.5', color: '#664d03' }}>
-            📢 店主 <b>8月2號 至 8月7號</b> 不在香港，所有訂單會於 <b>8月8號起陸續跟進</b>，感謝各位體諒與支持！❤️
+            📢 店主 <b>8月14號 至 8月18號</b> 不在香港，期間接到嘅訂單會於 <b>8月19號起陸續處理</b>，感謝各位體諒與支持！❤️
           </div>
         </div>
 
@@ -419,13 +421,6 @@ export default function App() {
 
         <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>產品預覽 (點擊圖片可放大/縮小)</h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '15px' }}>
-            <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
-            <ShowcaseCardMini img="/greytape.jpg" title="灰色膠紙座" price="$58" />
-            <ShowcaseCardMini img="/chi.jpg" title="Chiikawa防塵蓋" price="$30" />
-            <ShowcaseCardMini img="/us.jpg" title="Usagi防塵蓋" price="$30" />
-        </div>
-
         {/* 🏛️ 八月限定顏色大圖展示 */}
         <div style={{
           backgroundColor: '#fff',
@@ -476,48 +471,84 @@ export default function App() {
           </div>
         </div>
 
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '15px' }}>
+            <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
+            <ShowcaseCardMini img="/greytape.jpg" title="灰色膠紙座" price="$58" />
+            <ShowcaseCardMini img="/chi.jpg" title="Chiikawa防塵蓋" price="$30" />
+            <ShowcaseCardMini img="/us.jpg" title="Usagi防塵蓋" price="$30" />
+        </div>
+
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
             <a href="https://www.instagram.com/p/DW9hjFeEtjL/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🎨 睇客制顏色選項</a>
             <a href="https://www.instagram.com/p/DW3pJ1zkuY4/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🛡️ 點解要加防塵蓋？</a>
         </div>
 
-        <div style={{ backgroundColor: 'rgba(255,255,255,0.15)', padding: '12px', borderRadius: '18px', marginBottom: '25px', color: '#fff' }}>
-          <div style={{ fontSize: '13px', fontWeight: '900', marginBottom: '10px', textAlign: 'center' }}>🎨 3D打印材料顏色預覽 (點擊可放大)</div>
-          
-          <div style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px', marginBottom: '10px' }}>
-            <div style={{ fontSize: '11px', fontWeight: '900', color: '#FFE8A3', marginBottom: '4px' }}>
-              ✨ PLA Matta (啞光物料)
-            </div>
-            <div style={{ fontSize: '10px', color: '#fff', marginBottom: '8px', opacity: 0.9 }}>
-              💡 註：選用此物料的膠紙座，<b>底部將會配搭白色</b>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
-              {[
-                { img: 'pink', name: '櫻花粉' },
-                { img: 'seablue', name: '海洋藍' },
-                { img: 'iceblue', name: '冰藍' },
-                { img: 'usagiyellow', name: 'Usagi黃' }
-              ].map((color, idx) => (
-                <ColorShowcaseMini key={idx} img={`/${color.img}.jpg`} title={color.name} sub="白底" />
-              ))}
-            </div>
-          </div>
+        <div style={{ marginBottom: '25px' }}>
+          <button
+            type="button"
+            onClick={() => setShowColorPreview(!showColorPreview)}
+            style={{
+              width: '100%',
+              padding: '14px 18px',
+              backgroundColor: '#FFF9E6',
+              color: '#744210',
+              border: '2.5px solid #D69E2E',
+              borderRadius: '16px',
+              fontSize: '14.5px',
+              fontWeight: '900',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <span>🎨 {showColorPreview ? '隱藏 3D打印材料顏色預覽' : '展開 3D打印材料顏色預覽 (點擊查看所有色卡)'}</span>
+            <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{showColorPreview ? '▲' : '▼'}</span>
+          </button>
 
-          <div style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '12px' }}>
-            <div style={{ fontSize: '11px', fontWeight: '900', color: '#fff', marginBottom: '8px' }}>
-              🔹 PLA Basic (標準光面物料)
+          {showColorPreview && (
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.15)', padding: '12px', borderRadius: '18px', marginTop: '12px', color: '#fff' }}>
+              <div style={{ fontSize: '13px', fontWeight: '900', marginBottom: '10px', textAlign: 'center' }}>🎨 3D打印材料顏色預覽 (點擊可放大)</div>
+              
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px', marginBottom: '10px' }}>
+                <div style={{ fontSize: '11px', fontWeight: '900', color: '#FFE8A3', marginBottom: '4px' }}>
+                  ✨ PLA Matta (啞光物料)
+                </div>
+                <div style={{ fontSize: '10px', color: '#fff', marginBottom: '8px', opacity: 0.9 }}>
+                  💡 註：選用此物料的膠紙座，<b>底部將會配搭白色</b>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                  {[
+                    { img: 'pink', name: '櫻花粉' },
+                    { img: 'seablue', name: '海洋藍' },
+                    { img: 'iceblue', name: '冰藍' },
+                    { img: 'usagiyellow', name: '沙漠黃 (Usagi黃)' }
+                  ].map((color, idx) => (
+                    <ColorShowcaseMini key={idx} img={`/${color.img}.jpg`} title={color.name} sub="白底" />
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '12px' }}>
+                <div style={{ fontSize: '11px', fontWeight: '900', color: '#fff', marginBottom: '8px' }}>
+                  🔹 PLA Basic (標準光面物料)
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                  {[
+                    { img: 'white', name: '白色' }, { img: 'grey', name: '灰色' }, 
+                    { img: 'black', name: '黑色' }, { img: 'red', name: '深紅' }, 
+                    { img: 'warmyellow', name: '暖黃' }, { img: 'orange', name: '橙色' },
+                    { img: 'purple', name: '紫色' }, { img: 'green', name: '綠色' }
+                  ].map((color, idx) => (
+                    <ColorShowcaseMini key={idx} img={`/${color.img}.jpg`} title={color.name} />
+                  ))}
+                </div>
+              </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
-              {[
-                { img: 'white', name: '白色' }, { img: 'grey', name: '灰色' }, 
-                { img: 'black', name: '黑色' }, { img: 'red', name: '深紅' }, 
-                { img: 'warmyellow', name: '暖黃' }, { img: 'orange', name: '橙色' },
-                { img: 'purple', name: '紫色' }, { img: 'green', name: '綠色' }
-              ].map((color, idx) => (
-                <ColorShowcaseMini key={idx} img={`/${color.img}.jpg`} title={color.name} />
-              ))}
-            </div>
-          </div>
+          )}
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '15px' }}>
