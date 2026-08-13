@@ -353,7 +353,7 @@ export default function App() {
             </span>
           </div>
           <div style={{ fontSize: '13px', fontWeight: 'bold', lineHeight: '1.5', color: '#664d03' }}>
-            📢 店主 <b>8月14號 至 8月18號</b> 不在香港，期間接到嘅訂單會於 <b>8月19號起陸續處理</b>，感謝各位體諒與支持！❤️
+            📢 店主 <b>8月13號 至 8月18號</b> 不在香港，期間接到嘅訂單會於 <b>8月19號起陸續處理</b>，感謝各位體諒與支持！❤️
           </div>
         </div>
 
