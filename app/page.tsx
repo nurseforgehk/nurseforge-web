@@ -333,30 +333,6 @@ export default function App() {
       </div>
 
       <div style={{ maxWidth: '500px', margin: '0 auto 20px auto' }}>
-        {/* 📌 置頂特別公告 */}
-        <div style={{
-          backgroundColor: '#FFF3CD',
-          border: '2px solid #FFC107',
-          borderRadius: '14px',
-          padding: '12px 14px',
-          marginBottom: '12px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          color: '#856404'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #FFEBAA', paddingBottom: '6px', marginBottom: '6px' }}>
-            <span style={{ fontSize: '20px' }}>✈️</span>
-            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '900', color: '#856404', flex: 1 }}>
-              📌 【置頂公告】店主外遊特別通知
-            </h3>
-            <span style={{ fontSize: '10.5px', backgroundColor: '#DC3545', color: '#fff', padding: '2px 8px', borderRadius: '10px', fontWeight: '900' }}>
-              重要通知
-            </span>
-          </div>
-          <div style={{ fontSize: '13px', fontWeight: 'bold', lineHeight: '1.5', color: '#664d03' }}>
-            📢 店主 <b>8月13號 至 8月18號</b> 不在香港，期間接到嘅訂單會於 <b>8月19號起陸續處理</b>，感謝各位體諒與支持！❤️
-          </div>
-        </div>
-
         {/* 🏬 實體體驗店獨立公告卡片 */}
         <div style={{ backgroundColor: '#FFF0F5', border: '1.5px solid #FFB6C1', borderRadius: '14px', padding: '12px 14px', marginBottom: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', color: '#000' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', borderBottom: '1.5px solid #FFC0CB', paddingBottom: '4px' }}>
