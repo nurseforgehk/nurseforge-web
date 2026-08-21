@@ -25,7 +25,7 @@ export default function App() {
     tapeWhite: 0, tapeGrey: 0, tapeMarble: 0,
     tapeBlack: 0, tapeRed: 0, tapeYellow: 0, tapeOrange: 0, tapePurple: 0, tapeGreen: 0,
     tapePink: 0, tapeDesertYellow: 0, tapeOceanBlue: 0, tapeIceBlue: 0, 
-    coverChiikawa: 0, coverUsagi: 0, coverAddon: 0, coverSingle: 0, 
+    coverChiikawa: 0, coverUsagi: 0, coverHachiware: 0, coverAddon: 0, coverSingle: 0, 
     keyringNoWork: 0, keyringLucky: 0,
     clickerLuckyPink: 0, clickerLuckyBlue: 0, clickerShutUp: 0, clickerCombo: 0, 
     clickerCallbellNormal: 0, clickerCallbellFinger: 0, 
@@ -159,7 +159,7 @@ export default function App() {
   
   const totalTapeCount = tapeColorQuantities.reduce((acc, curr) => acc + curr, 0);
   const distinctColorsCount = tapeColorQuantities.filter(qty => qty > 0).length;
-  const totalCoverCount = items.coverChiikawa + items.coverUsagi + items.coverAddon + items.coverSingle;
+  const totalCoverCount = items.coverChiikawa + items.coverUsagi + items.coverHachiware + items.coverAddon + items.coverSingle;
   const showCoverRemarkNotice = distinctColorsCount >= 2 && totalCoverCount > 0 && totalCoverCount !== totalTapeCount;
 
   const isFormValid = agreed && shipping.name.trim() !== '' && shipping.phone.trim() !== '' && shipping.igName.trim() !== '' && shipping.address.trim() !== '';
@@ -168,7 +168,7 @@ export default function App() {
     { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 },
     { qty: items.tapeMarble, p: 68 },
     { qty: items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue + items.tapeIceBlue, p: 78 },
-    { qty: items.coverChiikawa + items.coverUsagi, p: 30 }, 
+    { qty: items.coverChiikawa + items.coverUsagi + items.coverHachiware, p: 30 }, 
     { qty: items.coverAddon, p: 10 }, { qty: items.coverSingle, p: 15 },
     { qty: items.clickerCallbellNormal + items.clickerCallbellFinger, p: 68 }, 
     { qty: items.clickerCallcarNormal + items.clickerCallcarFinger, p: 125 },
@@ -197,6 +197,7 @@ export default function App() {
     ...customColors.map(c => ({ name: c.n + '膠紙座', qty: (items as any)[`tape${c.k}`], price: 78 })),
     { name: 'Chiikawa防塵蓋', qty: items.coverChiikawa, price: 30 },
     { name: 'Usagi防塵蓋', qty: items.coverUsagi, price: 30 },
+    { name: 'Hachiware防塵蓋', qty: items.coverHachiware, price: 30 },
     { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10 },
     { name: '獨立防塵蓋', qty: items.coverSingle, price: 15 },
     { name: '叫人鐘 (正常版本)', qty: items.clickerCallbellNormal, price: 68 },
@@ -447,11 +448,17 @@ export default function App() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '15px' }}>
+        {/* 白色及灰色膠紙座 */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '10px' }}>
             <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
             <ShowcaseCardMini img="/greytape.jpg" title="灰色膠紙座" price="$58" />
+        </div>
+
+        {/* 三個特別防塵蓋 */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '15px' }}>
             <ShowcaseCardMini img="/chi.jpg" title="Chiikawa防塵蓋" price="$30" />
             <ShowcaseCardMini img="/us.jpg" title="Usagi防塵蓋" price="$30" />
+            <ShowcaseCardMini img="/ha.jpg" title="Hachiware防塵蓋" price="$30" />
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
@@ -583,6 +590,7 @@ export default function App() {
             <div style={{ marginTop: '20px', borderTop: '2px dashed #eee', paddingTop: '15px' }}>
               <Row name="🐹 Chiikawa防塵蓋 $30" count={items.coverChiikawa} onAdd={() => update('coverChiikawa', 1)} onSub={() => update('coverChiikawa', -1)} />
               <Row name="🐰 Usagi防塵蓋 $30" count={items.coverUsagi} onAdd={() => update('coverUsagi', 1)} onSub={() => update('coverUsagi', -1)} />
+              <Row name="🐱 Hachiware防塵蓋 $30" count={items.coverHachiware} onAdd={() => update('coverHachiware', 1)} onSub={() => update('coverHachiware', -1)} />
               <Row name="隨座加購防塵蓋 $10" count={items.coverAddon} onAdd={() => update('coverAddon', 1)} onSub={() => update('coverAddon', -1)} />
               <Row name="補買防塵蓋 $15" count={items.coverSingle} onAdd={() => update('coverSingle', 1)} onSub={() => update('coverSingle', -1)} />
               
@@ -1048,7 +1056,7 @@ function ShowcaseCardMini({ img, title, price }: any) {
     <div 
       onClick={() => setIsZoomed(!isZoomed)}
       style={{ 
-        backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'all 0.3s ease', gridColumn: isZoomed ? 'span 4' : 'auto', zIndex: isZoomed ? 10 : 1
+        backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'all 0.3s ease', gridColumn: isZoomed ? '1 / -1' : 'auto', zIndex: isZoomed ? 10 : 1
       } as any}
     >
       <img src={img} style={{ width: '100%', aspectRatio: isZoomed ? 'auto' : '1/1', maxHeight: isZoomed ? '400px' : 'none', objectFit: 'cover', transition: 'all 0.3s ease' } as any} alt={title} />
@@ -1067,7 +1075,7 @@ function ColorShowcaseMini({ img, title, sub }: any) {
     <div 
       onClick={() => setIsZoomed(!isZoomed)}
       style={{
-        backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', textAlign: 'center', border: '1px solid #ddd', cursor: 'pointer', transition: 'all 0.25s ease', gridColumn: isZoomed ? 'span 4' : 'auto', zIndex: isZoomed ? 20 : 1, boxShadow: isZoomed ? '0 8px 25px rgba(0,0,0,0.3)' : 'none'
+        backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', textAlign: 'center', border: '1px solid #ddd', cursor: 'pointer', transition: 'all 0.25s ease', gridColumn: isZoomed ? '1 / -1' : 'auto', zIndex: isZoomed ? 20 : 1, boxShadow: isZoomed ? '0 8px 25px rgba(0,0,0,0.3)' : 'none'
       } as any}
     >
       <img src={img} style={{ width: '100%', aspectRatio: isZoomed ? 'auto' : '1/1', maxHeight: isZoomed ? '320px' : 'none', objectFit: 'cover' } as any} alt={title} />
