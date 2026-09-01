@@ -22,7 +22,7 @@ export default function App() {
   ];
 
   const initialItems = {
-    tapeWhite: 0, tapeGrey: 0, tapeMarble: 0,
+    tapeWhite: 0, tapeGrey: 0, tapeAppleGreen: 0, tapeMarble: 0,
     tapeBlack: 0, tapeRed: 0, tapeYellow: 0, tapeOrange: 0, tapePurple: 0, tapeGreen: 0,
     tapePink: 0, tapeDesertYellow: 0, tapeOceanBlue: 0, tapeIceBlue: 0, 
     coverChiikawa: 0, coverUsagi: 0, coverHachiware: 0, coverAddon: 0, coverSingle: 0, 
@@ -152,7 +152,7 @@ export default function App() {
 
   // ======= ⚙️ 智能防塵蓋提示邏輯 =======
   const tapeColorQuantities = [
-    items.tapeWhite, items.tapeGrey, items.tapeMarble, items.tapeBlack, items.tapeRed, 
+    items.tapeWhite, items.tapeGrey, items.tapeAppleGreen, items.tapeMarble, items.tapeBlack, items.tapeRed, 
     items.tapeYellow, items.tapeOrange, items.tapePurple, items.tapeGreen, 
     items.tapePink, items.tapeDesertYellow, items.tapeOceanBlue, items.tapeIceBlue
   ];
@@ -166,14 +166,14 @@ export default function App() {
 
   const rawTotal = [
     { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 },
-    { qty: items.tapeMarble, p: 68 },
-    { qty: items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue + items.tapeIceBlue, p: 78 },
+    { qty: items.tapeAppleGreen, p: 68 },
+    { qty: items.tapeMarble + items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue + items.tapeIceBlue, p: 78 },
     { qty: items.coverChiikawa + items.coverUsagi + items.coverHachiware, p: 30 }, 
     { qty: items.coverAddon, p: 10 }, { qty: items.coverSingle, p: 15 },
-    { qty: items.clickerCallbellNormal + items.clickerCallbellFinger, p: 68 }, 
-    { qty: items.clickerCallcarNormal + items.clickerCallcarFinger, p: 125 },
-    { qty: items.clickerLuckyPink, p: 58 }, { qty: items.clickerLuckyBlue, p: 58 },
-    { qty: items.clickerCombo, p: 110 }, { qty: items.clickerShutUp, p: 68 },
+    { qty: items.clickerCallbellNormal + items.clickerCallbellFinger, p: 78 }, 
+    { qty: items.clickerCallcarNormal + items.clickerCallcarFinger, p: 145 },
+    { qty: items.clickerLuckyPink, p: 68 }, { qty: items.clickerLuckyBlue, p: 68 },
+    { qty: items.clickerCombo, p: 125 }, { qty: items.clickerShutUp, p: 78 },
     { qty: items.keyringNoWork, p: 28 }, { qty: items.keyringLucky, p: 28 },
     { qty: 1, p: items.addonDiff }
   ].reduce((acc, curr) => acc + (curr.qty * curr.p), 0);
@@ -182,6 +182,7 @@ export default function App() {
   const isFreeSF = total >= 200;
 
   const customColors = [
+    { k: 'Marble', n: '🏛️ 大理石' },
     { k: 'Black', n: '🖤 黑色' }, { k: 'Red', n: '❤️ 深紅' }, 
     { k: 'Yellow', n: '💛 暖黃' }, { k: 'Orange', n: '🧡 橙色' }, 
     { k: 'Purple', n: '💜 紫色' }, { k: 'Green', n: '💚 綠色' }, 
@@ -193,21 +194,21 @@ export default function App() {
   const activeProducts: any[] = [
     { name: '白色膠紙座', qty: items.tapeWhite, price: 58 },
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
-    { name: '八月限定大理石膠紙座', qty: items.tapeMarble, price: 68 },
+    { name: '九月限定青蘋果綠膠紙座', qty: items.tapeAppleGreen, price: 68 },
     ...customColors.map(c => ({ name: c.n + '膠紙座', qty: (items as any)[`tape${c.k}`], price: 78 })),
     { name: 'Chiikawa防塵蓋', qty: items.coverChiikawa, price: 30 },
     { name: 'Usagi防塵蓋', qty: items.coverUsagi, price: 30 },
     { name: 'Hachiware防塵蓋', qty: items.coverHachiware, price: 30 },
     { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10 },
     { name: '獨立防塵蓋', qty: items.coverSingle, price: 15 },
-    { name: '叫人鐘 (正常版本)', qty: items.clickerCallbellNormal, price: 68 },
-    { name: '叫人鐘 (舉中指版本)', qty: items.clickerCallbellFinger, price: 68 },
-    { name: '叫人鐘收聲先 (正常版本)', qty: items.clickerCallcarNormal, price: 125 },
-    { name: '叫人鐘收聲先 (舉中指版本)', qty: items.clickerCallcarFinger, price: 125 },
-    { name: '粉紅白吉床', qty: items.clickerLuckyPink, price: 58 },
-    { name: '藍白吉床', qty: items.clickerLuckyBlue, price: 58 },
-    { name: '吉床套裝 (粉紅+藍)', qty: items.clickerCombo, price: 110 },
-    { name: '收聲先', qty: items.clickerShutUp, price: 68 },
+    { name: '叫人鐘 (正常版本)', qty: items.clickerCallbellNormal, price: 78 },
+    { name: '叫人鐘 (舉中指版本)', qty: items.clickerCallbellFinger, price: 78 },
+    { name: '叫人鐘收聲先 (正常版本)', qty: items.clickerCallcarNormal, price: 145 },
+    { name: '叫人鐘收聲先 (舉中指版本)', qty: items.clickerCallcarFinger, price: 145 },
+    { name: '粉紅白吉床', qty: items.clickerLuckyPink, price: 68 },
+    { name: '藍白吉床', qty: items.clickerLuckyBlue, price: 68 },
+    { name: '吉床套裝 (粉紅白吉床x1, 藍白吉床x1)', qty: items.clickerCombo, price: 125 },
+    { name: '收聲先', qty: items.clickerShutUp, price: 78 },
     { name: '不想上班鎖匙扣', qty: items.keyringNoWork, price: 28 },
     { name: '如意吉場鎖匙扣', qty: items.keyringLucky, price: 28 },
     { name: '💰 補錢湊數', qty: 1, price: items.addonDiff }
@@ -368,69 +369,52 @@ export default function App() {
                 <div>2. 🔥 <b>新貨上架：</b>Call Bell Clicker 鎖匙扣登場，讓你隨時享受亂撳 Call Bell 嘅快感！</div>
                 
                 <div style={{ paddingTop: '5px', borderTop: '1px dashed #E6C200' }}>
-                  3. ⚙️ <b>品質全面升級：</b>所有膠紙座旋轉中軸已統一改用<b>白色 PETG 物料</b>，大幅增加耐用度與強度！
-                </div>
-
-                <div style={{ paddingTop: '5px', borderTop: '1px dashed #E6C200' }}>
-                  4. 📦 <b>膠紙座出貨說明：</b>
+                  3. 📦 <b>膠紙座出貨說明：</b>
                   <div style={{ paddingLeft: '4px', marginTop: '2px', fontSize: '12px', fontWeight: '600' }}>
                     🚚 <b>順豐速遞：</b>完整組裝好（連螺絲扭緊）先寄出，加購防塵蓋一併入盒，收到即刻用得！<br />
                     ✉️ <b>本地平郵：</b>受郵政厚度限制，會以零件（散件）寄出。
                   </div>
                 </div>
-
-                <div style={{ paddingTop: '5px', borderTop: '1px dashed #E6C200', color: '#b91c1c' }}>
-                  5. 💡 <b>溫馨提示：</b>全店產品將於 9 月起調整價格，想入手嘅同事建議把握現價落單～
-                </div>
               </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '60px' }}>
-              <img 
-                src="/middle.jpg" 
-                alt="白色PETG中軸" 
-                style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '8px', border: '2px solid #E6C200', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} 
-              />
-              <span style={{ fontSize: '9.5px', color: '#856404', fontWeight: 'bold', marginTop: '3px', textAlign: 'center' }}>PETG<br/>中軸升級</span>
             </div>
           </div>
         </div>
 
         <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>產品預覽 (點擊圖片可放大/縮小)</h2>
 
-        {/* 🏛️ 八月限定顏色大圖展示 */}
+        {/* 🍏 九月限定顏色大圖展示 */}
         <div style={{
           backgroundColor: '#fff',
           borderRadius: '20px',
           overflow: 'hidden',
           boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
-          border: '3px solid #D69E2E',
+          border: '3px solid #38A169',
           marginBottom: '15px',
           color: '#000'
         }}>
           <div style={{
-            backgroundColor: '#FEFCBF',
+            backgroundColor: '#F0FFF4',
             padding: '10px 14px',
-            borderBottom: '2px solid #D69E2E',
+            borderBottom: '2px solid #38A169',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '18px' }}>🏛️</span>
-              <span style={{ fontSize: '15px', fontWeight: '900', color: '#744210' }}>
-                【八月限定顏色】大理石膠紙座
+              <span style={{ fontSize: '18px' }}>🍏</span>
+              <span style={{ fontSize: '15px', fontWeight: '900', color: '#22543D' }}>
+                【九月限定顏色】青蘋果綠膠紙座
               </span>
             </div>
-            <span style={{ fontSize: '12px', backgroundColor: '#D69E2E', color: '#fff', padding: '2px 8px', borderRadius: '10px', fontWeight: '900' }}>
+            <span style={{ fontSize: '12px', backgroundColor: '#38A169', color: '#fff', padding: '2px 8px', borderRadius: '10px', fontWeight: '900' }}>
               $68 / 個
             </span>
           </div>
 
           <div style={{ position: 'relative' }}>
             <img 
-              src="/marble.jpg" 
-              alt="八月限定大理石膠紙座" 
+              src="/applegreen.jpg" 
+              alt="九月限定青蘋果綠膠紙座" 
               style={{
                 width: '100%',
                 aspectRatio: '3 / 4',
@@ -440,10 +424,10 @@ export default function App() {
             />
           </div>
 
-          <div style={{ padding: '12px 14px', backgroundColor: '#FFFAF0', fontSize: '12.5px', color: '#744210', fontWeight: 'bold', lineHeight: '1.5' }}>
-            ✨ 典雅大理石紋理色澤！<b>$68/個</b>（不包防塵蓋，防塵蓋加 <b>+$10</b>）<br />
-            <span style={{ color: '#B7791F', fontSize: '11.5px', fontWeight: '800', marginTop: '4px', display: 'block' }}>
-              💎 註：呢隻物料比起 PLA Basic 更加稀有同具備獨特質感！
+          <div style={{ padding: '12px 14px', backgroundColor: '#F7FAFC', fontSize: '12.5px', color: '#22543D', fontWeight: 'bold', lineHeight: '1.5' }}>
+            ✨ 清爽亮眼青蘋果綠色澤！<b>$68/個</b>（不包防塵蓋，防塵蓋加 <b>+$10</b>）<br />
+            <span style={{ color: '#2F855A', fontSize: '11.5px', fontWeight: '800', marginTop: '4px', display: 'block' }}>
+              🍏 註：九月限定人氣新色，清新吸睛！
             </span>
           </div>
         </div>
@@ -515,7 +499,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '12px' }}>
+              <div style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '12px', marginBottom: '10px' }}>
                 <div style={{ fontSize: '11px', fontWeight: '900', color: '#fff', marginBottom: '8px' }}>
                   🔹 PLA Basic (標準光面物料)
                 </div>
@@ -530,18 +514,27 @@ export default function App() {
                   ))}
                 </div>
               </div>
+
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px' }}>
+                <div style={{ fontSize: '11px', fontWeight: '900', color: '#FFE8A3', marginBottom: '4px' }}>
+                  🏛️ PLA 獨立材料
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                  <ColorShowcaseMini img="/marble.jpg" title="大理石" sub="獨立材料" />
+                </div>
+              </div>
             </div>
           )}
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '15px' }}>
           {[
-            { img: 'pbed', title: '粉紅白吉床', price: '$58' },
-            { img: 'bbed', title: '藍白吉床', price: '$58' },
-            { img: 'twobed', title: '吉床套裝', price: '$110' },
-            { img: 'cm', title: '收聲先', price: '$68' },
-            { img: 'callbell', title: '叫人鐘', price: '$68' },
-            { img: 'callcar', title: '叫人鐘收聲先', price: '$125' },
+            { img: 'pbed', title: '粉紅白吉床', price: '$68' },
+            { img: 'bbed', title: '藍白吉床', price: '$68' },
+            { img: 'twobed', title: '吉床套裝 (粉紅白x1+藍白x1)', price: '$125' },
+            { img: 'cm', title: '收聲先', price: '$78' },
+            { img: 'callbell', title: '叫人鐘', price: '$78' },
+            { img: 'callcar', title: '叫人鐘收聲先', price: '$145' },
             { img: 'sick', title: '不想上班', price: '$28' },
             { img: 'kc', title: '如意吉場', price: '$28' }
           ].map((item, idx) => (
@@ -557,25 +550,29 @@ export default function App() {
       <div ref={orderSectionRef} style={{ width: '100%', maxWidth: '480px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
         <div style={formCardStyle}>
           <Section title="📦 第一區：膠紙座系列" badge="可選平郵" badgeColor="#2E7D32">
+            <div style={{ fontSize: '12px', color: '#4A6B22', fontWeight: 'bold', marginBottom: '12px', backgroundColor: '#F0F7E6', padding: '8px 12px', borderRadius: '10px', border: '1px solid #D2E7B0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>⚙️</span>
+              <span>所有膠紙座旋轉中軸已統一改用白色 PETG 物料</span>
+            </div>
             <Row name="🤍 白色 White ($58)" count={items.tapeWhite} onAdd={() => update('tapeWhite', 1)} onSub={() => update('tapeWhite', -1)} />
             <Row name="🩶 灰色 Grey ($58)" count={items.tapeGrey} onAdd={() => update('tapeGrey', 1)} onSub={() => update('tapeGrey', -1)} />
             
-            {/* 🏛️ 八月限定大理石膠紙座 */}
-            <div style={{ margin: '10px 0', padding: '12px', backgroundColor: '#FFFDF0', border: '2px solid #D69E2E', borderRadius: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+            {/* 🍏 九月限定青蘋果綠膠紙座 */}
+            <div style={{ margin: '10px 0', padding: '12px', backgroundColor: '#F0FFF4', border: '2px solid #38A169', borderRadius: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontSize: '14px', fontWeight: '900', color: '#744210', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>🏛️ 八月限定：大理石膠紙座 ($68)</span>
+                  <div style={{ fontSize: '14px', fontWeight: '900', color: '#22543D', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>🍏 九月限定：青蘋果綠膠紙座 ($68)</span>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#9C4221', fontWeight: 'bold', marginTop: '3px' }}>
+                  <div style={{ fontSize: '11px', color: '#2F855A', fontWeight: 'bold', marginTop: '3px' }}>
                     💡 唔包防塵蓋，防塵蓋加 $10 (於下方選購)<br />
-                    💎 註：呢隻物料比 PLA Basic 更加稀有！
+                    ✨ 註：九月限定人氣新色！
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <button type="button" onClick={() => update('tapeMarble', -1)} className="btn-3d" style={btnStyle}>-</button>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', minWidth: '20px', textAlign: 'center' }}>{items.tapeMarble}</span>
-                  <button type="button" onClick={() => update('tapeMarble', 1)} className="btn-3d" style={btnStyle}>+</button>
+                  <button type="button" onClick={() => update('tapeAppleGreen', -1)} className="btn-3d" style={btnStyle}>-</button>
+                  <span style={{ fontSize: '15px', fontWeight: 'bold', minWidth: '20px', textAlign: 'center' }}>{items.tapeAppleGreen}</span>
+                  <button type="button" onClick={() => update('tapeAppleGreen', 1)} className="btn-3d" style={btnStyle}>+</button>
                 </div>
               </div>
             </div>
@@ -605,14 +602,17 @@ export default function App() {
 
         <div style={formCardStyle}>
           <Section title="🔔 第二區：Clicker 系列" badge="❌ 不設平郵" badgeColor="#dc3545">
-            <Row name="🛎️ 叫人鐘 (正常版本) ($68)" count={items.clickerCallbellNormal} onAdd={() => update('clickerCallbellNormal', 1)} onSub={() => update('clickerCallbellNormal', -1)} />
-            <Row name="🛎️ 叫人鐘 (舉中指版本) ($68)" count={items.clickerCallbellFinger} onAdd={() => update('clickerCallbellFinger', 1)} onSub={() => update('clickerCallbellFinger', -1)} />
-            <Row name="🚑 叫人鐘收聲先 (正常版本) ($125)" count={items.clickerCallcarNormal} onAdd={() => update('clickerCallcarNormal', 1)} onSub={() => update('clickerCallcarNormal', -1)} />
-            <Row name="🚑 叫人鐘收聲先 (舉中指版本) ($125)" count={items.clickerCallcarFinger} onAdd={() => update('clickerCallcarFinger', 1)} onSub={() => update('clickerCallcarFinger', -1)} />
-            <Row name="🌸 粉紅白吉床 ($58)" count={items.clickerLuckyPink} onAdd={() => update('clickerLuckyPink', 1)} onSub={() => update('clickerLuckyPink', -1)} />
-            <Row name="💎 藍白吉床 ($58)" count={items.clickerLuckyBlue} onAdd={() => update('clickerLuckyBlue', 1)} onSub={() => update('clickerLuckyBlue', -1)} />
-            <Row name="✨ 吉床套裝 ($110)" count={items.clickerCombo} onAdd={() => update('clickerCombo', 1)} onSub={() => update('clickerCombo', -1)} />
-            <Row name="🤫 收聲先 ($68)" count={items.clickerShutUp} onAdd={() => update('clickerShutUp', 1)} onSub={() => update('clickerShutUp', -1)} />
+            <Row name="🤫 收聲先 ($78)" count={items.clickerShutUp} onAdd={() => update('clickerShutUp', 1)} onSub={() => update('clickerShutUp', -1)} />
+            <Row name="🛎️ 叫人鐘 (正常版本) ($78)" count={items.clickerCallbellNormal} onAdd={() => update('clickerCallbellNormal', 1)} onSub={() => update('clickerCallbellNormal', -1)} />
+            <Row name="🛎️ 叫人鐘 (舉中指版本) ($78)" count={items.clickerCallbellFinger} onAdd={() => update('clickerCallbellFinger', 1)} onSub={() => update('clickerCallbellFinger', -1)} />
+            <Row name="🌸 粉紅白吉床 ($68)" count={items.clickerLuckyPink} onAdd={() => update('clickerLuckyPink', 1)} onSub={() => update('clickerLuckyPink', -1)} />
+            <Row name="💎 藍白吉床 ($68)" count={items.clickerLuckyBlue} onAdd={() => update('clickerLuckyBlue', 1)} onSub={() => update('clickerLuckyBlue', -1)} />
+            
+            <div style={{ margin: '14px 0 10px 0', borderTop: '2px dashed #e2e8f0' }} />
+
+            <Row name="🚑 叫人鐘收聲先 (正常版本) ($145)" count={items.clickerCallcarNormal} onAdd={() => update('clickerCallcarNormal', 1)} onSub={() => update('clickerCallcarNormal', -1)} />
+            <Row name="🚑 叫人鐘收聲先 (舉中指版本) ($145)" count={items.clickerCallcarFinger} onAdd={() => update('clickerCallcarFinger', 1)} onSub={() => update('clickerCallcarFinger', -1)} />
+            <Row name="✨ 吉床套裝 (含粉紅白吉床x1, 藍白吉床x1) ($125)" count={items.clickerCombo} onAdd={() => update('clickerCombo', 1)} onSub={() => update('clickerCombo', -1)} />
           </Section>
         </div>
 
@@ -659,7 +659,7 @@ export default function App() {
                 </div>
               ) : promoCode.trim() !== '' ? (
                 <div style={{ marginTop: '6px', fontSize: '12px', color: '#dc3545', fontWeight: 'bold' }}>
-                  ❌ 優惠碼無效，請確認是否為全大楷
+                  ❌ 優惠碼無效，請確認格式是否正確
                 </div>
               ) : null}
             </div>
@@ -683,7 +683,39 @@ export default function App() {
       </div>
 
       <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={capNoticeStyle}>📸 請將以下訂單圖及 PayMe 截圖 send 俾店主</div>
+        {/* 📸 醒目落單截圖指引公告 */}
+        <div style={capNoticeStyle}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '8px', fontSize: '17px', fontWeight: '900', color: '#854d0e', textAlign: 'center' }}>
+            <span>📸</span>
+            <span>【重要必睇】點解一定要截圖 send 俾店主？</span>
+            <span>📸</span>
+          </div>
+
+          <div style={{ backgroundColor: '#fff', padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #EAB308', textAlign: 'left', fontSize: '13px', lineHeight: '1.6', color: '#333' }}>
+            <div style={{ color: '#dc2626', fontWeight: '900', marginBottom: '6px', fontSize: '13.5px', display: 'flex', alignItems: 'flex-start', gap: '4px' }}>
+              <span>⚠️</span>
+              <span><b>注意：</b>為保障私隱，本網站為純靜態計算器，<b>絕無儲存任何訂單紀錄及個人資料</b>！</span>
+            </div>
+            <div style={{ fontWeight: 'bold', color: '#444', marginBottom: '4px' }}>
+              所以落單及付款後，請務必完成以下 3 個步驟，店主先可以為你執貨：
+            </div>
+            <div style={{ paddingLeft: '4px', display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12.5px', fontWeight: '700', color: '#1f2937' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 1</span>
+                <span><b>截圖下方「執貨單」全圖</b>（包含地址與所有選購品項）</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 2</span>
+                <span><b>截圖 PayMe 付款成功頁面</b></span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 3</span>
+                <span>將<b>兩張截圖</b>一併 DM Instagram: <a href="https://instagram.com/nurseforgehk" target="_blank" rel="noreferrer" style={{ color: '#D63384', textDecoration: 'underline' }}>@nurseforgehk</a> 安排出貨 📦</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div style={orderDraftStyle}>
           <div style={orderHeaderStyle}>
             <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#77815C' }}>NurseForgeHK 執貨單</h2>
@@ -989,7 +1021,9 @@ export default function App() {
           </div>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', padding: '0 2px' }}>
-            <span style={{ fontSize: '10px', color: '#888', fontWeight: 'bold' }}>📸 記得截圖執貨單 send 俾店主呀！</span>
+            <span style={{ fontSize: '11px', color: '#b91c1c', fontWeight: '900', backgroundColor: '#FEF08A', padding: '2px 6px', borderRadius: '6px', border: '1px solid #EAB308' }}>
+              📸 必做：截圖執貨單+PayMe紀錄 DM 店主 (網站無儲存)
+            </span>
             <span style={{ fontSize: '9px', color: '#aaa' }}>by @nursingmeme_hk</span>
           </div>
         </div>
@@ -1025,7 +1059,7 @@ const bottomTotalCardStyle: any = { backgroundColor: '#F9FAF6', padding: '6px 10
 const clearBtnStyle: any = { padding: '3px 8px', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', backgroundColor: '#fff' };
 const paymeBtnStyle: any = { display: 'block', width: '100%', padding: '10px 12px', backgroundColor: '#FF002B', color: '#fff', textDecoration: 'none', borderRadius: '30px', textAlign: 'center', fontWeight: '900', fontSize: '15px', boxShadow: '0 3px 10px rgba(255, 0, 43, 0.25)' };
 const paymeBtnDisabledStyle: any = { display: 'block', width: '100%', padding: '10px 12px', backgroundColor: '#e0e0e0', color: '#666', borderRadius: '30px', textAlign: 'center', fontWeight: '900', fontSize: '12px', cursor: 'not-allowed' };
-const capNoticeStyle: any = { backgroundColor: '#FFED4A', padding: '10px 20px', borderRadius: '10px', marginBottom: '15px', border: '2px solid #000', textAlign: 'center', fontSize: '16px', fontWeight: '900', color: '#000' };
+const capNoticeStyle: any = { backgroundColor: '#FEF08A', padding: '14px 16px', borderRadius: '16px', marginBottom: '16px', border: '3px solid #CA8A04', textAlign: 'center', width: '95%', maxWidth: '380px', boxShadow: '0 6px 20px rgba(0,0,0,0.15)', color: '#000' };
 const orderDraftStyle: any = { backgroundColor: '#fff', padding: '15px', width: '95%', maxWidth: '380px', border: '4px solid #77815C', color: '#000' };
 const orderHeaderStyle: any = { borderBottom: '2px solid #77815C', paddingBottom: '8px', marginBottom: '10px', textAlign: 'center' };
 const orderInfoBoxStyle: any = { fontSize: '12px', marginBottom: '10px', lineHeight: '1.4', backgroundColor: '#f9f9f9', padding: '10px', borderRadius: '8px' };
