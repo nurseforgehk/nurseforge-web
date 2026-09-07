@@ -335,6 +335,80 @@ export default function App() {
       </div>
 
       <div style={{ maxWidth: '500px', margin: '0 auto 20px auto' }}>
+        {/* ✈️ 店主離港及發貨安排公告 */}
+        <div style={{
+          backgroundColor: '#FFFBEB',
+          border: '2px solid #F59E0B',
+          borderRadius: '16px',
+          padding: '14px 16px',
+          marginBottom: '14px',
+          boxShadow: '0 4px 15px rgba(245, 158, 11, 0.15)',
+          color: '#000'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '8px',
+            borderBottom: '1.5px solid #FDE68A',
+            paddingBottom: '6px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '22px' }}>✈️</span>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '900', color: '#92400E' }}>
+                【重要】店主離港及出貨安排公告
+              </h3>
+            </div>
+            <span style={{
+              fontSize: '11px',
+              backgroundColor: '#F59E0B',
+              color: '#fff',
+              padding: '2px 8px',
+              borderRadius: '8px',
+              fontWeight: '900'
+            }}>
+              出貨須知
+            </span>
+          </div>
+
+          <div style={{ fontSize: '12.5px', color: '#78350F', lineHeight: '1.6', fontWeight: '600', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {/* 離港時段 */}
+            <div style={{ backgroundColor: '#FEF3C7', padding: '8px 10px', borderRadius: '10px', border: '1px solid #FCD34D' }}>
+              <div style={{ fontWeight: '900', color: '#92400E', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span>🧳</span> <b>店主不在香港時段：</b>
+              </div>
+              <ul style={{ margin: '0', paddingLeft: '20px', fontSize: '12px' }}>
+                <li><b>第一階段：</b>9 月 13 日 至 9 月 16 日</li>
+                <li><b>第二階段：</b>9 月 18 日 至 9 月 25 日</li>
+              </ul>
+              <div style={{ fontSize: '11px', color: '#B45309', marginTop: '3px', fontWeight: 'bold' }}>
+                *(9 月 17 日為短暫回港集中出貨日)*
+              </div>
+            </div>
+
+            {/* 出貨安排 */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ fontWeight: '900', color: '#92400E', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span>📦</span> <b>訂單出貨進度安排：</b>
+              </div>
+
+              <div style={{ backgroundColor: '#fff', padding: '8px 10px', borderRadius: '8px', border: '1px solid #FDE68A', fontSize: '12px' }}>
+                <span style={{ color: '#D97706', fontWeight: '900' }}>① 9 月 8 日 至 16 日收到之訂單：</span><br />
+                店主會<b>盡量於 9 月 17 日集中處理及寄出</b>；未能及時趕及之個別訂單，將順延至 <b>9 月 26 日起</b> 接續處理。
+              </div>
+
+              <div style={{ backgroundColor: '#fff', padding: '8px 10px', borderRadius: '8px', border: '1px solid #FDE68A', fontSize: '12px' }}>
+                <span style={{ color: '#D97706', fontWeight: '900' }}>② 9 月 18 日 至 25 日收到之訂單：</span><br />
+                所有訂單將統一於 <b>9 月 26 日起</b> 按付款先後次序陸續製作及寄出。
+              </div>
+            </div>
+
+            <div style={{ fontSize: '11.5px', color: '#6B7280', borderTop: '1px dashed #FCD34D', paddingTop: '6px', textAlign: 'center' }}>
+              💖 網站期間<b>照常接受下單</b>！如有急單敬請預早預留時間下單，感謝大家體諒同耐心等候！
+            </div>
+          </div>
+        </div>
+
         {/* 🏬 實體體驗店獨立公告卡片 */}
         <div style={{ backgroundColor: '#FFF0F5', border: '1.5px solid #FFB6C1', borderRadius: '14px', padding: '12px 14px', marginBottom: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', color: '#000' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', borderBottom: '1.5px solid #FFC0CB', paddingBottom: '4px' }}>
