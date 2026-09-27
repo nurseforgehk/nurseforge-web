@@ -25,7 +25,7 @@ export default function App() {
     tapeWhite: 0, tapeGrey: 0, tapeAppleGreen: 0, tapeMarble: 0,
     tapeBlack: 0, tapeRed: 0, tapeYellow: 0, tapeOrange: 0, tapePurple: 0, tapeGreen: 0,
     tapePink: 0, tapeDesertYellow: 0, tapeOceanBlue: 0, tapeIceBlue: 0, 
-    coverChiikawa: 0, coverUsagi: 0, coverHachiware: 0, coverAddon: 0, coverSingle: 0, 
+    coverChiikawa: 0, coverUsagi: 0, coverHachiware: 0, coverMiffyEar: 0, coverMiffy: 0, coverAddon: 0, coverSingle: 0, 
     keyringNoWork: 0, keyringLucky: 0,
     clickerLuckyPink: 0, clickerLuckyBlue: 0, clickerShutUp: 0, clickerCombo: 0, 
     clickerCallbellNormal: 0, clickerCallbellFinger: 0, 
@@ -159,7 +159,7 @@ export default function App() {
   
   const totalTapeCount = tapeColorQuantities.reduce((acc, curr) => acc + curr, 0);
   const distinctColorsCount = tapeColorQuantities.filter(qty => qty > 0).length;
-  const totalCoverCount = items.coverChiikawa + items.coverUsagi + items.coverHachiware + items.coverAddon + items.coverSingle;
+  const totalCoverCount = items.coverChiikawa + items.coverUsagi + items.coverHachiware + items.coverMiffyEar + items.coverMiffy + items.coverAddon + items.coverSingle;
   const showCoverRemarkNotice = distinctColorsCount >= 2 && totalCoverCount > 0 && totalCoverCount !== totalTapeCount;
 
   const isFormValid = agreed && shipping.name.trim() !== '' && shipping.phone.trim() !== '' && shipping.igName.trim() !== '' && shipping.address.trim() !== '';
@@ -168,7 +168,7 @@ export default function App() {
     { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 },
     { qty: items.tapeAppleGreen, p: 68 },
     { qty: items.tapeMarble + items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue + items.tapeIceBlue, p: 78 },
-    { qty: items.coverChiikawa + items.coverUsagi + items.coverHachiware, p: 30 }, 
+    { qty: items.coverChiikawa + items.coverUsagi + items.coverHachiware + items.coverMiffyEar + items.coverMiffy, p: 30 }, 
     { qty: items.coverAddon, p: 10 }, { qty: items.coverSingle, p: 15 },
     { qty: items.clickerCallbellNormal + items.clickerCallbellFinger, p: 78 }, 
     { qty: items.clickerCallcarNormal + items.clickerCallcarFinger, p: 145 },
@@ -196,11 +196,13 @@ export default function App() {
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
     { name: '九月限定青蘋果綠膠紙座', qty: items.tapeAppleGreen, price: 68 },
     ...customColors.map(c => ({ name: c.n + '膠紙座', qty: (items as any)[`tape${c.k}`], price: 78 })),
+    { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10 },
+    { name: '獨立防塵蓋', qty: items.coverSingle, price: 15 },
     { name: 'Chiikawa防塵蓋', qty: items.coverChiikawa, price: 30 },
     { name: 'Usagi防塵蓋', qty: items.coverUsagi, price: 30 },
     { name: 'Hachiware防塵蓋', qty: items.coverHachiware, price: 30 },
-    { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10 },
-    { name: '獨立防塵蓋', qty: items.coverSingle, price: 15 },
+    { name: 'Miffy防塵蓋 (有耳朵版本)', qty: items.coverMiffyEar, price: 30 },
+    { name: '近鏡Miffy防塵蓋', qty: items.coverMiffy, price: 30 },
     { name: '叫人鐘 (正常版本)', qty: items.clickerCallbellNormal, price: 78 },
     { name: '叫人鐘 (舉中指版本)', qty: items.clickerCallbellFinger, price: 78 },
     { name: '叫人鐘收聲先 (正常版本)', qty: items.clickerCallcarNormal, price: 145 },
@@ -439,10 +441,16 @@ export default function App() {
         </div>
 
         {/* 三個特別防塵蓋 */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '15px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '10px' }}>
             <ShowcaseCardMini img="/chi.jpg" title="Chiikawa防塵蓋" price="$30" />
             <ShowcaseCardMini img="/us.jpg" title="Usagi防塵蓋" price="$30" />
             <ShowcaseCardMini img="/ha.jpg" title="Hachiware防塵蓋" price="$30" />
+        </div>
+
+        {/* Miffy 特別防塵蓋 */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '15px' }}>
+            <ShowcaseCardMini img="/miffyear.jpg" title="Miffy防塵蓋 (有耳朵版本)" price="$30" />
+            <ShowcaseCardMini img="/miffy.jpg" title="近鏡Miffy防塵蓋" price="$30" />
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
@@ -585,11 +593,16 @@ export default function App() {
               </div>
             </div>
             <div style={{ marginTop: '20px', borderTop: '2px dashed #eee', paddingTop: '15px' }}>
+              <p style={{ margin: '0 0 6px 0', fontSize: '14px', fontWeight: '900', color: '#77815C' }}>🛡️ 標準防塵蓋加購：</p>
+              <Row name="隨座加購防塵蓋 $10" count={items.coverAddon} onAdd={() => update('coverAddon', 1)} onSub={() => update('coverAddon', -1)} />
+              <Row name="補買防塵蓋 $15" count={items.coverSingle} onAdd={() => update('coverSingle', 1)} onSub={() => update('coverSingle', -1)} />
+
+              <p style={{ margin: '16px 0 6px 0', fontSize: '14px', fontWeight: '900', color: '#77815C' }}>✨ 特別款式防塵蓋：</p>
               <Row name="🐹 Chiikawa防塵蓋 $30" count={items.coverChiikawa} onAdd={() => update('coverChiikawa', 1)} onSub={() => update('coverChiikawa', -1)} />
               <Row name="🐰 Usagi防塵蓋 $30" count={items.coverUsagi} onAdd={() => update('coverUsagi', 1)} onSub={() => update('coverUsagi', -1)} />
               <Row name="🐱 Hachiware防塵蓋 $30" count={items.coverHachiware} onAdd={() => update('coverHachiware', 1)} onSub={() => update('coverHachiware', -1)} />
-              <Row name="隨座加購防塵蓋 $10" count={items.coverAddon} onAdd={() => update('coverAddon', 1)} onSub={() => update('coverAddon', -1)} />
-              <Row name="補買防塵蓋 $15" count={items.coverSingle} onAdd={() => update('coverSingle', 1)} onSub={() => update('coverSingle', -1)} />
+              <Row name="🐰 Miffy防塵蓋 (有耳朵版本) $30" count={items.coverMiffyEar} onAdd={() => update('coverMiffyEar', 1)} onSub={() => update('coverMiffyEar', -1)} />
+              <Row name="🐰 近鏡Miffy防塵蓋 $30" count={items.coverMiffy} onAdd={() => update('coverMiffy', 1)} onSub={() => update('coverMiffy', -1)} />
               
               {showCoverRemarkNotice && (
                 <div style={{ marginTop: '12px', padding: '10px 12px', backgroundColor: '#FFF9E6', border: '1px dashed #FFCC00', borderRadius: '10px', fontSize: '12px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5' }}>
