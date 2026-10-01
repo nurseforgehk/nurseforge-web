@@ -166,8 +166,7 @@ export default function App() {
 
   const rawTotal = [
     { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 },
-    { qty: items.tapeAppleGreen, p: 68 },
-    { qty: items.tapeMarble + items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue + items.tapeIceBlue, p: 78 },
+    { qty: items.tapeAppleGreen + items.tapeMarble + items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue + items.tapeIceBlue, p: 78 },
     { qty: items.coverChiikawa + items.coverUsagi + items.coverHachiware + items.coverMiffyEar + items.coverMiffy, p: 30 }, 
     { qty: items.coverAddon, p: 10 }, { qty: items.coverSingle, p: 15 },
     { qty: items.clickerCallbellNormal + items.clickerCallbellFinger, p: 78 }, 
@@ -188,13 +187,13 @@ export default function App() {
     { k: 'Purple', n: '💜 紫色' }, { k: 'Green', n: '💚 綠色' }, 
     { k: 'Pink', n: '🌸 櫻花粉' }, { k: 'DesertYellow', n: '🏜️ 沙漠黃 (Usagi黃)' },
     { k: 'OceanBlue', n: '🌊 海洋藍' },
-    { k: 'IceBlue', n: '❄️ 冰藍' }
+    { k: 'IceBlue', n: '❄️ 冰藍' },
+    { k: 'AppleGreen', n: '🍏 青蘋果綠' }
   ];
 
   const activeProducts: any[] = [
     { name: '白色膠紙座', qty: items.tapeWhite, price: 58 },
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
-    { name: '九月限定青蘋果綠膠紙座', qty: items.tapeAppleGreen, price: 68 },
     ...customColors.map(c => ({ name: c.n + '膠紙座', qty: (items as any)[`tape${c.k}`], price: 78 })),
     { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10 },
     { name: '獨立防塵蓋', qty: items.coverSingle, price: 15 },
@@ -384,56 +383,6 @@ export default function App() {
 
         <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>產品預覽 (點擊圖片可放大/縮小)</h2>
 
-        {/* 🍏 九月限定顏色大圖展示 */}
-        <div style={{
-          backgroundColor: '#fff',
-          borderRadius: '20px',
-          overflow: 'hidden',
-          boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
-          border: '3px solid #38A169',
-          marginBottom: '15px',
-          color: '#000'
-        }}>
-          <div style={{
-            backgroundColor: '#F0FFF4',
-            padding: '10px 14px',
-            borderBottom: '2px solid #38A169',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '18px' }}>🍏</span>
-              <span style={{ fontSize: '15px', fontWeight: '900', color: '#22543D' }}>
-                【九月限定顏色】青蘋果綠膠紙座
-              </span>
-            </div>
-            <span style={{ fontSize: '12px', backgroundColor: '#38A169', color: '#fff', padding: '2px 8px', borderRadius: '10px', fontWeight: '900' }}>
-              $68 / 個
-            </span>
-          </div>
-
-          <div style={{ position: 'relative' }}>
-            <img 
-              src="/applegreen.jpg" 
-              alt="九月限定青蘋果綠膠紙座" 
-              style={{
-                width: '100%',
-                aspectRatio: '3 / 4',
-                objectFit: 'cover',
-                display: 'block'
-              }} 
-            />
-          </div>
-
-          <div style={{ padding: '12px 14px', backgroundColor: '#F7FAFC', fontSize: '12.5px', color: '#22543D', fontWeight: 'bold', lineHeight: '1.5' }}>
-            ✨ 清爽亮眼青蘋果綠色澤！<b>$68/個</b>（不包防塵蓋，防塵蓋加 <b>+$10</b>）<br />
-            <span style={{ color: '#2F855A', fontSize: '11.5px', fontWeight: '800', marginTop: '4px', display: 'block' }}>
-              🍏 註：九月限定人氣新色，清新吸睛！
-            </span>
-          </div>
-        </div>
-
         {/* 白色及灰色膠紙座 */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '10px' }}>
             <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
@@ -500,7 +449,8 @@ export default function App() {
                     { img: 'pink', name: '櫻花粉' },
                     { img: 'seablue', name: '海洋藍' },
                     { img: 'iceblue', name: '冰藍' },
-                    { img: 'usagiyellow', name: '沙漠黃 (Usagi黃)' }
+                    { img: 'usagiyellow', name: '沙漠黃 (Usagi黃)' },
+                    { img: 'applegreen', name: '青蘋果綠' }
                   ].map((color, idx) => (
                     <ColorShowcaseMini key={idx} img={`/${color.img}.jpg`} title={color.name} sub="白底" />
                   ))}
@@ -564,26 +514,6 @@ export default function App() {
             </div>
             <Row name="🤍 白色 White ($58)" count={items.tapeWhite} onAdd={() => update('tapeWhite', 1)} onSub={() => update('tapeWhite', -1)} />
             <Row name="🩶 灰色 Grey ($58)" count={items.tapeGrey} onAdd={() => update('tapeGrey', 1)} onSub={() => update('tapeGrey', -1)} />
-            
-            {/* 🍏 九月限定青蘋果綠膠紙座 */}
-            <div style={{ margin: '10px 0', padding: '12px', backgroundColor: '#F0FFF4', border: '2px solid #38A169', borderRadius: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: '900', color: '#22543D', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>🍏 九月限定：青蘋果綠膠紙座 ($68)</span>
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#2F855A', fontWeight: 'bold', marginTop: '3px' }}>
-                    💡 唔包防塵蓋，防塵蓋加 $10 (於下方選購)<br />
-                    ✨ 註：九月限定人氣新色！
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <button type="button" onClick={() => update('tapeAppleGreen', -1)} className="btn-3d" style={btnStyle}>-</button>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', minWidth: '20px', textAlign: 'center' }}>{items.tapeAppleGreen}</span>
-                  <button type="button" onClick={() => update('tapeAppleGreen', 1)} className="btn-3d" style={btnStyle}>+</button>
-                </div>
-              </div>
-            </div>
             <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '15px' }}>
               <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#77815C', marginBottom: '10px' }}>🎨 其他訂造顏色 ($78):</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
