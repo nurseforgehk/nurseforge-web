@@ -22,6 +22,7 @@ export default function App() {
   ];
 
   const initialItems = {
+    keyringEmo: 0,
     tapeWhite: 0, tapeGrey: 0, tapeAppleGreen: 0, tapeMarble: 0,
     tapeBlack: 0, tapeRed: 0, tapeYellow: 0, tapeOrange: 0, tapePurple: 0, tapeGreen: 0,
     tapePink: 0, tapeDesertYellow: 0, tapeOceanBlue: 0, tapeIceBlue: 0, 
@@ -165,6 +166,7 @@ export default function App() {
   const isFormValid = agreed && shipping.name.trim() !== '' && shipping.phone.trim() !== '' && shipping.igName.trim() !== '' && shipping.address.trim() !== '';
 
   const rawTotal = [
+    { qty: items.keyringEmo, p: 38 },
     { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 },
     { qty: items.tapeAppleGreen + items.tapeMarble + items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue + items.tapeIceBlue, p: 78 },
     { qty: items.coverChiikawa + items.coverUsagi + items.coverHachiware + items.coverMiffyEar + items.coverMiffy, p: 30 }, 
@@ -192,6 +194,13 @@ export default function App() {
   ];
 
   const activeProducts: any[] = [
+    ...(items.keyringEmo > 0 ? [{
+      name: items.keyringEmo >= 5 
+        ? `「emo人員」鎖匙扣 (買5送1，送${Math.floor(items.keyringEmo / 5)}個，實出${items.keyringEmo + Math.floor(items.keyringEmo / 5)}個)` 
+        : '「emo人員」鎖匙扣',
+      qty: items.keyringEmo,
+      price: 38
+    }] : []),
     { name: '白色膠紙座', qty: items.tapeWhite, price: 58 },
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
     ...customColors.map(c => ({ name: c.n + '膠紙座', qty: (items as any)[`tape${c.k}`], price: 78 })),
@@ -367,7 +376,7 @@ export default function App() {
               <div style={{ fontSize: '12.5px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <div>1. ✨ <b>全店滿 $200 即包順豐站/智能櫃運費！</b></div>
                 
-                <div>2. 🔥 <b>新貨上架：</b>Call Bell Clicker 鎖匙扣登場，讓你隨時享受亂撳 Call Bell 嘅快感！</div>
+                <div>2. 🔥 <b>新貨上架：</b>「emo人員」鎖匙扣登場！買俾身邊成日都 emo 嘅 lo best 啦，一人一個，一齊 emo！🖤（新產品限定：買五送一！）</div>
                 
                 <div style={{ paddingTop: '5px', borderTop: '1px dashed #E6C200' }}>
                   3. 📦 <b>膠紙座出貨說明：</b>
@@ -382,6 +391,66 @@ export default function App() {
         </div>
 
         <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>產品預覽 (點擊圖片可放大/縮小)</h2>
+
+        {/* 🖤 最新產品：「emo人員」鎖匙扣大圖展示 */}
+        <div style={{
+          backgroundColor: '#fff',
+          borderRadius: '20px',
+          overflow: 'hidden',
+          boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
+          border: '3px solid #111827',
+          marginBottom: '15px',
+          color: '#000'
+        }}>
+          <div style={{
+            backgroundColor: '#111827',
+            padding: '10px 14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '18px' }}>🖤</span>
+              <span style={{ fontSize: '15px', fontWeight: '900', color: '#fff' }}>
+                【最新登場】「emo人員」鎖匙扣
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '11px', backgroundColor: '#dc2626', color: '#fff', padding: '2px 7px', borderRadius: '10px', fontWeight: '900' }}>
+                新登場 🎁 買5送1
+              </span>
+              <span style={{ fontSize: '12px', backgroundColor: '#374151', color: '#fff', padding: '2px 8px', borderRadius: '10px', fontWeight: '900' }}>
+                $38 / 個
+              </span>
+            </div>
+          </div>
+
+          <div style={{ position: 'relative', overflow: 'hidden' }}>
+            <img 
+              src="/emo.jpg" 
+              alt="「emo人員」鎖匙扣" 
+              style={{
+                width: '100%',
+                aspectRatio: '4 / 3',
+                objectFit: 'cover',
+                display: 'block'
+              }} 
+            />
+          </div>
+
+          <div style={{ padding: '12px 14px', backgroundColor: '#F9FAFB', fontSize: '12.5px', color: '#1F2937', fontWeight: 'bold', lineHeight: '1.6' }}>
+            <div>🖤 <b>買俾身邊成日都 emo 嘅 lo best 啦，一人一個，一齊 emo！</b></div>
+            <div style={{ color: '#374151', fontSize: '12px', marginTop: '3px' }}>
+              📏 <b>尺寸：</b>約 3cm × 6cm
+            </div>
+            <div style={{ color: '#4B5563', fontSize: '12px', marginTop: '2px' }}>
+              ✉️ 產品夠細可以擺入去本地平郵信封包郵（平郵冇追蹤功能，寄失自負）
+            </div>
+            <div style={{ color: '#B91C1C', fontSize: '12px', fontWeight: '900', marginTop: '4px', backgroundColor: '#FEF2F2', padding: '6px 10px', borderRadius: '8px', border: '1px solid #FECACA' }}>
+              🎉 新產品限定特惠：<b>買五送一</b>（買 5 個實出 6 個，如此類推）！
+            </div>
+          </div>
+        </div>
 
         {/* 白色及灰色膠紙座 */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '10px' }}>
@@ -506,6 +575,74 @@ export default function App() {
       </div>
 
       <div ref={orderSectionRef} style={{ width: '100%', maxWidth: '480px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
+        {/* 🖤 最新商品：「emo人員」鎖匙扣 */}
+        <div style={formCardStyle}>
+          <Section title="🖤 最新商品：「emo人員」鎖匙扣" badge="買5送1" badgeColor="#111827">
+            <div style={{ fontSize: '12px', color: '#374151', fontWeight: 'bold', marginBottom: '12px', backgroundColor: '#F3F4F6', padding: '10px 12px', borderRadius: '12px', border: '1px solid #E5E7EB', lineHeight: '1.5' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#111827', fontWeight: '900', fontSize: '13px', marginBottom: '3px' }}>
+                <span>🖤</span>
+                <span>買俾身邊成日都 emo 嘅 lo best 啦，一人一個，一齊 emo！</span>
+              </div>
+              <div style={{ color: '#4B5563' }}>
+                📏 <b>尺寸：</b>約 3cm × 6cm<br />
+                ✉️ 產品夠細可選平郵包郵（平郵冇追蹤功能，寄失自負）<br />
+                🎁 <b>新產品限定特惠：</b>買 5 送 1（買 5 個實出 6 個，買 10 個實出 12 個）！
+              </div>
+            </div>
+
+            <div style={{ padding: '6px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '15px', fontWeight: '900', color: '#111827' }}>
+                    🖤「emo人員」鎖匙扣 ($38)
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: 'bold', marginTop: '2px' }}>
+                    買滿 5 個自動送 1 個
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <button type="button" onClick={() => update('keyringEmo', -1)} className="btn-3d" style={btnStyle}>-</button>
+                  <span style={{ fontSize: '16px', fontWeight: '900', minWidth: '24px', textAlign: 'center' }}>{items.keyringEmo}</span>
+                  <button type="button" onClick={() => update('keyringEmo', 1)} className="btn-3d" style={btnStyle}>+</button>
+                </div>
+              </div>
+
+              {/* 快捷加購 5 個按鈕 */}
+              {items.keyringEmo === 0 && (
+                <button
+                  type="button"
+                  onClick={() => setItems(p => ({ ...p, keyringEmo: 5 }))}
+                  style={{
+                    marginTop: '10px',
+                    width: '100%',
+                    padding: '9px 12px',
+                    backgroundColor: '#FEF2F2',
+                    border: '1.5px dashed #EF4444',
+                    borderRadius: '10px',
+                    color: '#B91C1C',
+                    fontSize: '12px',
+                    fontWeight: '900',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  ⚡ 一鍵加購 5 個（$190 享買五送一優惠）
+                </button>
+              )}
+
+              {/* 買 5 送 1 提示盒 */}
+              {items.keyringEmo >= 5 && (
+                <div style={{ marginTop: '10px', padding: '8px 12px', backgroundColor: '#ECFDF5', border: '1.5px solid #10B981', borderRadius: '10px', fontSize: '12px', color: '#065F46', fontWeight: 'bold', lineHeight: '1.5' }}>
+                  🎉 <b>已享「買五送一」！</b>你選購了 <b>{items.keyringEmo}</b> 個，店主出貨將自動附送 <b>+{Math.floor(items.keyringEmo / 5)}</b> 個（共寄出 <b>{items.keyringEmo + Math.floor(items.keyringEmo / 5)}</b> 個）！
+                </div>
+              )}
+            </div>
+          </Section>
+        </div>
+
         <div style={formCardStyle}>
           <Section title="📦 第一區：膠紙座系列" badge="可選平郵" badgeColor="#2E7D32">
             <div style={{ fontSize: '12px', color: '#4A6B22', fontWeight: 'bold', marginBottom: '12px', backgroundColor: '#F0F7E6', padding: '8px 12px', borderRadius: '10px', border: '1px solid #D2E7B0', display: 'flex', alignItems: 'center', gap: '6px' }}>
