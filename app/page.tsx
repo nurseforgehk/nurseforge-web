@@ -161,6 +161,45 @@ function copyPlainText(text: string) {
   return ok;
 }
 
+const PRODUCT_CODES = [
+  { group: '膠紙座', name: '白色膠紙座', code: '白色', price: 58 },
+  { group: '膠紙座', name: '灰色膠紙座', code: '灰色', price: 58 },
+  { group: '膠紙座', name: '大理石膠紙座', code: '大理石', price: 78 },
+  { group: '膠紙座', name: '黑色膠紙座', code: '黑色', price: 78 },
+  { group: '膠紙座', name: '深紅膠紙座', code: '深紅', price: 78 },
+  { group: '膠紙座', name: '暖黃膠紙座', code: '暖黃', price: 78 },
+  { group: '膠紙座', name: '橙色膠紙座', code: '橙色', price: 78 },
+  { group: '膠紙座', name: '紫色膠紙座', code: '紫色', price: 78 },
+  { group: '膠紙座', name: '綠色膠紙座', code: '綠色', price: 78 },
+  { group: '膠紙座', name: '櫻花粉膠紙座', code: '櫻花粉', price: 78 },
+  { group: '膠紙座', name: '沙漠黃膠紙座', code: '沙漠黃', price: 78 },
+  { group: '膠紙座', name: '海洋藍膠紙座', code: '海洋藍', price: 78 },
+  { group: '膠紙座', name: '冰藍膠紙座', code: '冰藍', price: 78 },
+  { group: '膠紙座', name: '青苹果绿膠紙座', code: '青苹果绿', price: 78 },
+  { group: '防塵蓋', name: '隨座加購防塵蓋', code: 'C', price: 10 },
+  { group: '防塵蓋', name: '補買防塵蓋', code: 'C補', price: 15 },
+  { group: '防塵蓋', name: 'Chiikawa防塵蓋', code: 'Chi', price: 30 },
+  { group: '防塵蓋', name: 'Usagi防塵蓋', code: 'US', price: 30 },
+  { group: '防塵蓋', name: 'Hachiware防塵蓋', code: 'HA', price: 30 },
+  { group: '防塵蓋', name: 'Miffy防塵蓋 (有耳朵版本)', code: 'Me', price: 30 },
+  { group: '防塵蓋', name: '近鏡Miffy防塵蓋', code: 'Mc', price: 30 },
+  { group: 'Clicker', name: '叫人鐘 (正常版本)', code: 'CB正常', price: 78 },
+  { group: 'Clicker', name: '叫人鐘 (舉中指版本)', code: 'CB中指', price: 78 },
+  { group: 'Clicker', name: '叫人鐘收聲先 (正常版本)', code: 'CBCM正常', price: 145 },
+  { group: 'Clicker', name: '叫人鐘收聲先 (舉中指版本)', code: 'CBCM中指', price: 145 },
+  { group: 'Clicker', name: '粉紅白吉床', code: 'PW', price: 68 },
+  { group: 'Clicker', name: '藍白吉床', code: 'BW', price: 68 },
+  { group: 'Clicker', name: '吉床套裝', code: 'BED', price: 125 },
+  { group: 'Clicker', name: '收聲先', code: 'CM', price: 78 },
+  { group: '鎖匙扣', name: '「emo人員」鎖匙扣', code: 'EMO', price: 38 },
+  { group: '鎖匙扣', name: '不想上班鎖匙扣', code: 'SL', price: 28 },
+  { group: '鎖匙扣', name: '如意吉場鎖匙扣', code: 'KC', price: 28 },
+];
+
+function productCodeText() {
+  return ['貨品\t代碼\t價錢', ...PRODUCT_CODES.map((item) => `${item.name}\t${item.code}\t$${item.price}`)].join('\n');
+}
+
 export default function App() {
   const [agreed, setAgreed] = useState(false);
   const [orderId, setOrderId] = useState(''); 
@@ -170,6 +209,8 @@ export default function App() {
   const [showFireworks, setShowFireworks] = useState(false);
   const [showColorPreview, setShowColorPreview] = useState(false);
   const [showIvCalc, setShowIvCalc] = useState(false);
+  const [showCodes, setShowCodes] = useState(false);
+  const [codeCopyState, setCodeCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const [photoPreview, setPhotoPreview] = useState<{ src: string; title: string } | null>(null);
   const [draftReady, setDraftReady] = useState(false);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
@@ -695,6 +736,13 @@ export default function App() {
 
       <button type="button" onClick={() => setShowIvCalc(true)} style={fabLeftStyle}>
         💧 點滴計算器
+      </button>
+      <button
+        type="button"
+        onClick={() => { setCodeCopyState('idle'); setShowCodes(true); }}
+        style={fabRightStyle}
+      >
+        貨品代碼
       </button>
 
       <div style={{ textAlign: 'center', marginBottom: '20px', color: '#fff', paddingTop: '50px' }}>
@@ -1439,6 +1487,53 @@ export default function App() {
           </div>
         </div>
       </div>
+      {showCodes && (
+        <div onClick={() => setShowCodes(false)} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(17,17,17,0.62)', zIndex: 2600, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '28px 12px', overflowY: 'auto' }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: '480px', backgroundColor: '#fff', borderRadius: '24px', padding: '20px 16px', color: '#111', position: 'relative' }}>
+            <button
+              type="button"
+              aria-label="關閉貨品代碼"
+              onClick={() => setShowCodes(false)}
+              style={{ position: 'absolute', top: '12px', right: '12px', width: '36px', height: '36px', borderRadius: '50%', border: '2px solid #111', backgroundColor: '#fff', color: '#111', fontSize: '22px', fontWeight: '900', lineHeight: 1, cursor: 'pointer' }}
+            >
+              ×
+            </button>
+            <h3 style={{ margin: '0 36px 12px 0', fontSize: '18px', fontWeight: '900', color: '#77815C' }}>貨品代碼</h3>
+            <button
+              type="button"
+              onClick={() => {
+                const text = productCodeText();
+                const legacyOk = copyPlainText(text);
+                const finish = (ok: boolean) => setCodeCopyState(ok ? 'copied' : 'failed');
+                if (navigator.clipboard?.writeText) {
+                  navigator.clipboard.writeText(text).then(() => finish(true)).catch(() => finish(legacyOk));
+                } else {
+                  finish(legacyOk);
+                }
+              }}
+              style={{ display: 'block', width: '100%', marginBottom: '12px', padding: '12px', border: 'none', borderRadius: '30px', backgroundColor: '#111', color: '#fff', fontWeight: 900, fontSize: '15px', cursor: 'pointer' }}
+            >
+              {codeCopyState === 'copied' ? '已複製全部代碼' : '一鍵複製全部代碼'}
+            </button>
+            {codeCopyState === 'failed' && (
+              <textarea readOnly value={productCodeText()} style={{ width: '100%', height: '120px', marginBottom: '12px', fontSize: '12px', padding: '8px', borderRadius: '8px', border: '1px solid #ccc' }} />
+            )}
+            {PRODUCT_CODES.map((item, index) => {
+              const showGroup = index === 0 || item.group !== PRODUCT_CODES[index - 1].group;
+              return (
+                <div key={item.name}>
+                  {showGroup && <div style={{ margin: index === 0 ? '0 0 6px' : '12px 0 6px', fontSize: '13px', fontWeight: '900', color: '#77815C' }}>{item.group}</div>}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '8px', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid #eee', fontSize: '13px' }}>
+                    <span style={{ fontWeight: '700' }}>{item.name}</span>
+                    <span style={{ fontWeight: '900', color: '#111' }}>{item.code}</span>
+                    <span style={{ fontWeight: '900', color: '#77815C', minWidth: '42px', textAlign: 'right' }}>${item.price}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1446,6 +1541,7 @@ export default function App() {
 // STYLES
 const announcementStyle: any = { backgroundColor: '#FFF9E6', border: '1.5px solid #FFCC00', borderRadius: '14px', padding: '12px 14px', marginBottom: '16px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', color: '#000' };
 const fabLeftStyle: any = { position: 'absolute', left: '10px', top: '12px', padding: '10px 12px', borderRadius: '20px', backgroundColor: '#fff', color: '#DD6B20', fontWeight: '900', border: '2.5px solid #DD6B20', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1100, fontSize: '11px', cursor: 'pointer' };
+const fabRightStyle: any = { position: 'absolute', right: '10px', top: '12px', padding: '10px 12px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '2.5px solid #77815C', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1100, fontSize: '11px', cursor: 'pointer' };
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
 
