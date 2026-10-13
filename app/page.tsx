@@ -6,6 +6,107 @@ let openPhotoPreview = (_src: string, _title: string) => {};
 const ORDER_DRAFT_KEY = 'nurseforge-order-draft';
 const SHIP_METHODS = ['post', 'sf_station', 'sf_locker', 'sf_store', 'sf_direct'];
 
+const TAPE_COLORS = [
+  { key: 'tapeWhite', label: '白色', swatch: '#ffffff' },
+  { key: 'tapeGrey', label: '灰色', swatch: '#9ca3af' },
+  { key: 'tapeBlack', label: '黑色', swatch: '#111111' },
+  { key: 'tapeRed', label: '深紅', swatch: '#dc2626' },
+  { key: 'tapeYellow', label: '暖黃', swatch: '#f59e0b' },
+  { key: 'tapeOrange', label: '橙色', swatch: '#f97316' },
+  { key: 'tapePurple', label: '紫色', swatch: '#a855f7' },
+  { key: 'tapeGreen', label: '綠色', swatch: '#22c55e' },
+  { key: 'tapePink', label: '櫻花粉', swatch: '#f472b6' },
+  { key: 'tapeDesertYellow', label: '沙漠黃', swatch: '#eab308' },
+  { key: 'tapeOceanBlue', label: '海洋藍', swatch: '#38bdf8' },
+  { key: 'tapeIceBlue', label: '冰藍', swatch: '#7dd3fc' },
+  { key: 'tapeAppleGreen', label: '青苹果绿', swatch: '#84cc16' },
+  { key: 'tapeMarble', label: '大理石', swatch: '#d6d3d1' },
+];
+
+function coverSum(map: Record<string, number> | null | undefined) {
+  if (!map) return 0;
+  return Object.values(map).reduce((sum, qty) => sum + qty, 0);
+}
+
+function sameCoverMap(a: Record<string, number>, b: Record<string, number>) {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+  for (const key of keys) {
+    if ((a[key] || 0) !== (b[key] || 0)) return false;
+  }
+  return true;
+}
+
+function defaultCoverColors(sourceItems: any, addonQty: number) {
+  const next: Record<string, number> = {};
+  if (addonQty <= 0) return next;
+  let left = addonQty;
+  const tapes = TAPE_COLORS.filter((color) => Math.floor(Number(sourceItems?.[color.key]) || 0) > 0);
+  for (const tape of tapes) {
+    if (left <= 0) break;
+    const take = Math.min(Math.floor(Number(sourceItems[tape.key]) || 0), left);
+    if (take > 0) next[tape.key] = take;
+    left -= take;
+  }
+  if (left > 0 && tapes.length) next[tapes[0].key] = (next[tapes[0].key] || 0) + left;
+  return next;
+}
+
+function normalizeCoverColors(raw: any, sourceItems: any, addonQty: number) {
+  const next: Record<string, number> = {};
+  if (!raw || typeof raw !== 'object' || addonQty <= 0) return next;
+  let left = addonQty;
+  for (const color of TAPE_COLORS) {
+    const n = Math.floor(Number(raw[color.key]));
+    if (!Number.isFinite(n) || n <= 0) continue;
+    const take = Math.min(n, left);
+    if (take > 0) next[color.key] = take;
+    left -= take;
+    if (left <= 0) return next;
+  }
+  const fill = defaultCoverColors(sourceItems, left);
+  for (const [key, qty] of Object.entries(fill)) next[key] = (next[key] || 0) + qty;
+  return next;
+}
+
+function readCoverColors(saved: any, sourceItems: any) {
+  if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return null;
+  const flat = Object.values(saved).every((value) => value == null || typeof value !== 'object');
+  if (!flat) return null;
+  const addonQty = Math.max(0, Math.floor(Number(sourceItems?.coverAddon) || 0));
+  if (addonQty <= 0) return null;
+  const next = normalizeCoverColors(saved, sourceItems, addonQty);
+  return sameCoverMap(next, defaultCoverColors(sourceItems, addonQty)) ? null : next;
+}
+
+function coverColorText(map: Record<string, number>, addonQty: number, withMissing: boolean) {
+  const parts: string[] = [];
+  let assigned = 0;
+  for (const color of TAPE_COLORS) {
+    const qty = map[color.key] || 0;
+    if (qty > 0) {
+      parts.push(`${color.label} x${qty}`);
+      assigned += qty;
+    }
+  }
+  const missing = addonQty - assigned;
+  if (withMissing && missing > 0) parts.push(`顏色未揀 x${missing}`);
+  return parts.join('、');
+}
+
+function addonCoverDetail(sourceItems: any, coverColors: Record<string, number> | null) {
+  const addonQty = Math.max(0, Math.floor(Number(sourceItems?.coverAddon) || 0));
+  if (addonQty <= 0) return '';
+  const defaults = defaultCoverColors(sourceItems, addonQty);
+  const colors = coverColors == null ? defaults : normalizeCoverColors(coverColors, sourceItems, addonQty);
+  const assigned = coverSum(colors);
+  const text = coverColorText(colors, addonQty, true);
+  if (!text) return '顏色未揀';
+  if ((coverColors == null || sameCoverMap(colors, defaults)) && assigned === addonQty) {
+    return `跟座身：${coverColorText(colors, addonQty, false)}`;
+  }
+  return text;
+}
+
 function newOrderId() {
   return Math.floor(Math.random() * 900000000000 + 100000000000).toString();
 }
@@ -103,6 +204,8 @@ export default function App() {
   };
 
   const [items, setItems] = useState(initialItems);
+  const [coverColors, setCoverColors] = useState<Record<string, number> | null>(null);
+  const [coverEditorOpen, setCoverEditorOpen] = useState(false);
   const [shipping, setShipping] = useState({ 
     name: '', phone: '', igName: '', address: '', method: 'sf_station', remarks: ''
   });
@@ -140,6 +243,7 @@ export default function App() {
             method: SHIP_METHODS.includes(saved.shipping.method) ? saved.shipping.method : prev.method,
           }));
         }
+        setCoverColors(readCoverColors(saved.coverColors, saved.items));
         if (typeof saved.promoCode === 'string') setPromoCode(saved.promoCode.slice(0, 40));
         if (typeof saved.agreed === 'boolean') setAgreed(saved.agreed);
         setOrderId(typeof saved.orderId === 'string' && saved.orderId ? saved.orderId : newOrderId());
@@ -157,11 +261,23 @@ export default function App() {
   useEffect(() => {
     if (!draftReady) return;
     try {
-      localStorage.setItem(ORDER_DRAFT_KEY, JSON.stringify({ items, shipping, promoCode, agreed, orderId, today }));
+      localStorage.setItem(ORDER_DRAFT_KEY, JSON.stringify({ items, shipping, promoCode, agreed, orderId, today, coverColors }));
     } catch {
       // 手機儲存已滿或被封鎖時，呢一頁仍然可以落單。
     }
-  }, [draftReady, items, shipping, promoCode, agreed, orderId, today]);
+  }, [draftReady, items, shipping, promoCode, agreed, orderId, today, coverColors]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    if (items.coverAddon <= 0) setCoverEditorOpen(false);
+    setCoverColors((prev) => {
+      if (items.coverAddon <= 0) return prev == null ? prev : null;
+      if (prev == null) return prev;
+      const next = normalizeCoverColors(prev, items, items.coverAddon);
+      if (sameCoverMap(next, defaultCoverColors(items, items.coverAddon))) return null;
+      return sameCoverMap(next, prev) ? prev : next;
+    });
+  }, [items, draftReady]);
 
   useEffect(() => {
     const el = copyFallbackRef.current;
@@ -273,8 +389,8 @@ export default function App() {
   
   const totalTapeCount = tapeColorQuantities.reduce((acc, curr) => acc + curr, 0);
   const distinctColorsCount = tapeColorQuantities.filter(qty => qty > 0).length;
-  const totalCoverCount = items.coverChiikawa + items.coverUsagi + items.coverHachiware + items.coverMiffyEar + items.coverMiffy + items.coverAddon + items.coverSingle;
-  const showCoverRemarkNotice = distinctColorsCount >= 2 && totalCoverCount > 0 && totalCoverCount !== totalTapeCount;
+  const looseCoverCount = items.coverChiikawa + items.coverUsagi + items.coverHachiware + items.coverMiffyEar + items.coverMiffy + items.coverSingle;
+  const showCoverRemarkNotice = distinctColorsCount >= 2 && looseCoverCount > 0 && looseCoverCount !== totalTapeCount;
 
   const hasRealProducts = Object.entries(items).some(([key, qty]) => key !== 'addonDiff' && qty > 0);
 
@@ -317,7 +433,7 @@ export default function App() {
     { name: '白色膠紙座', qty: items.tapeWhite, price: 58 },
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
     ...customColors.map(c => ({ name: c.n + '膠紙座', qty: (items as any)[`tape${c.k}`], price: 78 })),
-    { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10 },
+    { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10, detail: addonCoverDetail(items, coverColors) },
     { name: '獨立防塵蓋', qty: items.coverSingle, price: 15 },
     { name: 'Chiikawa防塵蓋', qty: items.coverChiikawa, price: 30 },
     { name: 'Usagi防塵蓋', qty: items.coverUsagi, price: 30 },
@@ -391,7 +507,46 @@ export default function App() {
   const rhythm = getClinicalRhythm(rawGttPerMin);
 
   const update = (f: string, d: number) => setItems(p => ({ ...p, [f]: Math.max(0, (p as any)[f] + d) }));
-  const clearAll = () => { if(confirm("確定要清除所有已選商品？收貨資料會保留。")) { setItems(initialItems); } };
+  const changeCoverQty = (colorKey: string, delta: number) => {
+    setCoverColors((prev) => {
+      const addonQty = Math.max(0, Math.floor(Number(items.coverAddon) || 0));
+      if (addonQty <= 0) return null;
+      const current = { ...(prev == null ? defaultCoverColors(items, addonQty) : normalizeCoverColors(prev, items, addonQty)) };
+      const assigned = coverSum(current);
+      if (delta > 0) {
+        if (assigned < addonQty) {
+          current[colorKey] = (current[colorKey] || 0) + 1;
+        } else {
+          const donor = [...TAPE_COLORS]
+            .filter((color) => color.key !== colorKey && (current[color.key] || 0) > 0)
+            .sort((a, b) => (current[b.key] - current[a.key]) || TAPE_COLORS.indexOf(b) - TAPE_COLORS.indexOf(a))[0];
+          if (!donor) return prev;
+          current[donor.key] -= 1;
+          if (current[donor.key] <= 0) delete current[donor.key];
+          current[colorKey] = (current[colorKey] || 0) + 1;
+        }
+      } else if ((current[colorKey] || 0) > 0) {
+        current[colorKey] -= 1;
+        if (current[colorKey] <= 0) delete current[colorKey];
+      } else {
+        return prev;
+      }
+      return sameCoverMap(current, defaultCoverColors(items, addonQty)) ? null : current;
+    });
+  };
+  const resetCoverColors = () => setCoverColors(null);
+  const clearAll = () => {
+    if (confirm("確定要清除所有已選商品？收貨資料會保留。")) {
+      setItems(initialItems);
+      setCoverColors(null);
+      setCoverEditorOpen(false);
+    }
+  };
+  const clearShipping = () => {
+    if (confirm("確定要清空配送及個人資料？已選商品會保留。")) {
+      setShipping({ name: '', phone: '', igName: '', address: '', method: 'sf_station', remarks: '' });
+    }
+  };
 
   const orderText = [
     'NurseForgeHK 執貨單',
@@ -408,7 +563,7 @@ export default function App() {
     '',
     '貨品：',
     ...(activeProducts.length
-      ? activeProducts.map((p) => `- ${p.name} x${p.qty}  $${p.qty * p.price}`)
+      ? activeProducts.map((p) => `- ${p.name} x${p.qty}${p.detail ? `（${p.detail}）` : ''}  $${p.qty * p.price}`)
       : ['- （未揀商品）']),
     '',
     `總額：HKD $${total}`
@@ -706,10 +861,22 @@ export default function App() {
           <CatalogTitle>標準防塵蓋</CatalogTitle>
           <div style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '12px 14px', marginBottom: '12px', color: '#000' }}>
             <Row name="隨座加購防塵蓋 $10" count={items.coverAddon} onAdd={() => update('coverAddon', 1)} onSub={() => update('coverAddon', -1)} />
+            <p style={{ margin: '0 0 8px 0', fontSize: '12px', fontWeight: '700', color: '#444', lineHeight: 1.5 }}>
+              膠紙座本身唔包防塵蓋。加購 $10 先有蓋，顏色預設跟座身。
+            </p>
+            <AddonCoverPicker
+              items={items}
+              tapeCount={totalTapeCount}
+              coverColors={coverColors}
+              open={coverEditorOpen}
+              onToggle={() => setCoverEditorOpen((prev) => !prev)}
+              onDelta={changeCoverQty}
+              onReset={resetCoverColors}
+            />
             <Row name="補買防塵蓋 $15" count={items.coverSingle} onAdd={() => update('coverSingle', 1)} onSub={() => update('coverSingle', -1)} />
             {showCoverRemarkNotice && (
               <div style={{ marginTop: '10px', padding: '10px 12px', backgroundColor: '#FFF9E6', border: '1px dashed #FFCC00', borderRadius: '10px', fontSize: '12px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5' }}>
-                ⚠️ 你揀咗多款顏色嘅膠紙座，請喺下面備註寫低防塵蓋想配邊個顏色 / 邊個座
+                ⚠️ 你揀咗多款顏色嘅膠紙座，公仔蓋或者補買防塵蓋請喺下面備註寫低想配邊個座
               </div>
             )}
           </div>
@@ -834,7 +1001,14 @@ export default function App() {
 
       <div ref={orderSectionRef} style={{ width: '100%', maxWidth: '480px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
         <div style={formCardStyle}>
-          <Section title="🚚 配送及個人資訊">
+          <Section
+            title="🚚 配送及個人資訊"
+            action={
+              <button type="button" onClick={clearShipping} style={{ ...clearBtnStyle, padding: '6px 10px', fontSize: '12px', flexShrink: 0 }}>
+                清空個人資料
+              </button>
+            }
+          >
             <p style={privacyNoticeStyle}>🛡️ 訂單只會留喺你部手機，方便去完 PayMe 返嚟再複製。網站唔會把資料上傳。</p>
             {hasClicker && <p style={{ color: '#dc3545', fontSize: '11px', fontWeight: 'bold', marginBottom: '8px' }}>⚠️ 由於選購了 Clicker，只能選順豐。</p>}
             
@@ -861,7 +1035,7 @@ export default function App() {
             
             {showCoverRemarkNotice && (
               <div style={{ marginBottom: '8px', padding: '10px 12px', backgroundColor: '#FFF9E6', border: '1px dashed #FFCC00', borderRadius: '10px', fontSize: '12px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5' }}>
-                ⚠️ 你揀咗多款顏色嘅膠紙座，請喺備註寫低防塵蓋想配邊個顏色 / 邊個座
+                ⚠️ 你揀咗多款顏色嘅膠紙座，公仔蓋或者補買防塵蓋請喺備註寫低想配邊個座
               </div>
             )}
             <input placeholder="備註 (Remarks) (例如：防塵蓋要灰色 / 配邊個座)" style={{...inputStyle, border: showCoverRemarkNotice ? '2px solid #FFCC00' : '2px solid #77815C', backgroundColor: showCoverRemarkNotice ? '#FFF9E6' : '#fff'} as any} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
@@ -959,9 +1133,12 @@ export default function App() {
           </div>
           <div style={{ minHeight: '40px' }}>
             {activeProducts.map((p, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '3px' }}>
-                <span>{p.name} <b style={{ color: '#77815C' }}>x{p.qty}</b></span>
-                <span style={{ fontWeight: 'bold' }}>${p.qty * p.price}</span>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', fontSize: '13px', marginBottom: '6px' }}>
+                <span style={{ flex: 1, minWidth: 0, lineHeight: 1.4 }}>
+                  {p.name} <b style={{ color: '#77815C' }}>x{p.qty}</b>
+                  {p.detail && <span style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#3f4a2e' }}>{p.detail}</span>}
+                </span>
+                <span style={{ fontWeight: 'bold', flexShrink: 0 }}>${p.qty * p.price}</span>
               </div>
             ))}
           </div>
@@ -1413,11 +1590,12 @@ function PhotoLightbox({ src, title, onClose }: any) {
   );
 }
 
-function Section({ title, badge, badgeColor, children }: any) {
+function Section({ title, badge, badgeColor, action, children }: any) {
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
         <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: '#77815C' }}>{title}</h3>
+        {action}
         {badge && (
           <span style={{ backgroundColor: badgeColor || '#2E7D32', color: '#fff', padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold' }}>
             {badge}
@@ -1438,6 +1616,73 @@ function Row({ name, count, onAdd, onSub }: any) {
         <span style={{ fontSize: '15px', fontWeight: 'bold', minWidth: '20px', textAlign: 'center' }}>{count}</span>
         <button type="button" onClick={onAdd} className="btn-3d" style={btnStyle}>+</button>
       </div>
+    </div>
+  );
+}
+
+function AddonCoverPicker({ items, tapeCount, coverColors, open, onToggle, onDelta, onReset }: any) {
+  const addonQty = Math.max(0, Math.floor(Number(items.coverAddon) || 0));
+  if (addonQty <= 0) return null;
+  const defaults = defaultCoverColors(items, addonQty);
+  const colors = coverColors == null ? defaults : normalizeCoverColors(coverColors, items, addonQty);
+  const isDefault = coverColors == null || sameCoverMap(colors, defaults);
+  const assigned = coverSum(colors);
+  const unassigned = addonQty - assigned;
+  const summary = assigned === 0
+    ? '顏色未揀'
+    : `${isDefault ? '跟座身：' : ''}${coverColorText(colors, addonQty, false)}`;
+
+  return (
+    <div style={{ backgroundColor: '#F4F6F0', borderRadius: '12px', padding: '10px 12px', margin: '0 0 10px 0' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: '14px', fontWeight: '900' }}>已加購 {addonQty} 隻防塵蓋</div>
+          <div style={{ fontSize: '12px', fontWeight: '700', color: '#3f4a2e', lineHeight: 1.4 }}>{summary}</div>
+          {tapeCount > 0 && tapeCount !== addonQty && (
+            <div style={{ fontSize: '11px', fontWeight: '700', color: '#666', lineHeight: 1.4 }}>
+              膠紙座有 {tapeCount} 個，蓋有 {addonQty} 隻
+            </div>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={onToggle}
+          style={{ padding: '6px 10px', borderRadius: '8px', border: '2px solid #77815C', backgroundColor: open ? '#77815C' : '#fff', color: open ? '#fff' : '#3f4a2e', fontWeight: 900, fontSize: '12px', cursor: 'pointer', flexShrink: 0 }}
+        >
+          {open ? '收起' : isDefault ? '轉色' : '改顏色'}
+        </button>
+      </div>
+      {open && (
+        <div style={{ marginTop: '10px' }}>
+          <div style={{ padding: '8px 10px', borderRadius: '10px', backgroundColor: '#fff', fontSize: '12px', fontWeight: '800', color: '#3f4a2e', lineHeight: 1.45 }}>
+            {unassigned > 0 ? `未分配 ×${unassigned}，撳加號就用呢隻。` : '撳加號會由數量最多嗰隻色借一隻過嚟。'}
+          </div>
+          <div style={{ marginTop: '8px' }}>
+            {TAPE_COLORS.map((color) => {
+              const count = colors[color.key] || 0;
+              const canAdd = unassigned > 0 || TAPE_COLORS.some((other) => other.key !== color.key && (colors[other.key] || 0) > 0);
+              return (
+                <div key={color.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '6px 0', borderBottom: '1px solid #e3e8d8' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '800' }}>
+                    <span style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: color.swatch, border: '1px solid rgba(0,0,0,0.25)', flexShrink: 0 }} />
+                    {color.label}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button type="button" aria-label={`減少${color.label}防塵蓋`} disabled={count <= 0} onClick={() => onDelta(color.key, -1)} className="btn-3d" style={{ ...btnStyle, opacity: count <= 0 ? 0.35 : 1 }}>-</button>
+                    <span style={{ minWidth: '18px', textAlign: 'center', fontWeight: '900' }}>{count}</span>
+                    <button type="button" aria-label={`增加${color.label}防塵蓋`} disabled={!canAdd} onClick={() => onDelta(color.key, 1)} className="btn-3d" style={{ ...btnStyle, opacity: canAdd ? 1 : 0.35 }}>+</button>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          {!isDefault && (
+            <button type="button" onClick={onReset} style={{ marginTop: '10px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #77815C', backgroundColor: '#fff', color: '#3f4a2e', fontWeight: 900, fontSize: '12px', cursor: 'pointer' }}>
+              全部跟座身
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
