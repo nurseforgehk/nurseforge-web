@@ -344,6 +344,13 @@ export default function App() {
     sf_store: "順豐合作便利店 (到付)",
     sf_direct: "順豐送上門 (到付)" 
   };
+  const addressPlaceholder: any = {
+    post: '✉️ 請填平郵收件地址：屋苑、座數、樓層、室',
+    sf_station: '🏪 請填順豐站點碼（如 852XXX）同站名，方便直接對賬',
+    sf_locker: '📦 請填智能櫃點碼同櫃位置（如 H852XXX）',
+    sf_store: '🏬 請填順豐合作便利店點碼同店舖地址',
+    sf_direct: '🏠 請填送貨上門地址：屋苑、座數、樓層、室'
+  };
 
   // ======= 💧 IV Drip Rate 計算邏輯 =======
   const numVol = typeof ivVolume === 'number' ? ivVolume : parseFloat(ivVolume) || 0;
@@ -836,9 +843,17 @@ export default function App() {
               <input placeholder="IG 帳號 (必填，方便搵返你)" style={inputStyle} value={shipping.igName} onChange={e => setShipping({...shipping, igName: e.target.value})} />
             </div>
             <input placeholder="聯絡電話 (必填)" style={inputStyle} value={shipping.phone} onChange={e => setShipping({...shipping, phone: e.target.value})} />
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', margin: '4px 0 12px' }}>
+              {!hasClicker && <Radio label="本地平郵 (包郵)" active={shipping.method === 'post'} onClick={() => setShipping({...shipping, method: 'post'})} />}
+              <Radio label={isFreeSF ? "順豐站 (免運)" : "順豐站 (到付)"} active={shipping.method === 'sf_station'} onClick={() => setShipping({...shipping, method: 'sf_station'})} />
+              <Radio label={isFreeSF ? "智能櫃 (免運)" : "智能櫃 (到付)"} active={shipping.method === 'sf_locker'} onClick={() => setShipping({...shipping, method: 'sf_locker'})} />
+              <Radio label="便利店 (到付)" active={shipping.method === 'sf_store'} onClick={() => setShipping({...shipping, method: 'sf_store'})} />
+              <Radio label="送上門 (到付)" active={shipping.method === 'sf_direct'} onClick={() => setShipping({...shipping, method: 'sf_direct'})} />
+            </div>
             
             <textarea 
-              placeholder="🏠 請輸入順豐點碼 (如: 852XXX) 及詳細地址（方便店主直接對賬，唔使上網慢慢查返地址呀，麻煩晒 ❤️）" 
+              placeholder={addressPlaceholder[shipping.method]} 
               style={{...inputStyle, height: '80px'} as any} 
               value={shipping.address} 
               onChange={e => setShipping({...shipping, address: e.target.value})} 
@@ -872,13 +887,6 @@ export default function App() {
               ) : null}
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px' }}>
-              {!hasClicker && <Radio label="本地平郵 (包郵)" active={shipping.method === 'post'} onClick={() => setShipping({...shipping, method: 'post'})} />}
-              <Radio label={isFreeSF ? "順豐站 (免運)" : "順豐站 (到付)"} active={shipping.method === 'sf_station'} onClick={() => setShipping({...shipping, method: 'sf_station'})} />
-              <Radio label={isFreeSF ? "智能櫃 (免運)" : "智能櫃 (到付)"} active={shipping.method === 'sf_locker'} onClick={() => setShipping({...shipping, method: 'sf_locker'})} />
-              <Radio label="便利店 (到付)" active={shipping.method === 'sf_store'} onClick={() => setShipping({...shipping, method: 'sf_store'})} />
-              <Radio label="送上門 (到付)" active={shipping.method === 'sf_direct'} onClick={() => setShipping({...shipping, method: 'sf_direct'})} />
-            </div>
             <div style={addonCardStyle}>
               <span style={{ fontSize: '15px', fontWeight: '900', color: '#D63384' }}>💰 補錢湊數：${items.addonDiff}</span>
               <div style={{ display: 'flex', gap: '10px' }}>
