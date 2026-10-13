@@ -51,7 +51,7 @@ function defaultCoverColors(sourceItems: any, addonQty: number) {
   return next;
 }
 
-function normalizeCoverColors(raw: any, sourceItems: any, addonQty: number) {
+function normalizeCoverColors(raw: any, addonQty: number) {
   const next: Record<string, number> = {};
   if (!raw || typeof raw !== 'object' || addonQty <= 0) return next;
   let left = addonQty;
@@ -63,8 +63,6 @@ function normalizeCoverColors(raw: any, sourceItems: any, addonQty: number) {
     left -= take;
     if (left <= 0) return next;
   }
-  const fill = defaultCoverColors(sourceItems, left);
-  for (const [key, qty] of Object.entries(fill)) next[key] = (next[key] || 0) + qty;
   return next;
 }
 
@@ -74,7 +72,7 @@ function readCoverColors(saved: any, sourceItems: any) {
   if (!flat) return null;
   const addonQty = Math.max(0, Math.floor(Number(sourceItems?.coverAddon) || 0));
   if (addonQty <= 0) return null;
-  const next = normalizeCoverColors(saved, sourceItems, addonQty);
+  const next = normalizeCoverColors(saved, addonQty);
   return sameCoverMap(next, defaultCoverColors(sourceItems, addonQty)) ? null : next;
 }
 
@@ -97,7 +95,7 @@ function addonCoverDetail(sourceItems: any, coverColors: Record<string, number> 
   const addonQty = Math.max(0, Math.floor(Number(sourceItems?.coverAddon) || 0));
   if (addonQty <= 0) return '';
   const defaults = defaultCoverColors(sourceItems, addonQty);
-  const colors = coverColors == null ? defaults : normalizeCoverColors(coverColors, sourceItems, addonQty);
+  const colors = coverColors == null ? defaults : normalizeCoverColors(coverColors, addonQty);
   const assigned = coverSum(colors);
   const text = coverColorText(colors, addonQty, true);
   if (!text) return '顏色未揀';
@@ -215,8 +213,6 @@ export default function App() {
   const [ivDropFactor, setIvDropFactor] = useState<number | string>(15);
   const [ivTime, setIvTime] = useState<number | string>(30);
   const [ivTimeUnit, setIvTimeUnit] = useState<'mins' | 'hrs'>('mins');
-  
-  const orderSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -273,7 +269,7 @@ export default function App() {
     setCoverColors((prev) => {
       if (items.coverAddon <= 0) return prev == null ? prev : null;
       if (prev == null) return prev;
-      const next = normalizeCoverColors(prev, items, items.coverAddon);
+      const next = normalizeCoverColors(prev, items.coverAddon);
       if (sameCoverMap(next, defaultCoverColors(items, items.coverAddon))) return null;
       return sameCoverMap(next, prev) ? prev : next;
     });
@@ -433,7 +429,7 @@ export default function App() {
     { name: '白色膠紙座', qty: items.tapeWhite, price: 58 },
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
     ...customColors.map(c => ({ name: c.n + '膠紙座', qty: (items as any)[`tape${c.k}`], price: 78 })),
-    { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10, detail: addonCoverDetail(items, coverColors) },
+    { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10 },
     { name: '獨立防塵蓋', qty: items.coverSingle, price: 15 },
     { name: 'Chiikawa防塵蓋', qty: items.coverChiikawa, price: 30 },
     { name: 'Usagi防塵蓋', qty: items.coverUsagi, price: 30 },
@@ -511,7 +507,7 @@ export default function App() {
     setCoverColors((prev) => {
       const addonQty = Math.max(0, Math.floor(Number(items.coverAddon) || 0));
       if (addonQty <= 0) return null;
-      const current = { ...(prev == null ? defaultCoverColors(items, addonQty) : normalizeCoverColors(prev, items, addonQty)) };
+      const current = { ...(prev == null ? defaultCoverColors(items, addonQty) : normalizeCoverColors(prev, addonQty)) };
       const assigned = coverSum(current);
       if (delta > 0) {
         if (assigned < addonQty) {
@@ -548,6 +544,13 @@ export default function App() {
     }
   };
 
+  const coverRemark = (() => {
+    const detail = addonCoverDetail(items, coverColors);
+    if (!detail) return '';
+    return detail.startsWith('跟座身：') ? `防塵蓋${detail}` : `防塵蓋：${detail}`;
+  })();
+  const remarkOutput = [shipping.remarks.trim(), coverRemark].filter(Boolean).join('\n');
+
   const orderText = [
     'NurseForgeHK 執貨單',
     `請付：HKD $${total}`,
@@ -558,7 +561,7 @@ export default function App() {
     `電話：${shipping.phone.trim() || '---'}`,
     `運送：${methodMap[shipping.method] || '---'}`,
     `地址：${shipping.address.trim() || '未填寫'}`,
-    shipping.remarks.trim() ? `備註：${shipping.remarks.trim()}` : '',
+    remarkOutput ? `備註：${remarkOutput}` : '',
     isPromoApplied ? `優惠：已用九折（原價 HKD $${rawTotal}）` : '',
     '',
     '貨品：',
@@ -692,10 +695,6 @@ export default function App() {
 
       <button type="button" onClick={() => setShowIvCalc(true)} style={fabLeftStyle}>
         💧 點滴計算器
-      </button>
-
-      <button type="button" onClick={() => orderSectionRef.current?.scrollIntoView({ behavior: 'smooth' })} style={fabStyle}>
-        去填收貨資料 📦
       </button>
 
       <div style={{ textAlign: 'center', marginBottom: '20px', color: '#fff', paddingTop: '50px' }}>
@@ -999,7 +998,7 @@ export default function App() {
         </div>
       </div>
 
-      <div ref={orderSectionRef} style={{ width: '100%', maxWidth: '480px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
+      <div style={{ width: '100%', maxWidth: '480px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
         <div style={formCardStyle}>
           <Section
             title="🚚 配送及個人資訊"
@@ -1120,9 +1119,9 @@ export default function App() {
              <div><strong>Tel:</strong> {shipping.phone || '---'}</div>
              <div><strong>Ship:</strong> {methodMap[shipping.method]}</div>
              <p style={addressPreviewStyle}><strong>Addr:</strong> {shipping.address || '未填寫'}</p>
-             {shipping.remarks && (
-               <div style={{ marginTop: '5px', padding: '5px', backgroundColor: '#FFF5F7', borderRadius: '4px', borderLeft: '3px solid #D63384', fontSize: '11px', color: '#000' }}>
-                 <strong>備註:</strong> {shipping.remarks}
+             {remarkOutput && (
+               <div style={{ marginTop: '5px', padding: '5px', backgroundColor: '#FFF5F7', borderRadius: '4px', borderLeft: '3px solid #D63384', fontSize: '11px', color: '#000', whiteSpace: 'pre-line' }}>
+                 <strong>備註:</strong> {remarkOutput}
                </div>
              )}
              {isPromoApplied && (
@@ -1447,7 +1446,6 @@ export default function App() {
 // STYLES
 const announcementStyle: any = { backgroundColor: '#FFF9E6', border: '1.5px solid #FFCC00', borderRadius: '14px', padding: '12px 14px', marginBottom: '16px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', color: '#000' };
 const fabLeftStyle: any = { position: 'absolute', left: '10px', top: '12px', padding: '10px 12px', borderRadius: '20px', backgroundColor: '#fff', color: '#DD6B20', fontWeight: '900', border: '2.5px solid #DD6B20', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1100, fontSize: '11px', cursor: 'pointer' };
-const fabStyle: any = { position: 'absolute', right: '10px', top: '12px', padding: '10px 12px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '2.5px solid #77815C', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1100, fontSize: '11px', cursor: 'pointer' };
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
 
@@ -1624,7 +1622,7 @@ function AddonCoverPicker({ items, tapeCount, coverColors, open, onToggle, onDel
   const addonQty = Math.max(0, Math.floor(Number(items.coverAddon) || 0));
   if (addonQty <= 0) return null;
   const defaults = defaultCoverColors(items, addonQty);
-  const colors = coverColors == null ? defaults : normalizeCoverColors(coverColors, items, addonQty);
+  const colors = coverColors == null ? defaults : normalizeCoverColors(coverColors, addonQty);
   const isDefault = coverColors == null || sameCoverMap(colors, defaults);
   const assigned = coverSum(colors);
   const unassigned = addonQty - assigned;
@@ -1657,30 +1655,30 @@ function AddonCoverPicker({ items, tapeCount, coverColors, open, onToggle, onDel
           <div style={{ padding: '8px 10px', borderRadius: '10px', backgroundColor: '#fff', fontSize: '12px', fontWeight: '800', color: '#3f4a2e', lineHeight: 1.45 }}>
             {unassigned > 0 ? `未分配 ×${unassigned}，撳加號就用呢隻。` : '撳加號會由數量最多嗰隻色借一隻過嚟。'}
           </div>
-          <div style={{ marginTop: '8px' }}>
+          {!isDefault && (
+            <button type="button" onClick={onReset} style={{ marginTop: '8px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #77815C', backgroundColor: '#fff', color: '#3f4a2e', fontWeight: 900, fontSize: '12px', cursor: 'pointer' }}>
+              全部跟座身
+            </button>
+          )}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 10px', marginTop: '8px' }}>
             {TAPE_COLORS.map((color) => {
               const count = colors[color.key] || 0;
               const canAdd = unassigned > 0 || TAPE_COLORS.some((other) => other.key !== color.key && (colors[other.key] || 0) > 0);
               return (
-                <div key={color.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '6px 0', borderBottom: '1px solid #e3e8d8' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '800' }}>
-                    <span style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: color.swatch, border: '1px solid rgba(0,0,0,0.25)', flexShrink: 0 }} />
+                <div key={color.key} style={{ minWidth: 0, paddingBottom: '6px', borderBottom: '1px solid #e3e8d8' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>
+                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: color.swatch, border: '1px solid rgba(0,0,0,0.25)', flexShrink: 0 }} />
                     {color.label}
                   </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <button type="button" aria-label={`減少${color.label}防塵蓋`} disabled={count <= 0} onClick={() => onDelta(color.key, -1)} className="btn-3d" style={{ ...btnStyle, opacity: count <= 0 ? 0.35 : 1 }}>-</button>
-                    <span style={{ minWidth: '18px', textAlign: 'center', fontWeight: '900' }}>{count}</span>
-                    <button type="button" aria-label={`增加${color.label}防塵蓋`} disabled={!canAdd} onClick={() => onDelta(color.key, 1)} className="btn-3d" style={{ ...btnStyle, opacity: canAdd ? 1 : 0.35 }}>+</button>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+                    <button type="button" aria-label={`減少${color.label}防塵蓋`} disabled={count <= 0} onClick={() => onDelta(color.key, -1)} className="btn-3d" style={{ ...btnStyle, width: '28px', height: '28px', opacity: count <= 0 ? 0.35 : 1 }}>-</button>
+                    <span style={{ minWidth: '16px', textAlign: 'center', fontWeight: '900', fontSize: '14px' }}>{count}</span>
+                    <button type="button" aria-label={`增加${color.label}防塵蓋`} disabled={!canAdd} onClick={() => onDelta(color.key, 1)} className="btn-3d" style={{ ...btnStyle, width: '28px', height: '28px', opacity: canAdd ? 1 : 0.35 }}>+</button>
                   </span>
                 </div>
               );
             })}
           </div>
-          {!isDefault && (
-            <button type="button" onClick={onReset} style={{ marginTop: '10px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #77815C', backgroundColor: '#fff', color: '#3f4a2e', fontWeight: 900, fontSize: '12px', cursor: 'pointer' }}>
-              全部跟座身
-            </button>
-          )}
         </div>
       )}
     </div>
