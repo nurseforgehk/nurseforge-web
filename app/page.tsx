@@ -1,6 +1,67 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 
+let openPhotoPreview = (_src: string, _title: string) => {};
+
+const ORDER_DRAFT_KEY = 'nurseforge-order-draft';
+const SHIP_METHODS = ['post', 'sf_station', 'sf_locker', 'sf_store', 'sf_direct'];
+
+function newOrderId() {
+  return Math.floor(Math.random() * 900000000000 + 100000000000).toString();
+}
+
+function hkToday() {
+  return new Date().toLocaleString('en-GB', {
+    timeZone: 'Asia/Hong_Kong', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).split(',')[0].split('/').reverse().join('-');
+}
+
+function readOrderDraft() {
+  try {
+    const raw = localStorage.getItem(ORDER_DRAFT_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    return data && typeof data === 'object' ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+function copyPlainText(text: string) {
+  const area = document.createElement('textarea');
+  area.value = text;
+  area.readOnly = false;
+  area.style.position = 'fixed';
+  area.style.left = '0';
+  area.style.top = '0';
+  area.style.width = '2em';
+  area.style.height = '2em';
+  area.style.padding = '0';
+  area.style.border = 'none';
+  area.style.outline = 'none';
+  area.style.boxShadow = 'none';
+  area.style.background = 'transparent';
+  area.style.fontSize = '16px';
+  document.body.appendChild(area);
+  const selection = document.getSelection();
+  const range = document.createRange();
+  range.selectNodeContents(area);
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+  area.focus();
+  area.select();
+  area.setSelectionRange(0, area.value.length);
+  let ok = false;
+  try {
+    ok = document.execCommand('copy');
+  } catch {
+    ok = false;
+  }
+  selection?.removeAllRanges();
+  document.body.removeChild(area);
+  return ok;
+}
+
 export default function App() {
   const [agreed, setAgreed] = useState(false);
   const [orderId, setOrderId] = useState(''); 
@@ -9,8 +70,15 @@ export default function App() {
   const [promoCode, setPromoCode] = useState('');
   const [showFireworks, setShowFireworks] = useState(false);
   const [showColorPreview, setShowColorPreview] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<{ src: string; title: string } | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const [copyFallback, setCopyFallback] = useState('');
+  const [allowFireworks, setAllowFireworks] = useState(false);
+  openPhotoPreview = (src, title) => setPhotoPreview({ src, title });
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const copyFallbackRef = useRef<HTMLTextAreaElement | null>(null);
 
   const quotes = [
     "祝你準時收工！🕒", "見字飲水呀同事！💧", "記得去廁所，人工包埋㗎！🚽", 
@@ -48,13 +116,60 @@ export default function App() {
   const calcSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setOrderId(Math.floor(Math.random() * 900000000000 + 100000000000).toString());
-    const hkDate = new Date().toLocaleString("en-GB", {
-      timeZone: "Asia/Hong_Kong", year: 'numeric', month: '2-digit', day: '2-digit'
-    }).split(',')[0].split('/').reverse().join('-');
-    setToday(hkDate);
-    setRandomQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+    try {
+      const saved = readOrderDraft();
+      if (saved) {
+        if (saved.items && typeof saved.items === 'object') {
+          setItems(prev => {
+            const next = { ...prev };
+            for (const key of Object.keys(prev)) {
+              const qty = Number(saved.items[key]);
+              if (Number.isFinite(qty) && qty >= 0) (next as any)[key] = Math.floor(qty);
+            }
+            return next;
+          });
+        }
+        if (saved.shipping && typeof saved.shipping === 'object') {
+          setShipping(prev => ({
+            ...prev,
+            name: typeof saved.shipping.name === 'string' ? saved.shipping.name : prev.name,
+            phone: typeof saved.shipping.phone === 'string' ? saved.shipping.phone : prev.phone,
+            igName: typeof saved.shipping.igName === 'string' ? saved.shipping.igName : prev.igName,
+            address: typeof saved.shipping.address === 'string' ? saved.shipping.address : prev.address,
+            remarks: typeof saved.shipping.remarks === 'string' ? saved.shipping.remarks : prev.remarks,
+            method: SHIP_METHODS.includes(saved.shipping.method) ? saved.shipping.method : prev.method,
+          }));
+        }
+        if (typeof saved.promoCode === 'string') setPromoCode(saved.promoCode.slice(0, 40));
+        if (typeof saved.agreed === 'boolean') setAgreed(saved.agreed);
+        setOrderId(typeof saved.orderId === 'string' && saved.orderId ? saved.orderId : newOrderId());
+        setToday(typeof saved.today === 'string' && saved.today ? saved.today : hkToday());
+      } else {
+        setOrderId(newOrderId());
+        setToday(hkToday());
+      }
+    } finally {
+      setRandomQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+      setDraftReady(true);
+    }
   }, []);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    try {
+      localStorage.setItem(ORDER_DRAFT_KEY, JSON.stringify({ items, shipping, promoCode, agreed, orderId, today }));
+    } catch {
+      // 手機儲存已滿或被封鎖時，呢一頁仍然可以落單。
+    }
+  }, [draftReady, items, shipping, promoCode, agreed, orderId, today]);
+
+  useEffect(() => {
+    const el = copyFallbackRef.current;
+    if (!copyFallback || !el) return;
+    el.focus();
+    el.select();
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [copyFallback]);
 
   const hasClicker = items.clickerLuckyPink > 0 || items.clickerLuckyBlue > 0 || items.clickerShutUp > 0 || items.clickerCombo > 0 || items.clickerCallbellNormal > 0 || items.clickerCallbellFinger > 0 || items.clickerCallcarNormal > 0 || items.clickerCallcarFinger > 0;
 
@@ -69,7 +184,7 @@ export default function App() {
 
   // 🎇 煙花效果 (觸發 1 秒)
   useEffect(() => {
-    if (isPromoApplied) {
+    if (allowFireworks && isPromoApplied) {
       setShowFireworks(true);
       const timer = setTimeout(() => {
         setShowFireworks(false);
@@ -78,7 +193,7 @@ export default function App() {
     } else {
       setShowFireworks(false);
     }
-  }, [isPromoApplied]);
+  }, [isPromoApplied, allowFireworks]);
 
   // 🎆 Canvas 煙花繪製邏輯
   useEffect(() => {
@@ -162,7 +277,6 @@ export default function App() {
   const showCoverRemarkNotice = distinctColorsCount >= 2 && totalCoverCount > 0 && totalCoverCount !== totalTapeCount;
 
   const hasRealProducts = Object.entries(items).some(([key, qty]) => key !== 'addonDiff' && qty > 0);
-  const isFormValid = hasRealProducts && agreed && shipping.name.trim() !== '' && shipping.phone.trim() !== '' && shipping.igName.trim() !== '' && shipping.address.trim() !== '';
 
   const rawTotal = [
     { qty: items.keyringEmo, p: 38 },
@@ -270,11 +384,98 @@ export default function App() {
   const rhythm = getClinicalRhythm(rawGttPerMin);
 
   const update = (f: string, d: number) => setItems(p => ({ ...p, [f]: Math.max(0, (p as any)[f] + d) }));
-  const clearAll = () => { if(confirm("確定要清除所有已選商品？")) { setItems(initialItems); } };
+  const clearAll = () => { if(confirm("確定要清除所有已選商品？收貨資料會保留。")) { setItems(initialItems); } };
+
+  const orderText = [
+    'NurseForgeHK 執貨單',
+    `請付：HKD $${total}`,
+    `單號：${orderId || '---'}${isPromoApplied ? ' (MK)' : ''}`,
+    `日期：${today || '---'}`,
+    `IG：@${shipping.igName.trim() || '---'}`,
+    `姓名：${shipping.name.trim() || '---'}`,
+    `電話：${shipping.phone.trim() || '---'}`,
+    `運送：${methodMap[shipping.method] || '---'}`,
+    `地址：${shipping.address.trim() || '未填寫'}`,
+    shipping.remarks.trim() ? `備註：${shipping.remarks.trim()}` : '',
+    isPromoApplied ? `優惠：已用九折（原價 HKD $${rawTotal}）` : '',
+    '',
+    '貨品：',
+    ...(activeProducts.length
+      ? activeProducts.map((p) => `- ${p.name} x${p.qty}  $${p.qty * p.price}`)
+      : ['- （未揀商品）']),
+    '',
+    `總額：HKD $${total}`
+  ].filter(line => line !== '').join('\n');
+
+  const copyOrder = () => {
+    const legacyOk = copyPlainText(orderText);
+    const finish = (ok: boolean) => {
+      if (ok) {
+        setCopyState('copied');
+        setCopyFallback('');
+      } else {
+        setCopyState('failed');
+        setCopyFallback(orderText);
+      }
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(orderText).then(() => finish(true)).catch(() => finish(legacyOk));
+    } else {
+      finish(legacyOk);
+    }
+  };
+
+  useEffect(() => {
+    setCopyState('idle');
+    setCopyFallback('');
+  }, [orderText]);
+
+  const paymeLockedReason = !hasRealProducts
+    ? '請先揀選至少一件商品'
+    : !agreed
+    ? '請先剔選上方聲明'
+    : shipping.name.trim() === '' || shipping.phone.trim() === '' || shipping.igName.trim() === '' || shipping.address.trim() === ''
+    ? '請填妥姓名/IG/電話/詳細地址'
+    : copyState !== 'copied'
+    ? '請先複製訂單文字，再去 PayMe'
+    : '';
+
+  const renderCopyButton = () => (
+    <button
+      type="button"
+      onClick={copyOrder}
+      disabled={!hasRealProducts}
+      style={{
+        display: 'block',
+        width: '100%',
+        marginTop: '8px',
+        padding: '12px',
+        backgroundColor: !hasRealProducts ? '#e0e0e0' : copyState === 'copied' ? '#2E7D32' : '#111',
+        color: !hasRealProducts ? '#666' : '#fff',
+        border: 'none',
+        borderRadius: '30px',
+        fontWeight: 900,
+        fontSize: '15px',
+        cursor: hasRealProducts ? 'pointer' : 'not-allowed'
+      }}
+    >
+      {!hasRealProducts ? '請先揀選商品先可以複製' : copyState === 'copied' ? '已複製，撳多次都得' : copyState === 'failed' ? '再試一次複製' : '複製訂單文字'}
+    </button>
+  );
+
+  if (!draftReady) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#77815C', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '28px' }}>
+        NurseForgeHK
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: '20px 15px 160px 15px', backgroundColor: '#77815C', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
+    <div style={{ padding: '20px 15px 230px 15px', backgroundColor: '#77815C', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
       
+      {photoPreview && <PhotoLightbox src={photoPreview.src} title={photoPreview.title} onClose={() => setPhotoPreview(null)} />}
+
       {/* 🎆 全螢幕煙花 Canvas */}
       {showFireworks && (
         <canvas
@@ -332,7 +533,7 @@ export default function App() {
       </button>
 
       <button type="button" onClick={() => orderSectionRef.current?.scrollIntoView({ behavior: 'smooth' })} style={fabStyle}>
-        直接帶 me 去揀商品 🛒
+        去填收貨資料 📦
       </button>
 
       <div style={{ textAlign: 'center', marginBottom: '20px', color: '#fff', paddingTop: '50px' }}>
@@ -387,7 +588,7 @@ export default function App() {
           </div>
         </div>
 
-        <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>產品預覽 (點擊圖片可放大/縮小)</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>揀商品（撳「加入」落單，撳圖睇大圖）</h2>
 
         {/* 🖤 最新產品：「emo人員」鎖匙扣大圖展示 */}
         <div style={{
@@ -428,11 +629,13 @@ export default function App() {
               alt="「emo人員」鎖匙扣" 
               fetchPriority="high"
               decoding="async"
+              onClick={() => openPhotoPreview('/emo.jpg', '「emo人員」鎖匙扣')}
               style={{
                 width: '100%',
                 aspectRatio: '4 / 3',
                 objectFit: 'cover',
-                display: 'block'
+                display: 'block',
+                cursor: 'zoom-in'
               }} 
             />
           </div>
@@ -448,32 +651,68 @@ export default function App() {
             <div style={{ color: '#B91C1C', fontSize: '12px', fontWeight: '900', marginTop: '4px', backgroundColor: '#FEF2F2', padding: '6px 10px', borderRadius: '8px', border: '1px solid #FECACA' }}>
               🎉 新產品限定特惠：<b>買五送一</b>（買 5 個實出 6 個，如此類推）！
             </div>
+            <PreviewAdd count={items.keyringEmo} onAdd={() => update('keyringEmo', 1)} onSub={() => update('keyringEmo', -1)} addText="加入落單" />
+            {items.keyringEmo === 0 && (
+              <button
+                type="button"
+                onClick={() => setItems(p => ({ ...p, keyringEmo: 5 }))}
+                style={{
+                  marginTop: '8px',
+                  width: '100%',
+                  padding: '9px 12px',
+                  backgroundColor: '#FEF2F2',
+                  border: '1.5px dashed #EF4444',
+                  borderRadius: '10px',
+                  color: '#B91C1C',
+                  fontSize: '12px',
+                  fontWeight: '900',
+                  cursor: 'pointer'
+                }}
+              >
+                ⚡ 一鍵加購 5 個（$190 享買五送一）
+              </button>
+            )}
+            {items.keyringEmo >= 5 && (
+              <div style={{ marginTop: '8px', padding: '8px 12px', backgroundColor: '#ECFDF5', border: '1.5px solid #10B981', borderRadius: '10px', fontSize: '12px', color: '#065F46', fontWeight: 'bold', lineHeight: '1.5' }}>
+                🎉 已享買五送一：選了 {items.keyringEmo} 個，出貨再送 {Math.floor(items.keyringEmo / 5)} 個（共 {items.keyringEmo + Math.floor(items.keyringEmo / 5)} 個）
+              </div>
+            )}
           </div>
         </div>
 
+        <div style={{ fontSize: '12px', color: '#fff', fontWeight: 'bold', marginBottom: '10px' }}>⚙️ 膠紙座旋轉中軸已統一用白色 PETG</div>
+
         {/* 白色及灰色膠紙座 */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '10px' }}>
-            <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" />
-            <ShowcaseCardMini img="/greytape.jpg" title="灰色膠紙座" price="$58" />
+            <ShowcaseCardMini img="/whitetape.jpg" title="白色膠紙座" price="$58" actions={[{ key: 'tapeWhite' }]} countOf={(key: string) => (items as any)[key]} onAdd={(key: string) => update(key, 1)} onSub={(key: string) => update(key, -1)} />
+            <ShowcaseCardMini img="/greytape.jpg" title="灰色膠紙座" price="$58" actions={[{ key: 'tapeGrey' }]} countOf={(key: string) => (items as any)[key]} onAdd={(key: string) => update(key, 1)} onSub={(key: string) => update(key, -1)} />
         </div>
 
         {/* 三個特別防塵蓋 */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '10px' }}>
-            <ShowcaseCardMini img="/chi.jpg" title="Chiikawa防塵蓋" price="$30" />
-            <ShowcaseCardMini img="/us.jpg" title="Usagi防塵蓋" price="$30" />
-            <ShowcaseCardMini img="/ha.jpg" title="Hachiware防塵蓋" price="$30" />
+            <ShowcaseCardMini img="/chi.jpg" title="Chiikawa防塵蓋" price="$30" actions={[{ key: 'coverChiikawa' }]} countOf={(key: string) => (items as any)[key]} onAdd={(key: string) => update(key, 1)} onSub={(key: string) => update(key, -1)} />
+            <ShowcaseCardMini img="/us.jpg" title="Usagi防塵蓋" price="$30" actions={[{ key: 'coverUsagi' }]} countOf={(key: string) => (items as any)[key]} onAdd={(key: string) => update(key, 1)} onSub={(key: string) => update(key, -1)} />
+            <ShowcaseCardMini img="/ha.jpg" title="Hachiware防塵蓋" price="$30" actions={[{ key: 'coverHachiware' }]} countOf={(key: string) => (items as any)[key]} onAdd={(key: string) => update(key, 1)} onSub={(key: string) => update(key, -1)} />
         </div>
 
         {/* Miffy 特別防塵蓋 */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '15px' }}>
-            <ShowcaseCardMini img="/miffyear.jpg" title="Miffy防塵蓋 (有耳朵版本)" price="$30" />
-            <ShowcaseCardMini img="/miffy.jpg" title="近鏡Miffy防塵蓋" price="$30" />
+            <ShowcaseCardMini img="/miffyear.jpg" title="Miffy防塵蓋 (有耳朵版本)" price="$30" actions={[{ key: 'coverMiffyEar' }]} countOf={(key: string) => (items as any)[key]} onAdd={(key: string) => update(key, 1)} onSub={(key: string) => update(key, -1)} />
+            <ShowcaseCardMini img="/miffy.jpg" title="近鏡Miffy防塵蓋" price="$30" actions={[{ key: 'coverMiffy' }]} countOf={(key: string) => (items as any)[key]} onAdd={(key: string) => update(key, 1)} onSub={(key: string) => update(key, -1)} />
         </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
-            <a href="https://www.instagram.com/p/DW9hjFeEtjL/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🎨 睇客制顏色選項</a>
-            <a href="https://www.instagram.com/p/DW3pJ1zkuY4/" target="_blank" rel="noreferrer" style={igLinkBtnStyle}>🛡️ 點解要加防塵蓋？</a>
+        <div style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '12px 14px', marginBottom: '15px', color: '#000' }}>
+          <p style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: '900', color: '#77815C' }}>🛡️ 標準防塵蓋</p>
+          <Row name="隨座加購防塵蓋 $10" count={items.coverAddon} onAdd={() => update('coverAddon', 1)} onSub={() => update('coverAddon', -1)} />
+          <Row name="補買防塵蓋 $15" count={items.coverSingle} onAdd={() => update('coverSingle', 1)} onSub={() => update('coverSingle', -1)} />
+          {showCoverRemarkNotice && (
+            <div style={{ marginTop: '10px', padding: '10px 12px', backgroundColor: '#FFF9E6', border: '1px dashed #FFCC00', borderRadius: '10px', fontSize: '12px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5' }}>
+              ⚠️ 你揀咗多款顏色嘅膠紙座，請喺下面備註寫低防塵蓋想配邊個顏色 / 邊個座
+            </div>
+          )}
         </div>
+
+        <a href="https://www.instagram.com/p/DW3pJ1zkuY4/" target="_blank" rel="noreferrer" style={{ ...igLinkBtnStyle, display: 'block', width: '100%', marginBottom: '14px', padding: '12px 14px', fontSize: '14px' }}>🛡️ 點解要加防塵蓋？</a>
 
         <div style={{ marginBottom: '25px' }}>
           <button
@@ -481,29 +720,42 @@ export default function App() {
             onClick={() => setShowColorPreview(!showColorPreview)}
             style={{
               width: '100%',
-              padding: '14px 18px',
-              backgroundColor: '#FFF9E6',
-              color: '#744210',
-              border: '2.5px solid #D69E2E',
-              borderRadius: '16px',
-              fontSize: '14.5px',
-              fontWeight: '900',
+              padding: '16px 16px 14px',
+              backgroundColor: '#fff',
+              color: '#111',
+              border: '3px solid #111',
+              borderRadius: '18px',
               cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+              boxShadow: '0 5px 0 #111',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              flexDirection: 'column',
+              alignItems: 'stretch',
               gap: '8px',
-              transition: 'all 0.2s ease'
+              textAlign: 'left'
             }}
           >
-            <span>🎨 {showColorPreview ? '隱藏 3D打印材料顏色預覽' : '展開 3D打印材料顏色預覽 (點擊查看所有色卡)'}</span>
-            <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{showColorPreview ? '▲' : '▼'}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '26px', lineHeight: 1 }}>🎨</span>
+              <span style={{ flex: 1 }}>
+                <span style={{ display: 'block', fontSize: '17px', fontWeight: '900', lineHeight: 1.25 }}>
+                  {showColorPreview ? '收起膠紙座色卡' : '展開全部膠紙座色卡'}
+                </span>
+                <span style={{ display: 'block', marginTop: '2px', fontSize: '12px', fontWeight: '700', color: '#444' }}>
+                  {showColorPreview ? '撳一下收起' : '撳一下睇晒所有顏色，可以直接加入'}
+                </span>
+              </span>
+              <span style={{ fontSize: '18px', fontWeight: '900' }}>{showColorPreview ? '▲' : '▼'}</span>
+            </span>
+            <span style={{ display: 'flex', gap: '5px' }}>
+              {['#ffffff', '#9ca3af', '#111111', '#dc2626', '#f59e0b', '#f472b6', '#38bdf8', '#84cc16', '#a855f7', '#d6d3d1'].map((color) => (
+                <span key={color} style={{ flex: 1, height: '14px', borderRadius: '7px', backgroundColor: color, border: '1px solid rgba(0,0,0,0.18)' }} />
+              ))}
+            </span>
           </button>
 
           {showColorPreview && (
             <div style={{ backgroundColor: 'rgba(255,255,255,0.15)', padding: '12px', borderRadius: '18px', marginTop: '12px', color: '#fff' }}>
-              <div style={{ fontSize: '13px', fontWeight: '900', marginBottom: '10px', textAlign: 'center' }}>🎨 3D打印材料顏色預覽 (點擊可放大)</div>
+              <div style={{ fontSize: '13px', fontWeight: '900', marginBottom: '10px', textAlign: 'center' }}>🎨 3D打印材料顏色（撳圖睇大圖，撳加入就落單）</div>
               
               <div style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px', marginBottom: '10px' }}>
                 <div style={{ fontSize: '11px', fontWeight: '900', color: '#FFE8A3', marginBottom: '4px' }}>
@@ -514,13 +766,13 @@ export default function App() {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
                   {[
-                    { img: 'pink', name: '櫻花粉' },
-                    { img: 'seablue', name: '海洋藍' },
-                    { img: 'iceblue', name: '冰藍' },
-                    { img: 'usagiyellow', name: '沙漠黃 (Usagi黃)' },
-                    { img: 'applegreen', name: '青蘋果綠' }
-                  ].map((color, idx) => (
-                    <ColorShowcaseMini key={idx} img={`/${color.img}.jpg`} title={color.name} sub="白底" />
+                    { img: 'pink', name: '櫻花粉', key: 'tapePink' },
+                    { img: 'seablue', name: '海洋藍', key: 'tapeOceanBlue' },
+                    { img: 'iceblue', name: '冰藍', key: 'tapeIceBlue' },
+                    { img: 'usagiyellow', name: '沙漠黃 (Usagi黃)', key: 'tapeDesertYellow' },
+                    { img: 'applegreen', name: '青蘋果綠', key: 'tapeAppleGreen' }
+                  ].map((color) => (
+                    <ColorShowcaseMini key={color.key} img={`/${color.img}.jpg`} title={color.name} sub="白底" count={(items as any)[color.key]} onAdd={() => update(color.key, 1)} onSub={() => update(color.key, -1)} />
                   ))}
                 </div>
               </div>
@@ -531,12 +783,12 @@ export default function App() {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
                   {[
-                    { img: 'white', name: '白色' }, { img: 'grey', name: '灰色' }, 
-                    { img: 'black', name: '黑色' }, { img: 'red', name: '深紅' }, 
-                    { img: 'warmyellow', name: '暖黃' }, { img: 'orange', name: '橙色' },
-                    { img: 'purple', name: '紫色' }, { img: 'green', name: '綠色' }
-                  ].map((color, idx) => (
-                    <ColorShowcaseMini key={idx} img={`/${color.img}.jpg`} title={color.name} />
+                    { img: 'white', name: '白色', key: 'tapeWhite' }, { img: 'grey', name: '灰色', key: 'tapeGrey' }, 
+                    { img: 'black', name: '黑色', key: 'tapeBlack' }, { img: 'red', name: '深紅', key: 'tapeRed' }, 
+                    { img: 'warmyellow', name: '暖黃', key: 'tapeYellow' }, { img: 'orange', name: '橙色', key: 'tapeOrange' },
+                    { img: 'purple', name: '紫色', key: 'tapePurple' }, { img: 'green', name: '綠色', key: 'tapeGreen' }
+                  ].map((color) => (
+                    <ColorShowcaseMini key={color.key} img={`/${color.img}.jpg`} title={color.name} count={(items as any)[color.key]} onAdd={() => update(color.key, 1)} onSub={() => update(color.key, -1)} />
                   ))}
                 </div>
               </div>
@@ -546,25 +798,37 @@ export default function App() {
                   🏛️ PLA 獨立材料
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
-                  <ColorShowcaseMini img="/marble.jpg" title="大理石" sub="獨立材料" />
+                  <ColorShowcaseMini img="/marble.jpg" title="大理石" sub="獨立材料" count={items.tapeMarble} onAdd={() => update('tapeMarble', 1)} onSub={() => update('tapeMarble', -1)} />
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '15px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '10px' }}>
           {[
-            { img: 'pbed', title: '粉紅白吉床', price: '$68' },
-            { img: 'bbed', title: '藍白吉床', price: '$68' },
-            { img: 'twobed', title: '吉床套裝 (粉紅白x1+藍白x1)', price: '$125' },
-            { img: 'cm', title: '收聲先', price: '$78' },
-            { img: 'callbell', title: '叫人鐘', price: '$78' },
-            { img: 'callcar', title: '叫人鐘收聲先', price: '$145' },
-            { img: 'sick', title: '不想上班', price: '$28' },
-            { img: 'kc', title: '如意吉場', price: '$28' }
-          ].map((item, idx) => (
-            <ShowcaseCardMini key={idx} img={`/${item.img}.jpg`} title={item.title} price={item.price} />
+            { img: 'pbed', title: '粉紅白吉床', price: '$68', actions: [{ key: 'clickerLuckyPink' }] },
+            { img: 'bbed', title: '藍白吉床', price: '$68', actions: [{ key: 'clickerLuckyBlue' }] },
+            { img: 'twobed', title: '吉床套裝 (粉紅白x1+藍白x1)', price: '$125', actions: [{ key: 'clickerCombo' }] },
+            { img: 'cm', title: '收聲先', price: '$78', actions: [{ key: 'clickerShutUp' }] }
+          ].map((item) => (
+            <ShowcaseCardMini key={item.img} img={`/${item.img}.jpg`} title={item.title} price={item.price} actions={item.actions} countOf={(key: string) => (items as any)[key]} onAdd={(key: string) => update(key, 1)} onSub={(key: string) => update(key, -1)} />
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '10px' }}>
+          {[
+            { img: 'callbell', title: '叫人鐘', price: '$78', actions: [{ key: 'clickerCallbellNormal', label: '正常' }, { key: 'clickerCallbellFinger', label: '中指' }] },
+            { img: 'callcar', title: '叫人鐘收聲先', price: '$145', actions: [{ key: 'clickerCallcarNormal', label: '正常' }, { key: 'clickerCallcarFinger', label: '中指' }] }
+          ].map((item) => (
+            <ShowcaseCardMini key={item.img} img={`/${item.img}.jpg`} title={item.title} price={item.price} actions={item.actions} countOf={(key: string) => (items as any)[key]} onAdd={(key: string) => update(key, 1)} onSub={(key: string) => update(key, -1)} />
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '15px' }}>
+          {[
+            { img: 'sick', title: '不想上班', price: '$28', actions: [{ key: 'keyringNoWork' }] },
+            { img: 'kc', title: '如意吉場', price: '$28', actions: [{ key: 'keyringLucky' }] }
+          ].map((item) => (
+            <ShowcaseCardMini key={item.img} img={`/${item.img}.jpg`} title={item.title} price={item.price} actions={item.actions} countOf={(key: string) => (items as any)[key]} onAdd={(key: string) => update(key, 1)} onSub={(key: string) => update(key, -1)} />
           ))}
         </div>
 
@@ -574,137 +838,9 @@ export default function App() {
       </div>
 
       <div ref={orderSectionRef} style={{ width: '100%', maxWidth: '480px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
-        {/* 🖤 最新商品：「emo人員」鎖匙扣 */}
         <div style={formCardStyle}>
-          <Section title="🖤 最新商品：「emo人員」鎖匙扣" badge="買5送1" badgeColor="#111827">
-            <div style={{ fontSize: '12px', color: '#374151', fontWeight: 'bold', marginBottom: '12px', backgroundColor: '#F3F4F6', padding: '10px 12px', borderRadius: '12px', border: '1px solid #E5E7EB', lineHeight: '1.5' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#111827', fontWeight: '900', fontSize: '13px', marginBottom: '3px' }}>
-                <span>🖤</span>
-                <span>買俾身邊成日都 emo 嘅 lo best 啦，一人一個，一齊 emo！</span>
-              </div>
-              <div style={{ color: '#4B5563' }}>
-                📏 <b>尺寸：</b>約 3cm × 6cm<br />
-                ✉️ 產品夠細可選平郵包郵（平郵冇追蹤功能，寄失自負）<br />
-                🎁 <b>新產品限定特惠：</b>買 5 送 1（買 5 個實出 6 個，買 10 個實出 12 個）！
-              </div>
-            </div>
-
-            <div style={{ padding: '6px 0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: '15px', fontWeight: '900', color: '#111827' }}>
-                    🖤「emo人員」鎖匙扣 ($38)
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: 'bold', marginTop: '2px' }}>
-                    買滿 5 個自動送 1 個
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <button type="button" onClick={() => update('keyringEmo', -1)} className="btn-3d" style={btnStyle}>-</button>
-                  <span style={{ fontSize: '16px', fontWeight: '900', minWidth: '24px', textAlign: 'center' }}>{items.keyringEmo}</span>
-                  <button type="button" onClick={() => update('keyringEmo', 1)} className="btn-3d" style={btnStyle}>+</button>
-                </div>
-              </div>
-
-              {/* 快捷加購 5 個按鈕 */}
-              {items.keyringEmo === 0 && (
-                <button
-                  type="button"
-                  onClick={() => setItems(p => ({ ...p, keyringEmo: 5 }))}
-                  style={{
-                    marginTop: '10px',
-                    width: '100%',
-                    padding: '9px 12px',
-                    backgroundColor: '#FEF2F2',
-                    border: '1.5px dashed #EF4444',
-                    borderRadius: '10px',
-                    color: '#B91C1C',
-                    fontSize: '12px',
-                    fontWeight: '900',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px'
-                  }}
-                >
-                  ⚡ 一鍵加購 5 個（$190 享買五送一優惠）
-                </button>
-              )}
-
-              {/* 買 5 送 1 提示盒 */}
-              {items.keyringEmo >= 5 && (
-                <div style={{ marginTop: '10px', padding: '8px 12px', backgroundColor: '#ECFDF5', border: '1.5px solid #10B981', borderRadius: '10px', fontSize: '12px', color: '#065F46', fontWeight: 'bold', lineHeight: '1.5' }}>
-                  🎉 <b>已享「買五送一」！</b>你選購了 <b>{items.keyringEmo}</b> 個，店主出貨將自動附送 <b>+{Math.floor(items.keyringEmo / 5)}</b> 個（共寄出 <b>{items.keyringEmo + Math.floor(items.keyringEmo / 5)}</b> 個）！
-                </div>
-              )}
-            </div>
-          </Section>
-        </div>
-
-        <div style={formCardStyle}>
-          <Section title="📦 第一區：膠紙座系列" badge="可選平郵" badgeColor="#2E7D32">
-            <div style={{ fontSize: '12px', color: '#4A6B22', fontWeight: 'bold', marginBottom: '12px', backgroundColor: '#F0F7E6', padding: '8px 12px', borderRadius: '10px', border: '1px solid #D2E7B0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>⚙️</span>
-              <span>所有膠紙座旋轉中軸已統一改用白色 PETG 物料</span>
-            </div>
-            <Row name="🤍 白色 White ($58)" count={items.tapeWhite} onAdd={() => update('tapeWhite', 1)} onSub={() => update('tapeWhite', -1)} />
-            <Row name="🩶 灰色 Grey ($58)" count={items.tapeGrey} onAdd={() => update('tapeGrey', 1)} onSub={() => update('tapeGrey', -1)} />
-            <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '15px' }}>
-              <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#77815C', marginBottom: '10px' }}>🎨 其他訂造顏色 ($78):</p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                {customColors.map(c => (
-                  <RowMini key={c.k} name={c.n} count={(items as any)[`tape${c.k}`]} onAdd={() => update(`tape${c.k}`, 1)} onSub={() => update(`tape${c.k}`, -1)} />
-                ))}
-              </div>
-            </div>
-            <div style={{ marginTop: '20px', borderTop: '2px dashed #eee', paddingTop: '15px' }}>
-              <p style={{ margin: '0 0 6px 0', fontSize: '14px', fontWeight: '900', color: '#77815C' }}>🛡️ 標準防塵蓋加購：</p>
-              <Row name="隨座加購防塵蓋 $10" count={items.coverAddon} onAdd={() => update('coverAddon', 1)} onSub={() => update('coverAddon', -1)} />
-              <Row name="補買防塵蓋 $15" count={items.coverSingle} onAdd={() => update('coverSingle', 1)} onSub={() => update('coverSingle', -1)} />
-
-              <p style={{ margin: '16px 0 6px 0', fontSize: '14px', fontWeight: '900', color: '#77815C' }}>✨ 特別款式防塵蓋：</p>
-              <Row name="🐹 Chiikawa防塵蓋 $30" count={items.coverChiikawa} onAdd={() => update('coverChiikawa', 1)} onSub={() => update('coverChiikawa', -1)} />
-              <Row name="🐰 Usagi防塵蓋 $30" count={items.coverUsagi} onAdd={() => update('coverUsagi', 1)} onSub={() => update('coverUsagi', -1)} />
-              <Row name="🐱 Hachiware防塵蓋 $30" count={items.coverHachiware} onAdd={() => update('coverHachiware', 1)} onSub={() => update('coverHachiware', -1)} />
-              <Row name="🐰 Miffy防塵蓋 (有耳朵版本) $30" count={items.coverMiffyEar} onAdd={() => update('coverMiffyEar', 1)} onSub={() => update('coverMiffyEar', -1)} />
-              <Row name="🐰 近鏡Miffy防塵蓋 $30" count={items.coverMiffy} onAdd={() => update('coverMiffy', 1)} onSub={() => update('coverMiffy', -1)} />
-              
-              {showCoverRemarkNotice && (
-                <div style={{ marginTop: '12px', padding: '10px 12px', backgroundColor: '#FFF9E6', border: '1px dashed #FFCC00', borderRadius: '10px', fontSize: '12px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5' }}>
-                  ⚠️ 溫馨提示：由於你揀咗多款顏色嘅膠紙座，請記得喺下方「第四區」備註欄寫低防塵蓋分別想要咩顏色 / 配邊個座呀，多謝合作 ❤️
-                </div>
-              )}
-            </div>
-          </Section>
-        </div>
-
-        <div style={formCardStyle}>
-          <Section title="🔔 第二區：Clicker 系列" badge="❌ 不設平郵" badgeColor="#dc3545">
-            <Row name="🤫 收聲先 ($78)" count={items.clickerShutUp} onAdd={() => update('clickerShutUp', 1)} onSub={() => update('clickerShutUp', -1)} />
-            <Row name="🛎️ 叫人鐘 (正常版本) ($78)" count={items.clickerCallbellNormal} onAdd={() => update('clickerCallbellNormal', 1)} onSub={() => update('clickerCallbellNormal', -1)} />
-            <Row name="🛎️ 叫人鐘 (舉中指版本) ($78)" count={items.clickerCallbellFinger} onAdd={() => update('clickerCallbellFinger', 1)} onSub={() => update('clickerCallbellFinger', -1)} />
-            <Row name="🌸 粉紅白吉床 ($68)" count={items.clickerLuckyPink} onAdd={() => update('clickerLuckyPink', 1)} onSub={() => update('clickerLuckyPink', -1)} />
-            <Row name="💎 藍白吉床 ($68)" count={items.clickerLuckyBlue} onAdd={() => update('clickerLuckyBlue', 1)} onSub={() => update('clickerLuckyBlue', -1)} />
-            
-            <div style={{ margin: '14px 0 10px 0', borderTop: '2px dashed #e2e8f0' }} />
-
-            <Row name="🚑 叫人鐘收聲先 (正常版本) ($145)" count={items.clickerCallcarNormal} onAdd={() => update('clickerCallcarNormal', 1)} onSub={() => update('clickerCallcarNormal', -1)} />
-            <Row name="🚑 叫人鐘收聲先 (舉中指版本) ($145)" count={items.clickerCallcarFinger} onAdd={() => update('clickerCallcarFinger', 1)} onSub={() => update('clickerCallcarFinger', -1)} />
-            <Row name="✨ 吉床套裝 (含粉紅白吉床x1, 藍白吉床x1) ($125)" count={items.clickerCombo} onAdd={() => update('clickerCombo', 1)} onSub={() => update('clickerCombo', -1)} />
-          </Section>
-        </div>
-
-        <div style={formCardStyle}>
-          <Section title="🎁 第三區：鎖匙扣系列 ($28)" badge="可選平郵" badgeColor="#2E7D32">
-            <Row name="🚫 不想上班" count={items.keyringNoWork} onAdd={() => update('keyringNoWork', 1)} onSub={() => update('keyringNoWork', -1)} />
-            <Row name="🍊 如意吉場" count={items.keyringLucky} onAdd={() => update('keyringLucky', 1)} onSub={() => update('keyringLucky', -1)} />
-          </Section>
-        </div>
-
-        <div style={formCardStyle}>
-          <Section title="🚚 第四區：配送及個人資訊">
-            <p style={privacyNoticeStyle}>🛡️ 呢個網站唔會儲存任何個人資料。</p>
+          <Section title="🚚 配送及個人資訊">
+            <p style={privacyNoticeStyle}>🛡️ 訂單只會留喺你部手機，方便去完 PayMe 返嚟再複製。網站唔會把資料上傳。</p>
             {hasClicker && <p style={{ color: '#dc3545', fontSize: '11px', fontWeight: 'bold', marginBottom: '8px' }}>⚠️ 由於選購了 Clicker，只能選順豐。</p>}
             
             <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
@@ -720,6 +856,11 @@ export default function App() {
               onChange={e => setShipping({...shipping, address: e.target.value})} 
             />
             
+            {showCoverRemarkNotice && (
+              <div style={{ marginBottom: '8px', padding: '10px 12px', backgroundColor: '#FFF9E6', border: '1px dashed #FFCC00', borderRadius: '10px', fontSize: '12px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5' }}>
+                ⚠️ 你揀咗多款顏色嘅膠紙座，請喺備註寫低防塵蓋想配邊個顏色 / 邊個座
+              </div>
+            )}
             <input placeholder="備註 (Remarks) (例如：防塵蓋要灰色 / 配邊個座)" style={{...inputStyle, border: showCoverRemarkNotice ? '2px solid #FFCC00' : '2px solid #77815C', backgroundColor: showCoverRemarkNotice ? '#FFF9E6' : '#fff'} as any} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
             
             <div style={{ marginTop: '12px', padding: '12px', backgroundColor: '#F4F6F0', borderRadius: '12px', border: '1px solid #77815C' }}>
@@ -730,7 +871,7 @@ export default function App() {
                 placeholder="輸入優惠碼" 
                 style={{...inputStyle, marginBottom: '0', textTransform: 'uppercase'}} 
                 value={promoCode} 
-                onChange={e => setPromoCode(e.target.value.toUpperCase())} 
+                onChange={e => { setAllowFireworks(true); setPromoCode(e.target.value.toUpperCase()); }} 
               />
               {isPromoApplied ? (
                 <div style={{ marginTop: '6px', fontSize: '12px', color: '#2E7D32', fontWeight: 'bold' }}>
@@ -765,23 +906,22 @@ export default function App() {
         {/* 📸 醒目落單截圖指引公告 */}
         <div style={capNoticeStyle}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '8px', fontSize: '17px', fontWeight: '900', color: '#854d0e', textAlign: 'center' }}>
-            <span>📸</span>
-            <span>【重要必睇】點解一定要截圖 send 俾店主？</span>
-            <span>📸</span>
+            <span>📋</span>
+            <span>【重要必睇】點樣把訂單交俾店主？</span>
           </div>
 
           <div style={{ backgroundColor: '#fff', padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #EAB308', textAlign: 'left', fontSize: '13px', lineHeight: '1.6', color: '#333' }}>
-            <div style={{ color: '#dc2626', fontWeight: '900', marginBottom: '6px', fontSize: '13.5px', display: 'flex', alignItems: 'flex-start', gap: '4px' }}>
-              <span>⚠️</span>
-              <span><b>注意：</b>為保障私隱，本網站為純靜態計算器，<b>絕無儲存任何訂單紀錄及個人資料</b>！</span>
+            <div style={{ color: '#166534', fontWeight: '900', marginBottom: '6px', fontSize: '13.5px', display: 'flex', alignItems: 'flex-start', gap: '4px' }}>
+              <span>📱</span>
+              <span>張單會留喺呢部手機。去完 PayMe 或者 Instagram 返嚟，都可以再複製。</span>
             </div>
             <div style={{ fontWeight: 'bold', color: '#444', marginBottom: '4px' }}>
-              所以落單及付款後，請務必完成以下 3 個步驟，店主先可以為你執貨：
+              請跟以下 3 個步驟，店主先可以為你執貨：
             </div>
             <div style={{ paddingLeft: '4px', display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12.5px', fontWeight: '700', color: '#1f2937' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
                 <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 1</span>
-                <span><b>截圖下方「執貨單」全圖</b>（包含地址與所有選購品項）</span>
+                <span><b>撳「複製訂單文字」</b>（執貨單唔使再截圖）</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
                 <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 2</span>
@@ -789,7 +929,7 @@ export default function App() {
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
                 <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 3</span>
-                <span>將<b>兩張截圖</b>一併 DM Instagram: <a href="https://instagram.com/nurseforgehk" target="_blank" rel="noreferrer" style={{ color: '#D63384', textDecoration: 'underline' }}>@nurseforgehk</a> 安排出貨 📦</span>
+                <span>將<b>複製嘅文字同 PayMe 截圖</b>一併 DM Instagram: <a href="https://instagram.com/nurseforgehk" target="_blank" rel="noreferrer" style={{ color: '#D63384', textDecoration: 'underline' }}>@nurseforgehk</a> 📦</span>
               </div>
             </div>
           </div>
@@ -837,8 +977,35 @@ export default function App() {
             )}
             <div style={{ fontSize: '24px', fontWeight: '900', color: '#77815C' }}>Total: HKD ${total}</div>
           </div>
+          {renderCopyButton()}
+          {copyState === 'copied' && (
+            <div style={{ marginTop: '8px', fontSize: '12px', fontWeight: 'bold', color: '#166534', textAlign: 'center', lineHeight: 1.5 }}>
+              已複製。去 PayMe 同 IG 之後返嚟，張單仍然喺度，可以再複製。
+            </div>
+          )}
           <div style={quoteAreaStyle}>✨ {randomQuote}</div>
         </div>
+
+        {copyFallback && (
+          <div style={{ width: '95%', maxWidth: '380px', marginTop: '12px', padding: '12px', backgroundColor: '#fff', borderRadius: '12px', border: '3px solid #dc2626' }}>
+            <p style={{ margin: '0 0 8px 0', fontSize: '13px', fontWeight: 'bold', color: '#991b1b', lineHeight: 1.5 }}>
+              呢個瀏覽器未複製到。請長按下面文字，揀「複製」，然後撳「我已經複製好」。
+            </p>
+            <textarea
+              ref={copyFallbackRef}
+              readOnly
+              value={copyFallback}
+              style={{ width: '100%', height: '180px', fontSize: '13px', lineHeight: 1.45, padding: '8px', borderRadius: '8px', border: '1px solid #ccc' }}
+            />
+            <button
+              type="button"
+              onClick={() => { setCopyState('copied'); setCopyFallback(''); }}
+              style={{ display: 'block', width: '100%', marginTop: '8px', padding: '12px', backgroundColor: '#111', color: '#fff', border: 'none', borderRadius: '30px', fontWeight: 900, cursor: 'pointer' }}
+            >
+              我已經複製好
+            </button>
+          </div>
+        )}
 
         <div style={agreementBoxStyle}>
           <label style={{ display: 'flex', gap: '12px', cursor: 'pointer', alignItems: 'flex-start' }}>
@@ -1081,29 +1248,32 @@ export default function App() {
             </div>
           </div>
           
-          <div>
-            {isFormValid ? (
-              <a 
-                href="https://payme.hsbc/nfhk" 
-                target="_blank" 
-                rel="noreferrer" 
+          {renderCopyButton()}
+          <div style={{ marginTop: '6px' }}>
+            {paymeLockedReason === '' ? (
+              <button
+                type="button"
                 className="payme-active-btn"
-                style={paymeBtnStyle}
+                style={{ ...paymeBtnStyle, border: 'none', cursor: 'pointer' }}
+                onClick={() => {
+                  copyOrder();
+                  window.open('https://payme.hsbc/nfhk', '_blank', 'noopener,noreferrer');
+                }}
               >
                 🌟 立即 PayMe 付款
-              </a>
+              </button>
             ) : (
               <div style={paymeBtnDisabledStyle}>
-                {!hasRealProducts ? "請先揀選至少一件商品" : !agreed ? "請先剔選上方聲明" : "請填妥姓名/IG/電話/詳細地址"}
+                {paymeLockedReason}
               </div>
             )}
           </div>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', padding: '0 2px' }}>
-            <span style={{ fontSize: '11px', color: '#b91c1c', fontWeight: '900', backgroundColor: '#FEF08A', padding: '2px 6px', borderRadius: '6px', border: '1px solid #EAB308' }}>
-              📸 必做：截圖執貨單+PayMe紀錄 DM 店主 (網站無儲存)
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', padding: '0 2px', gap: '8px' }}>
+            <span style={{ fontSize: '11px', color: '#166534', fontWeight: '900', backgroundColor: '#DCFCE7', padding: '2px 6px', borderRadius: '6px', border: '1px solid #86EFAC', lineHeight: 1.35 }}>
+              先複製訂單，再截 PayMe 圖 DM 店主。返嚟可以再複製。
             </span>
-            <span style={{ fontSize: '9px', color: '#aaa' }}>by @nursingmeme_hk</span>
+            <span style={{ fontSize: '9px', color: '#aaa', flexShrink: 0 }}>by @nursingmeme_hk</span>
           </div>
         </div>
       </div>
@@ -1163,38 +1333,86 @@ const diffBtnStyle: any = {
 };
 
 // COMPONENTS
-function ShowcaseCardMini({ img, title, price }: any) { 
-  const [isZoomed, setIsZoomed] = useState(false);
+function PreviewAdd({ count, onAdd, onSub, label, addText, compact }: any) {
+  const stop = (e: any) => e.stopPropagation();
+  if (!count) {
+    return (
+      <button
+        type="button"
+        className="btn-3d"
+        onClick={(e) => { stop(e); onAdd(); }}
+        style={{
+          marginTop: compact ? '4px' : '8px',
+          width: '100%',
+          padding: compact ? '5px 2px' : '9px 10px',
+          borderRadius: '8px',
+          border: '1px solid #77815C',
+          backgroundColor: '#77815C',
+          color: '#fff',
+          fontSize: compact ? '11px' : '14px',
+          fontWeight: '900',
+          cursor: 'pointer',
+          lineHeight: 1.2
+        }}
+      >
+        {label ? `${label} 加入` : (addText || '加入')}
+      </button>
+    );
+  }
+  return (
+    <div onClick={stop} style={{ marginTop: compact ? '4px' : '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', width: '100%' }}>
+      <button type="button" className="btn-3d" onClick={onSub} style={{ ...btnStyle, width: compact ? '26px' : '28px', height: compact ? '26px' : '28px', fontSize: '14px', flex: '0 0 auto' }}>-</button>
+      <span style={{ fontSize: compact ? '12px' : '15px', fontWeight: '900', color: '#77815C', flex: 1, textAlign: 'center' }}>{label ? `${label} ${count}` : count}</span>
+      <button type="button" className="btn-3d" onClick={onAdd} style={{ ...btnStyle, width: compact ? '26px' : '28px', height: compact ? '26px' : '28px', fontSize: '14px', flex: '0 0 auto' }}>+</button>
+    </div>
+  );
+}
+
+function ShowcaseCardMini({ img, title, price, actions, countOf, onAdd, onSub }: any) { 
   return ( 
     <div 
-      onClick={() => setIsZoomed(!isZoomed)}
       style={{ 
-        backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'all 0.3s ease', gridColumn: isZoomed ? '1 / -1' : 'auto', zIndex: isZoomed ? 10 : 1
-      } as any}
+        backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+      }}
     >
-      <img src={img} loading="lazy" decoding="async" style={{ width: '100%', aspectRatio: isZoomed ? 'auto' : '1/1', maxHeight: isZoomed ? '400px' : 'none', objectFit: 'cover', transition: 'all 0.3s ease' } as any} alt={title} />
-      <div style={{ padding: isZoomed ? '12px' : '6px' }}>
-        <div style={{ fontSize: isZoomed ? '15px' : '11px', fontWeight: 'bold', color: '#000' }}>{title}</div>
-        <div style={{ fontSize: isZoomed ? '16px' : '12px', color: '#77815C', fontWeight: '900' }}>{price}</div>
-        {isZoomed && <div style={{ fontSize: '11px', color: '#dc3545', fontWeight: 'bold', marginTop: '6px', backgroundColor: '#fff3cd', padding: '2px 6px', borderRadius: '4px', display: 'inline-block' }}>💡 再點擊圖片可縮小 ⬆️</div>}
+      <img src={img} alt={title} loading="lazy" decoding="async" onClick={() => openPhotoPreview(img, title)} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block', cursor: 'zoom-in' }} />
+      <div style={{ padding: '6px' }}>
+        <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#000' }}>{title}</div>
+        <div style={{ fontSize: '12px', color: '#77815C', fontWeight: '900' }}>{price}</div>
+        {actions?.map((action: any) => (
+          <PreviewAdd key={action.key} compact label={action.label} count={countOf(action.key)} onAdd={() => onAdd(action.key)} onSub={() => onSub(action.key)} />
+        ))}
       </div>
     </div> 
   ); 
 }
 
-function ColorShowcaseMini({ img, title, sub }: any) {
-  const [isZoomed, setIsZoomed] = useState(false);
+function ColorShowcaseMini({ img, title, sub, count, onAdd, onSub }: any) {
   return (
     <div 
-      onClick={() => setIsZoomed(!isZoomed)}
       style={{
-        backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', textAlign: 'center', border: '1px solid #ddd', cursor: 'pointer', transition: 'all 0.25s ease', gridColumn: isZoomed ? '1 / -1' : 'auto', zIndex: isZoomed ? 20 : 1, boxShadow: isZoomed ? '0 8px 25px rgba(0,0,0,0.3)' : 'none'
-      } as any}
+        backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', textAlign: 'center', border: '1px solid #ddd'
+      }}
     >
-      <img src={img} loading="lazy" decoding="async" style={{ width: '100%', aspectRatio: isZoomed ? 'auto' : '1/1', maxHeight: isZoomed ? '320px' : 'none', objectFit: 'cover' } as any} alt={title} />
-      <div style={{ padding: '4px 2px', fontSize: isZoomed ? '13px' : '10px', color: '#333', fontWeight: 'bold' }}>
+      <img src={img} alt={title} loading="lazy" decoding="async" onClick={() => openPhotoPreview(img, title)} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block', cursor: 'zoom-in' }} />
+      <div style={{ padding: '4px 2px 6px', fontSize: '10px', color: '#333', fontWeight: 'bold' }}>
         {title}
         {sub && <span style={{ fontSize: '9px', color: '#77815C', display: 'block' }}>({sub})</span>}
+        {onAdd && <PreviewAdd compact count={count} onAdd={onAdd} onSub={onSub} />}
+      </div>
+    </div>
+  );
+}
+
+function PhotoLightbox({ src, title, onClose }: any) {
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, backgroundColor: '#1a1a1a', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: '440px' }}>
+        <img src={src} alt={title} style={{ width: '100%', maxHeight: '72vh', objectFit: 'contain', display: 'block', backgroundColor: '#fff', borderRadius: '16px' }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginTop: '10px' }}>
+          <span style={{ color: '#fff', fontWeight: '900', fontSize: '15px' }}>{title}</span>
+          <button type="button" onClick={onClose} style={{ border: 'none', backgroundColor: '#fff', color: '#111', borderRadius: '20px', padding: '8px 14px', fontWeight: '900', cursor: 'pointer' }}>關閉</button>
+        </div>
       </div>
     </div>
   );
@@ -1224,19 +1442,6 @@ function Row({ name, count, onAdd, onSub }: any) {
         <button type="button" onClick={onSub} className="btn-3d" style={btnStyle}>-</button>
         <span style={{ fontSize: '15px', fontWeight: 'bold', minWidth: '20px', textAlign: 'center' }}>{count}</span>
         <button type="button" onClick={onAdd} className="btn-3d" style={btnStyle}>+</button>
-      </div>
-    </div>
-  );
-}
-
-function RowMini({ name, count, onAdd, onSub }: any) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', backgroundColor: '#fff', padding: '8px', borderRadius: '10px', border: '1px solid #eee' }}>
-      <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#333' }}>{name}</span>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <button type="button" onClick={onSub} className="btn-3d" style={{ ...btnStyle, width: '26px', height: '26px', fontSize: '12px' }}>-</button>
-        <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{count}</span>
-        <button type="button" onClick={onAdd} className="btn-3d" style={{ ...btnStyle, width: '26px', height: '26px', fontSize: '12px' }}>+</button>
       </div>
     </div>
   );
