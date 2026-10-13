@@ -2,7 +2,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 export default function App() {
-  const [mounted, setMounted] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [orderId, setOrderId] = useState(''); 
   const [today, setToday] = useState('');
@@ -49,7 +48,6 @@ export default function App() {
   const calcSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setMounted(true);
     setOrderId(Math.floor(Math.random() * 900000000000 + 100000000000).toString());
     const hkDate = new Date().toLocaleString("en-GB", {
       timeZone: "Asia/Hong_Kong", year: 'numeric', month: '2-digit', day: '2-digit'
@@ -163,7 +161,8 @@ export default function App() {
   const totalCoverCount = items.coverChiikawa + items.coverUsagi + items.coverHachiware + items.coverMiffyEar + items.coverMiffy + items.coverAddon + items.coverSingle;
   const showCoverRemarkNotice = distinctColorsCount >= 2 && totalCoverCount > 0 && totalCoverCount !== totalTapeCount;
 
-  const isFormValid = agreed && shipping.name.trim() !== '' && shipping.phone.trim() !== '' && shipping.igName.trim() !== '' && shipping.address.trim() !== '';
+  const hasRealProducts = Object.entries(items).some(([key, qty]) => key !== 'addonDiff' && qty > 0);
+  const isFormValid = hasRealProducts && agreed && shipping.name.trim() !== '' && shipping.phone.trim() !== '' && shipping.igName.trim() !== '' && shipping.address.trim() !== '';
 
   const rawTotal = [
     { qty: items.keyringEmo, p: 38 },
@@ -272,8 +271,6 @@ export default function App() {
 
   const update = (f: string, d: number) => setItems(p => ({ ...p, [f]: Math.max(0, (p as any)[f] + d) }));
   const clearAll = () => { if(confirm("確定要清除所有已選商品？")) { setItems(initialItems); } };
-
-  if (!mounted) return null;
 
   return (
     <div style={{ padding: '20px 15px 160px 15px', backgroundColor: '#77815C', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
@@ -429,6 +426,8 @@ export default function App() {
             <img 
               src="/emo.jpg" 
               alt="「emo人員」鎖匙扣" 
+              fetchPriority="high"
+              decoding="async"
               style={{
                 width: '100%',
                 aspectRatio: '4 / 3',
@@ -1095,7 +1094,7 @@ export default function App() {
               </a>
             ) : (
               <div style={paymeBtnDisabledStyle}>
-                {!agreed ? "請先剔選上方聲明" : "請填妥姓名/IG/電話/詳細地址"}
+                {!hasRealProducts ? "請先揀選至少一件商品" : !agreed ? "請先剔選上方聲明" : "請填妥姓名/IG/電話/詳細地址"}
               </div>
             )}
           </div>
@@ -1173,7 +1172,7 @@ function ShowcaseCardMini({ img, title, price }: any) {
         backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', textAlign: 'center', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'all 0.3s ease', gridColumn: isZoomed ? '1 / -1' : 'auto', zIndex: isZoomed ? 10 : 1
       } as any}
     >
-      <img src={img} style={{ width: '100%', aspectRatio: isZoomed ? 'auto' : '1/1', maxHeight: isZoomed ? '400px' : 'none', objectFit: 'cover', transition: 'all 0.3s ease' } as any} alt={title} />
+      <img src={img} loading="lazy" decoding="async" style={{ width: '100%', aspectRatio: isZoomed ? 'auto' : '1/1', maxHeight: isZoomed ? '400px' : 'none', objectFit: 'cover', transition: 'all 0.3s ease' } as any} alt={title} />
       <div style={{ padding: isZoomed ? '12px' : '6px' }}>
         <div style={{ fontSize: isZoomed ? '15px' : '11px', fontWeight: 'bold', color: '#000' }}>{title}</div>
         <div style={{ fontSize: isZoomed ? '16px' : '12px', color: '#77815C', fontWeight: '900' }}>{price}</div>
@@ -1192,7 +1191,7 @@ function ColorShowcaseMini({ img, title, sub }: any) {
         backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', textAlign: 'center', border: '1px solid #ddd', cursor: 'pointer', transition: 'all 0.25s ease', gridColumn: isZoomed ? '1 / -1' : 'auto', zIndex: isZoomed ? 20 : 1, boxShadow: isZoomed ? '0 8px 25px rgba(0,0,0,0.3)' : 'none'
       } as any}
     >
-      <img src={img} style={{ width: '100%', aspectRatio: isZoomed ? 'auto' : '1/1', maxHeight: isZoomed ? '320px' : 'none', objectFit: 'cover' } as any} alt={title} />
+      <img src={img} loading="lazy" decoding="async" style={{ width: '100%', aspectRatio: isZoomed ? 'auto' : '1/1', maxHeight: isZoomed ? '320px' : 'none', objectFit: 'cover' } as any} alt={title} />
       <div style={{ padding: '4px 2px', fontSize: isZoomed ? '13px' : '10px', color: '#333', fontWeight: 'bold' }}>
         {title}
         {sub && <span style={{ fontSize: '9px', color: '#77815C', display: 'block' }}>({sub})</span>}
