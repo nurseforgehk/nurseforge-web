@@ -435,9 +435,6 @@ export default function App() {
   ];
   
   const totalTapeCount = tapeColorQuantities.reduce((acc, curr) => acc + curr, 0);
-  const distinctColorsCount = tapeColorQuantities.filter(qty => qty > 0).length;
-  const looseCoverCount = items.coverChiikawa + items.coverUsagi + items.coverHachiware + items.coverMiffyEar + items.coverMiffy + items.coverSingle;
-  const showCoverRemarkNotice = distinctColorsCount >= 2 && looseCoverCount > 0 && looseCoverCount !== totalTapeCount;
 
   const hasRealProducts = Object.entries(items).some(([key, qty]) => key !== 'addonDiff' && qty > 0);
 
@@ -950,11 +947,6 @@ export default function App() {
               onReset={resetCoverColors}
             />
             <Row name="補買防塵蓋 $15" count={items.coverSingle} onAdd={() => update('coverSingle', 1)} onSub={() => update('coverSingle', -1)} />
-            {showCoverRemarkNotice && (
-              <div style={{ marginTop: '10px', padding: '10px 12px', backgroundColor: '#FFF9E6', border: '1px dashed #FFCC00', borderRadius: '10px', fontSize: '12px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5' }}>
-                ⚠️ 你揀咗多款顏色嘅膠紙座，公仔蓋或者補買防塵蓋請喺下面備註寫低想配邊個座
-              </div>
-            )}
           </div>
           <a href="https://www.instagram.com/p/DW3pJ1zkuY4/" target="_blank" rel="noreferrer" style={{ ...igLinkBtnStyle, display: 'block', width: '100%', padding: '12px 14px', fontSize: '14px' }}>🛡️ 點解要加防塵蓋？</a>
         </div>
@@ -1131,12 +1123,7 @@ export default function App() {
               onChange={e => setShipping({...shipping, address: e.target.value})} 
             />
             
-            {showCoverRemarkNotice && (
-              <div style={{ marginBottom: '8px', padding: '10px 12px', backgroundColor: '#FFF9E6', border: '1px dashed #FFCC00', borderRadius: '10px', fontSize: '12px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5' }}>
-                ⚠️ 你揀咗多款顏色嘅膠紙座，公仔蓋或者補買防塵蓋請喺備註寫低想配邊個座
-              </div>
-            )}
-            <input placeholder="備註 (Remarks) (例如：防塵蓋要灰色 / 配邊個座)" style={{...inputStyle, border: showCoverRemarkNotice ? '2px solid #FFCC00' : '2px solid #77815C', backgroundColor: showCoverRemarkNotice ? '#FFF9E6' : '#fff'} as any} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
+            <input placeholder="備註" style={inputStyle} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
             
             <div style={{ marginTop: '12px', padding: '12px', backgroundColor: '#F4F6F0', borderRadius: '12px', border: '1px solid #77815C' }}>
               <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#77815C', display: 'block', marginBottom: '6px' }}>
