@@ -191,7 +191,8 @@ const PRODUCT_CODES = [
   { group: 'Clicker', name: '藍白吉床', code: 'BW', price: 68 },
   { group: 'Clicker', name: '吉床套裝', code: 'BED', price: 125 },
   { group: 'Clicker', name: '收聲先', code: 'CM', price: 78 },
-  { group: '鎖匙扣', name: '「emo人員」鎖匙扣', code: 'EMO', price: 38 },
+  { group: '鎖匙扣', name: '「emo人員」鎖匙扣 (RN)', code: 'EMORN', price: 38 },
+  { group: '鎖匙扣', name: '「emo人員」鎖匙扣 (APN)', code: 'EMOAPN', price: 38 },
   { group: '鎖匙扣', name: '不想上班鎖匙扣', code: 'SL', price: 28 },
   { group: '鎖匙扣', name: '如意吉場鎖匙扣', code: 'KC', price: 28 },
 ];
@@ -233,7 +234,7 @@ export default function App() {
   ];
 
   const initialItems = {
-    keyringEmo: 0,
+    keyringEmoRn: 0, keyringEmoApn: 0,
     tapeWhite: 0, tapeGrey: 0, tapeAppleGreen: 0, tapeMarble: 0,
     tapeBlack: 0, tapeRed: 0, tapeYellow: 0, tapeOrange: 0, tapePurple: 0, tapeGreen: 0,
     tapePink: 0, tapeDesertYellow: 0, tapeOceanBlue: 0, tapeIceBlue: 0, 
@@ -246,6 +247,7 @@ export default function App() {
   };
 
   const [items, setItems] = useState(initialItems);
+  const [emoGiftRn, setEmoGiftRn] = useState<number | null>(null);
   const [coverColors, setCoverColors] = useState<Record<string, number> | null>(null);
   const [coverEditorOpen, setCoverEditorOpen] = useState(false);
   const [shipping, setShipping] = useState({ 
@@ -269,6 +271,10 @@ export default function App() {
               const qty = Number(saved.items[key]);
               if (Number.isFinite(qty) && qty >= 0) (next as any)[key] = Math.floor(qty);
             }
+            const legacyEmo = Number(saved.items.keyringEmo);
+            if (Number.isFinite(legacyEmo) && legacyEmo > 0 && next.keyringEmoRn === 0 && next.keyringEmoApn === 0) {
+              next.keyringEmoRn = Math.floor(legacyEmo);
+            }
             return next;
           });
         }
@@ -286,6 +292,7 @@ export default function App() {
         setCoverColors(readCoverColors(saved.coverColors, saved.items));
         if (typeof saved.promoCode === 'string') setPromoCode(saved.promoCode.slice(0, 40));
         if (typeof saved.agreed === 'boolean') setAgreed(saved.agreed);
+        if (typeof saved.emoGiftRn === 'number' && Number.isFinite(saved.emoGiftRn)) setEmoGiftRn(Math.max(0, Math.floor(saved.emoGiftRn)));
         setOrderId(typeof saved.orderId === 'string' && saved.orderId ? saved.orderId : newOrderId());
         setToday(typeof saved.today === 'string' && saved.today ? saved.today : hkToday());
       } else {
@@ -301,11 +308,11 @@ export default function App() {
   useEffect(() => {
     if (!draftReady) return;
     try {
-      localStorage.setItem(ORDER_DRAFT_KEY, JSON.stringify({ items, shipping, promoCode, agreed, orderId, today, coverColors }));
+      localStorage.setItem(ORDER_DRAFT_KEY, JSON.stringify({ items, shipping, promoCode, agreed, orderId, today, coverColors, emoGiftRn }));
     } catch {
       // 手機儲存已滿或被封鎖時，呢一頁仍然可以落單。
     }
-  }, [draftReady, items, shipping, promoCode, agreed, orderId, today, coverColors]);
+  }, [draftReady, items, shipping, promoCode, agreed, orderId, today, coverColors, emoGiftRn]);
 
   useEffect(() => {
     if (!draftReady) return;
@@ -435,7 +442,7 @@ export default function App() {
   const hasRealProducts = Object.entries(items).some(([key, qty]) => key !== 'addonDiff' && qty > 0);
 
   const rawTotal = [
-    { qty: items.keyringEmo, p: 38 },
+    { qty: items.keyringEmoRn + items.keyringEmoApn, p: 38 },
     { qty: items.tapeWhite, p: 58 }, { qty: items.tapeGrey, p: 58 },
     { qty: items.tapeAppleGreen + items.tapeMarble + items.tapeBlack + items.tapeRed + items.tapeYellow + items.tapeOrange + items.tapePurple + items.tapeGreen + items.tapePink + items.tapeDesertYellow + items.tapeOceanBlue + items.tapeIceBlue, p: 78 },
     { qty: items.coverChiikawa + items.coverUsagi + items.coverHachiware + items.coverMiffyEar + items.coverMiffy, p: 30 }, 
@@ -462,14 +469,32 @@ export default function App() {
     { k: 'AppleGreen', n: '🍏 青蘋果綠' }
   ];
 
+  const emoPaid = items.keyringEmoRn + items.keyringEmoApn;
+  const emoFree = Math.floor(emoPaid / 5);
+  const emoGiftRnCount = emoFree <= 0
+    ? 0
+    : Math.min(
+        emoFree,
+        Math.max(0, emoGiftRn == null
+          ? (items.keyringEmoApn === 0 || items.keyringEmoRn >= items.keyringEmoApn ? emoFree : 0)
+          : emoGiftRn)
+      );
+  const emoGiftApnCount = emoFree - emoGiftRnCount;
+  const emoProduct = (label: string, paid: number, gift: number) => {
+    const ship = paid + gift;
+    if (ship <= 0) return null;
+    return {
+      name: `「emo人員」鎖匙扣 (${label})`,
+      qty: ship,
+      shipQty: ship,
+      lineTotal: paid * 38,
+      price: 38,
+      detail: gift > 0 ? `其中 ${gift} 個係買五送一` : ''
+    };
+  };
   const activeProducts: any[] = [
-    ...(items.keyringEmo > 0 ? [{
-      name: items.keyringEmo >= 5 
-        ? `「emo人員」鎖匙扣 (買5送1，送${Math.floor(items.keyringEmo / 5)}個，實出${items.keyringEmo + Math.floor(items.keyringEmo / 5)}個)` 
-        : '「emo人員」鎖匙扣',
-      qty: items.keyringEmo,
-      price: 38
-    }] : []),
+    emoProduct('RN', items.keyringEmoRn, emoGiftRnCount),
+    emoProduct('APN', items.keyringEmoApn, emoGiftApnCount),
     { name: '白色膠紙座', qty: items.tapeWhite, price: 58 },
     { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
     ...customColors.map(c => ({ name: c.n + '膠紙座', qty: (items as any)[`tape${c.k}`], price: 78 })),
@@ -491,7 +516,7 @@ export default function App() {
     { name: '不想上班鎖匙扣', qty: items.keyringNoWork, price: 28 },
     { name: '如意吉場鎖匙扣', qty: items.keyringLucky, price: 28 },
     { name: '💰 補錢湊數', qty: 1, price: items.addonDiff }
-  ].filter(p => (p.name === '💰 補錢湊數' ? p.price > 0 : p.qty > 0));
+  ].filter(p => p && (p.name === '💰 補錢湊數' ? p.price > 0 : p.qty > 0));
 
   const methodMap: any = { 
     post: "本地平郵 (包郵)", 
@@ -578,6 +603,7 @@ export default function App() {
   const clearAll = () => {
     if (confirm("確定要清除所有已選商品？收貨資料會保留。")) {
       setItems(initialItems);
+      setEmoGiftRn(null);
       setCoverColors(null);
       setCoverEditorOpen(false);
     }
@@ -610,7 +636,7 @@ export default function App() {
     '',
     '貨品：',
     ...(activeProducts.length
-      ? activeProducts.map((p) => `- ${p.name} x${p.qty}${p.detail ? `（${p.detail}）` : ''}  $${p.qty * p.price}`)
+      ? activeProducts.map((p) => `- ${p.name} x${p.shipQty ?? p.qty}${p.detail ? `（${p.detail}）` : ''}  $${p.lineTotal ?? p.qty * p.price}`)
       : ['- （未揀商品）']),
     '',
     `總額：HKD $${total}`
@@ -786,7 +812,7 @@ export default function App() {
               <div style={{ fontSize: '12.5px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <div>1. ✨ <b>全店滿 $200 即包順豐站/智能櫃運費！</b></div>
                 
-                <div>2. 🔥 <b>新貨上架：</b>「emo人員」鎖匙扣登場！買俾身邊成日都 emo 嘅 lo best 啦，一人一個，一齊 emo！🖤（新產品限定：買五送一！）</div>
+                <div>2. 🔥 <b>新貨上架：</b>「emo人員」鎖匙扣有 RN、APN 兩個版本！買俾身邊成日都 emo 嘅 lo best 啦，一人一個，一齊 emo！🖤（買五送一，兩個版本可以夾）</div>
                 
                 <div style={{ paddingTop: '5px', borderTop: '1px dashed #E6C200' }}>
                   3. 📦 <b>膠紙座出貨說明：</b>
@@ -1003,33 +1029,55 @@ export default function App() {
               </div>
             </div>
             <img
-              src="/emo.jpg"
-              alt="「emo人員」鎖匙扣"
+              src="/emo-versions.jpg"
+              alt="「emo人員」鎖匙扣 RN 同 APN"
               fetchPriority="high"
               decoding="async"
-              onClick={() => openPhotoPreview('/emo.jpg', '「emo人員」鎖匙扣')}
-              style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block', cursor: 'zoom-in' }}
+              onClick={() => openPhotoPreview('/emo-versions.jpg', '「emo人員」鎖匙扣 RN / APN')}
+              style={{ width: '100%', height: 'auto', display: 'block', cursor: 'zoom-in', backgroundColor: '#F3F4F6' }}
             />
+            <div style={{ padding: '8px 14px', backgroundColor: '#fff', fontSize: '12px', fontWeight: '800', color: '#374151', textAlign: 'center' }}>
+              左：APN（紅框）　·　右：RN（間條）
+            </div>
             <div style={{ padding: '12px 14px', backgroundColor: '#F9FAFB', fontSize: '12.5px', color: '#1F2937', fontWeight: 'bold', lineHeight: '1.6' }}>
               <div>🖤 <b>買俾身邊成日都 emo 嘅 lo best 啦，一人一個，一齊 emo！</b></div>
-              <div style={{ color: '#374151', fontSize: '12px', marginTop: '3px' }}>📏 <b>尺寸：</b>約 3cm × 6cm</div>
+              <div style={{ color: '#374151', fontSize: '12px', marginTop: '3px' }}>📏 <b>尺寸：</b>約 3cm × 6cm　·　RN、APN 都係 $38</div>
               <div style={{ color: '#4B5563', fontSize: '12px', marginTop: '2px' }}>✉️ 產品夠細可以擺入去本地平郵信封包郵（平郵冇追蹤功能，寄失自負）</div>
               <div style={{ color: '#B91C1C', fontSize: '12px', fontWeight: '900', marginTop: '4px', backgroundColor: '#FEF2F2', padding: '6px 10px', borderRadius: '8px', border: '1px solid #FECACA' }}>
-                🎉 新產品限定特惠：<b>買五送一</b>（買 5 個實出 6 個，如此類推）！
+                🎉 <b>買五送一</b>：兩個版本一齊計，買 5 個實出 6 個。送邊款你揀。
               </div>
-              <PreviewAdd count={items.keyringEmo} onAdd={() => update('keyringEmo', 1)} onSub={() => update('keyringEmo', -1)} addText="加入落單" />
-              {items.keyringEmo === 0 && (
-                <button
-                  type="button"
-                  onClick={() => setItems(p => ({ ...p, keyringEmo: 5 }))}
-                  style={{ marginTop: '8px', width: '100%', padding: '9px 12px', backgroundColor: '#FEF2F2', border: '1.5px dashed #EF4444', borderRadius: '10px', color: '#B91C1C', fontSize: '12px', fontWeight: '900', cursor: 'pointer' }}
-                >
-                  ⚡ 一鍵加購 5 個（$190 享買五送一）
-                </button>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '8px' }}>
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: '900', marginBottom: '2px' }}>RN　$38</div>
+                  <PreviewAdd count={items.keyringEmoRn} onAdd={() => update('keyringEmoRn', 1)} onSub={() => update('keyringEmoRn', -1)} addText="加入 RN" />
+                </div>
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: '900', marginBottom: '2px' }}>APN　$38</div>
+                  <PreviewAdd count={items.keyringEmoApn} onAdd={() => update('keyringEmoApn', 1)} onSub={() => update('keyringEmoApn', -1)} addText="加入 APN" />
+                </div>
+              </div>
+              {emoPaid > 0 && emoFree === 0 && (
+                <div style={{ marginTop: '8px', fontSize: '12px', color: '#9A3412' }}>
+                  已選 {emoPaid} 個，再買多 {5 - (emoPaid % 5)} 個就送 1 個。
+                </div>
               )}
-              {items.keyringEmo >= 5 && (
+              {emoFree > 0 && (
                 <div style={{ marginTop: '8px', padding: '8px 12px', backgroundColor: '#ECFDF5', border: '1.5px solid #10B981', borderRadius: '10px', fontSize: '12px', color: '#065F46', fontWeight: 'bold', lineHeight: '1.5' }}>
-                  🎉 已享買五送一：選了 {items.keyringEmo} 個，出貨再送 {Math.floor(items.keyringEmo / 5)} 個（共 {items.keyringEmo + Math.floor(items.keyringEmo / 5)} 個）
+                  <div>付款 {emoPaid} 個，送 {emoFree} 個，實出 {emoPaid + emoFree} 個。</div>
+                  <div style={{ marginTop: '6px' }}>送邊款（可以夾）：</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+                      <button type="button" onClick={() => setEmoGiftRn(Math.max(0, emoGiftRnCount - 1))} style={btnStyle}>-</button>
+                      <span>RN {emoGiftRnCount}</span>
+                      <button type="button" onClick={() => setEmoGiftRn(Math.min(emoFree, emoGiftRnCount + 1))} style={btnStyle}>+</button>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+                      <button type="button" onClick={() => setEmoGiftRn(Math.min(emoFree, emoGiftRnCount + 1))} style={btnStyle}>-</button>
+                      <span>APN {emoGiftApnCount}</span>
+                      <button type="button" onClick={() => setEmoGiftRn(Math.max(0, emoGiftRnCount - 1))} style={btnStyle}>+</button>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '6px' }}>實出 RN {items.keyringEmoRn + emoGiftRnCount} 個、APN {items.keyringEmoApn + emoGiftApnCount} 個。</div>
                 </div>
               )}
             </div>
@@ -1178,10 +1226,10 @@ export default function App() {
             {activeProducts.map((p, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', fontSize: '13px', marginBottom: '6px' }}>
                 <span style={{ flex: 1, minWidth: 0, lineHeight: 1.4 }}>
-                  {p.name} <b style={{ color: '#77815C' }}>x{p.qty}</b>
+                  {p.name} <b style={{ color: '#77815C' }}>x{p.shipQty ?? p.qty}</b>
                   {p.detail && <span style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#3f4a2e' }}>{p.detail}</span>}
                 </span>
-                <span style={{ fontWeight: 'bold', flexShrink: 0 }}>${p.qty * p.price}</span>
+                <span style={{ fontWeight: 'bold', flexShrink: 0 }}>${p.lineTotal ?? p.qty * p.price}</span>
               </div>
             ))}
           </div>
