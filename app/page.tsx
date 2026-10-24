@@ -482,6 +482,7 @@ export default function App() {
     if (ship <= 0) return null;
     return {
       name: `「emo人員」鎖匙扣 (${label})`,
+      code: label === 'RN' ? 'EMORN' : 'EMOAPN',
       qty: ship,
       shipQty: ship,
       lineTotal: paid * 38,
@@ -492,26 +493,26 @@ export default function App() {
   const activeProducts: any[] = [
     emoProduct('RN', items.keyringEmoRn, emoGiftRnCount),
     emoProduct('APN', items.keyringEmoApn, emoGiftApnCount),
-    { name: '白色膠紙座', qty: items.tapeWhite, price: 58 },
-    { name: '灰色膠紙座', qty: items.tapeGrey, price: 58 },
-    ...customColors.map(c => ({ name: c.n + '膠紙座', qty: (items as any)[`tape${c.k}`], price: 78 })),
-    { name: '隨座加購防塵蓋', qty: items.coverAddon, price: 10 },
-    { name: '獨立防塵蓋', qty: items.coverSingle, price: 15 },
-    { name: 'Chiikawa防塵蓋', qty: items.coverChiikawa, price: 30 },
-    { name: 'Usagi防塵蓋', qty: items.coverUsagi, price: 30 },
-    { name: 'Hachiware防塵蓋', qty: items.coverHachiware, price: 30 },
-    { name: 'Miffy防塵蓋 (有耳朵版本)', qty: items.coverMiffyEar, price: 30 },
-    { name: '近鏡Miffy防塵蓋', qty: items.coverMiffy, price: 30 },
-    { name: '叫人鐘 (正常版本)', qty: items.clickerCallbellNormal, price: 78 },
-    { name: '叫人鐘 (舉中指版本)', qty: items.clickerCallbellFinger, price: 78 },
-    { name: '叫人鐘收聲先 (正常版本)', qty: items.clickerCallcarNormal, price: 145 },
-    { name: '叫人鐘收聲先 (舉中指版本)', qty: items.clickerCallcarFinger, price: 145 },
-    { name: '粉紅白吉床', qty: items.clickerLuckyPink, price: 68 },
-    { name: '藍白吉床', qty: items.clickerLuckyBlue, price: 68 },
-    { name: '吉床套裝 (粉紅白吉床x1, 藍白吉床x1)', qty: items.clickerCombo, price: 125 },
-    { name: '收聲先', qty: items.clickerShutUp, price: 78 },
-    { name: '不想上班鎖匙扣', qty: items.keyringNoWork, price: 28 },
-    { name: '如意吉場鎖匙扣', qty: items.keyringLucky, price: 28 },
+    { name: '白色膠紙座', code: '白色', qty: items.tapeWhite, price: 58 },
+    { name: '灰色膠紙座', code: '灰色', qty: items.tapeGrey, price: 58 },
+    ...customColors.map(c => ({ name: c.n + '膠紙座', code: c.n.replace(/^[^\u4e00-\u9fff]+/, '').split(' (')[0], qty: (items as any)[`tape${c.k}`], price: 78 })),
+    { name: '隨座加購防塵蓋', code: 'C', qty: items.coverAddon, price: 10 },
+    { name: '獨立防塵蓋', code: 'C補', qty: items.coverSingle, price: 15 },
+    { name: 'Chiikawa防塵蓋', code: 'Chi', qty: items.coverChiikawa, price: 30 },
+    { name: 'Usagi防塵蓋', code: 'US', qty: items.coverUsagi, price: 30 },
+    { name: 'Hachiware防塵蓋', code: 'HA', qty: items.coverHachiware, price: 30 },
+    { name: 'Miffy防塵蓋 (有耳朵版本)', code: 'Me', qty: items.coverMiffyEar, price: 30 },
+    { name: '近鏡Miffy防塵蓋', code: 'Mc', qty: items.coverMiffy, price: 30 },
+    { name: '叫人鐘 (正常版本)', code: 'CB正常', qty: items.clickerCallbellNormal, price: 78 },
+    { name: '叫人鐘 (舉中指版本)', code: 'CB中指', qty: items.clickerCallbellFinger, price: 78 },
+    { name: '叫人鐘收聲先 (正常版本)', code: 'CBCM正常', qty: items.clickerCallcarNormal, price: 145 },
+    { name: '叫人鐘收聲先 (舉中指版本)', code: 'CBCM中指', qty: items.clickerCallcarFinger, price: 145 },
+    { name: '粉紅白吉床', code: 'PW', qty: items.clickerLuckyPink, price: 68 },
+    { name: '藍白吉床', code: 'BW', qty: items.clickerLuckyBlue, price: 68 },
+    { name: '吉床套裝 (粉紅白吉床x1, 藍白吉床x1)', code: 'BED', qty: items.clickerCombo, price: 125 },
+    { name: '收聲先', code: 'CM', qty: items.clickerShutUp, price: 78 },
+    { name: '不想上班鎖匙扣', code: 'SL', qty: items.keyringNoWork, price: 28 },
+    { name: '如意吉場鎖匙扣', code: 'KC', qty: items.keyringLucky, price: 28 },
     { name: '💰 補錢湊數', qty: 1, price: items.addonDiff }
   ].filter(p => p && (p.name === '💰 補錢湊數' ? p.price > 0 : p.qty > 0));
 
@@ -618,26 +619,28 @@ export default function App() {
   })();
   const remarkOutput = [shipping.remarks.trim(), coverRemark].filter(Boolean).join('\n');
 
+  const selectedProductText = activeProducts.map((p) => {
+    if (!p.code && String(p.name).includes('補錢')) return `補錢湊數 $${p.price}`;
+    const qty = p.shipQty ?? p.qty;
+    return `${p.name} x${qty}${p.detail ? `（${p.detail}）` : ''}`;
+  }).join('、');
+  const compactCodes = activeProducts.filter((p) => p.code).map((p) => {
+    const code = String(p.code).endsWith('色') ? String(p.code).slice(0, -1) : p.code;
+    return `${code}${p.shipQty ?? p.qty}`;
+  }).join('');
   const orderText = [
-    'NurseForgeHK 執貨單',
-    `請付：HKD $${total}`,
-    `單號：${orderId || '---'}${isPromoApplied ? ' (MK)' : ''}`,
-    `日期：${today || '---'}`,
-    `IG：@${shipping.igName.trim() || '---'}`,
-    `姓名：${shipping.name.trim() || '---'}`,
-    `電話：${shipping.phone.trim() || '---'}`,
-    `運送：${methodMap[shipping.method] || '---'}`,
-    `地址：${shipping.address.trim() || '未填寫'}`,
-    remarkOutput ? `備註：${remarkOutput}` : '',
-    isPromoApplied ? `優惠：已用九折（原價 HKD $${rawTotal}）` : '',
-    '',
-    '貨品：',
-    ...(activeProducts.length
-      ? activeProducts.map((p) => `- ${p.name} x${p.shipQty ?? p.qty}${p.detail ? `（${p.detail}）` : ''}  $${p.lineTotal ?? p.qty * p.price}`)
-      : ['- （未揀商品）']),
-    '',
-    `總額：HKD $${total}`
-  ].filter(line => line !== '').join('\n');
+    `單號ID：${orderId || ''}${isPromoApplied ? ' (MK)' : ''}`,
+    `下單日期：${today || ''}`,
+    `已選貨品：${selectedProductText}`,
+    `貨品代碼：${compactCodes ? `(${compactCodes})` : ''}`,
+    `Instagram AC：${shipping.igName.trim().replace(/^@+/, '')}`,
+    `收件人：${shipping.name.trim()}`,
+    `電話號碼：${shipping.phone.trim()}`,
+    `地址：${shipping.address.trim().replace(/[\r\n]+/g, ' ')}`,
+    `配送方式：${methodMap[shipping.method] || ''}`,
+    `總價格：${total}${isPromoApplied ? ' 已使用優惠' : ''}`,
+    `Remark：${remarkOutput.replace(/[\r\n]+/g, '；')}`
+  ].join('\n');
 
   const copyOrder = () => {
     const legacyOk = copyPlainText(orderText);
