@@ -259,6 +259,12 @@ export default function App() {
   const [ivDropFactor, setIvDropFactor] = useState<number | string>(15);
   const [ivTime, setIvTime] = useState<number | string>(30);
   const [ivTimeUnit, setIvTimeUnit] = useState<'mins' | 'hrs'>('mins');
+  const [dripTaps, setDripTaps] = useState<number[]>([]);
+  const [tapPressed, setTapPressed] = useState(false);
+
+  useEffect(() => {
+    if (!showIvCalc) setDripTaps([]);
+  }, [showIvCalc]);
 
   useEffect(() => {
     try {
@@ -568,6 +574,41 @@ export default function App() {
   };
 
   const rhythm = getClinicalRhythm(rawGttPerMin);
+
+  const recordDripTap = () => {
+    const now = performance.now();
+    setDripTaps((prev) => {
+      if (prev.length === 0) return [now];
+      const gap = now - prev[prev.length - 1];
+      if (gap < 120) return prev;
+      const intervals = prev.slice(1).map((stamp, index) => stamp - prev[index]);
+      const recent = intervals.slice(-5);
+      const average = recent.length ? recent.reduce((sum, gapMs) => sum + gapMs, 0) / recent.length : 0;
+      const paused = average > 0 ? gap > Math.max(average * 3, 2500) : gap > 20000;
+      if (paused) return [now];
+      return [...prev, now].slice(-8);
+    });
+  };
+  const dripIntervals = dripTaps.slice(1).map((stamp, index) => stamp - dripTaps[index]).slice(-6);
+  const measuredGtt = dripIntervals.length
+    ? 60000 / (dripIntervals.reduce((sum, gapMs) => sum + gapMs, 0) / dripIntervals.length)
+    : 0;
+  const projectedMins = measuredGtt > 0 && numVol > 0 && numDrop > 0 ? (numVol * numDrop) / measuredGtt : 0;
+  const formatMins = (mins: number) => {
+    const total = Math.max(0, Math.round(mins));
+    const hours = Math.floor(total / 60);
+    const minutes = total % 60;
+    if (hours <= 0) return `${minutes} 分鐘`;
+    if (minutes === 0) return `${hours} 小時`;
+    return `${hours} 小時 ${minutes} 分`;
+  };
+  const paceDiff = projectedMins - totalMins;
+  const paceClose = totalMins > 0 && Math.abs(paceDiff) <= Math.max(2, totalMins * 0.08);
+  const paceText = totalMins <= 0 || projectedMins <= 0
+    ? ''
+    : paceClose
+      ? '差唔多岩'
+      : `${paceDiff > 0 ? '慢咗' : '快咗'}約 ${formatMins(Math.abs(paceDiff))}`;
 
   const update = (f: string, d: number) => setItems(p => ({ ...p, [f]: Math.max(0, (p as any)[f] + d) }));
   const changeCoverQty = (colorKey: string, delta: number) => {
@@ -1377,6 +1418,68 @@ export default function App() {
               <div style={{ marginTop: '8px', fontSize: '15px', fontWeight: '800', color: '#7B341E' }}>
                 {rhythm.text} · 10 秒 {dropsIn10Sec} 滴
               </div>
+            )}
+          </div>
+
+          <div style={{ marginTop: '16px', textAlign: 'center' }}>
+            <div style={{ fontSize: '14px', fontWeight: '900', color: '#9C4221' }}>篤篤板</div>
+            <div style={{ marginTop: '2px', fontSize: '12px', fontWeight: '700', color: '#7B341E' }}>望住滴壺，每滴篤一下</div>
+            <button
+              type="button"
+              aria-label="跟住每一滴篤一下"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                setTapPressed(true);
+                recordDripTap();
+              }}
+              onPointerUp={() => setTapPressed(false)}
+              onPointerLeave={() => setTapPressed(false)}
+              onPointerCancel={() => setTapPressed(false)}
+              style={{
+                width: '168px',
+                height: '168px',
+                margin: '12px auto 0',
+                borderRadius: '50%',
+                border: '6px solid #DD6B20',
+                backgroundColor: tapPressed ? '#FBD38D' : '#fff',
+                color: '#C05621',
+                fontSize: '32px',
+                fontWeight: '900',
+                cursor: 'pointer',
+                display: 'block',
+                touchAction: 'none',
+                userSelect: 'none',
+                transform: tapPressed ? 'scale(0.96)' : 'scale(1)'
+              }}
+            >
+              篤
+            </button>
+            <div style={{ marginTop: '10px', fontSize: '15px', fontWeight: '800', color: '#7B341E', lineHeight: 1.5 }}>
+              {dripTaps.length < 2 ? '再篤一下就有速度' : `而家約 ${Math.round(measuredGtt)} 滴/分鐘`}
+            </div>
+            {projectedMins > 0 && (
+              <div style={{ fontSize: '15px', fontWeight: '800', color: '#9A3412', lineHeight: 1.5 }}>
+                照呢個速度要 {formatMins(projectedMins)} 滴完
+              </div>
+            )}
+            {paceText && (
+              <div style={{ fontSize: '15px', fontWeight: '900', color: paceClose ? '#166534' : '#C2410C', lineHeight: 1.5 }}>
+                想要 {formatMins(totalMins)}，{paceText}
+              </div>
+            )}
+            {measuredGtt > 60 && (
+              <div style={{ marginTop: '4px', fontSize: '12px', fontWeight: '700', color: '#9A3412' }}>
+                滴得太快，手會追唔切，用上面 10 秒嗰行數
+              </div>
+            )}
+            {dripTaps.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setDripTaps([])}
+                style={{ marginTop: '8px', border: 'none', background: 'transparent', color: '#9C4221', fontWeight: '800', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                再篤過
+              </button>
             )}
           </div>
         </div>
