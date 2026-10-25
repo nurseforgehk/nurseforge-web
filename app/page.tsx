@@ -589,6 +589,10 @@ export default function App() {
   const paceDiff = projectedMins - totalMins;
   const paceClose = totalMins > 0 && Math.abs(paceDiff) <= Math.max(2, totalMins * 0.08);
   const paceColor = paceClose ? '#166534' : '#DC2626';
+  const paceOn = hasMeasuredPace && paceClose;
+  const ivTheme = paceOn
+    ? { overlay: 'rgba(21, 128, 61, 0.72)', sheet: '#BBF7D0', border: '#15803D', ink: '#14532D', number: '#14532D', card: '#86EFAC', cardBorder: '#15803D', button: '#15803D', muted: '#166534', pressed: '#4ADE80' }
+    : { overlay: 'rgba(17,17,17,0.62)', sheet: '#FFF8F0', border: '#DD6B20', ink: '#9C4221', number: '#C05621', card: '#FFEDD5', cardBorder: '#F97316', button: '#DD6B20', muted: '#7B341E', pressed: '#FBD38D' };
   const paceText = totalMins <= 0 || projectedMins <= 0
     ? ''
     : paceClose
@@ -1300,16 +1304,17 @@ export default function App() {
       </div>
 
       {showIvCalc && (
-        <div onClick={() => setShowIvCalc(false)} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(17,17,17,0.62)', zIndex: 2500, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '28px 12px', overflowY: 'auto' }}>
+        <div onClick={() => setShowIvCalc(false)} style={{ position: 'fixed', inset: 0, backgroundColor: ivTheme.overlay, zIndex: 2500, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '28px 12px', overflowY: 'auto', transition: 'background-color 0.2s ease' }}>
         <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: '480px' }}>
         <div style={{
-          backgroundColor: '#FFF8F0',
+          backgroundColor: ivTheme.sheet,
           borderRadius: '24px',
           padding: '20px 16px',
           boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
           color: '#000',
-          border: '3.5px solid #DD6B20',
-          position: 'relative'
+          border: `3.5px solid ${ivTheme.border}`,
+          position: 'relative',
+          transition: 'background-color 0.2s ease, border-color 0.2s ease'
         }}>
           <button
             type="button"
@@ -1319,45 +1324,45 @@ export default function App() {
           >
             ×
           </button>
-          <h3 style={{ margin: '0 40px 14px 0', fontSize: '18px', fontWeight: '900', color: '#DD6B20' }}>
+          <h3 style={{ margin: '0 40px 14px 0', fontSize: '18px', fontWeight: '900', color: ivTheme.border }}>
             💧 點滴直式
           </h3>
 
           <div style={{ textAlign: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '8px' }}>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: '800', color: '#9C4221', marginBottom: '4px' }}>容量</div>
-                <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff', border: '2px solid #DD6B20', borderRadius: '12px', padding: '4px 8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: '800', color: ivTheme.ink, marginBottom: '4px' }}>容量</div>
+                <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff', border: `2px solid ${ivTheme.border}`, borderRadius: '12px', padding: '4px 8px' }}>
                   <input
                     type="number"
                     value={ivVolume}
                     onChange={e => setIvVolume(e.target.value === '' ? '' : Number(e.target.value))}
                     style={{ width: '72px', fontSize: '22px', fontWeight: '900', textAlign: 'center', border: 'none', outline: 'none', background: 'transparent' }}
                   />
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#9C4221' }}>mL</span>
+                  <span style={{ fontSize: '13px', fontWeight: '800', color: ivTheme.ink }}>mL</span>
                 </div>
               </div>
-              <span style={{ fontSize: '22px', fontWeight: '900', color: '#DD6B20', paddingBottom: '6px' }}>×</span>
+              <span style={{ fontSize: '22px', fontWeight: '900', color: ivTheme.border, paddingBottom: '6px' }}>×</span>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: '800', color: '#9C4221', marginBottom: '4px' }}>滴數</div>
-                <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff', border: '2px solid #DD6B20', borderRadius: '12px', padding: '4px 8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: '800', color: ivTheme.ink, marginBottom: '4px' }}>滴數</div>
+                <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff', border: `2px solid ${ivTheme.border}`, borderRadius: '12px', padding: '4px 8px' }}>
                   <input
                     type="number"
                     value={ivDropFactor}
                     onChange={e => setIvDropFactor(e.target.value === '' ? '' : Number(e.target.value))}
                     style={{ width: '56px', fontSize: '22px', fontWeight: '900', textAlign: 'center', border: 'none', outline: 'none', background: 'transparent' }}
                   />
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#9C4221' }}>gtt/mL</span>
+                  <span style={{ fontSize: '13px', fontWeight: '800', color: ivTheme.ink }}>gtt/mL</span>
                 </div>
               </div>
             </div>
 
-            <div style={{ height: '3px', backgroundColor: '#DD6B20', margin: '12px 4px', borderRadius: '2px' }} />
+            <div style={{ height: '3px', backgroundColor: ivTheme.border, margin: '12px 4px', borderRadius: '2px' }} />
 
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '8px' }}>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: '800', color: '#9C4221', marginBottom: '4px' }}>時間</div>
-                <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff', border: '2px solid #DD6B20', borderRadius: '12px', padding: '4px 8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: '800', color: ivTheme.ink, marginBottom: '4px' }}>時間</div>
+                <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff', border: `2px solid ${ivTheme.border}`, borderRadius: '12px', padding: '4px 8px' }}>
                   <input
                     type="number"
                     value={ivTime}
@@ -1370,7 +1375,7 @@ export default function App() {
                 type="button"
                 onClick={() => setIvTimeUnit(u => u === 'mins' ? 'hrs' : 'mins')}
                 style={{
-                  backgroundColor: '#DD6B20',
+                  backgroundColor: ivTheme.button,
                   color: '#fff',
                   border: 'none',
                   borderRadius: '12px',
@@ -1384,44 +1389,45 @@ export default function App() {
                 {ivTimeUnit === 'mins' ? '分鐘' : '小時'}
               </button>
               {ivTimeUnit === 'hrs' && (
-                <span style={{ fontSize: '18px', fontWeight: '900', color: '#DD6B20', paddingBottom: '8px' }}>× 60</span>
+                <span style={{ fontSize: '18px', fontWeight: '900', color: ivTheme.border, paddingBottom: '8px' }}>× 60</span>
               )}
             </div>
           </div>
 
           <div style={{
             marginTop: '16px',
-            backgroundColor: '#FFEDD5',
-            border: '2px solid #F97316',
+            backgroundColor: ivTheme.card,
+            border: `2px solid ${ivTheme.cardBorder}`,
+            transition: 'background-color 0.2s ease, border-color 0.2s ease',
             borderRadius: '16px',
             padding: '12px 10px',
             textAlign: 'center'
           }}>
             <div style={{ display: 'grid', gridTemplateColumns: '56px 1fr 1fr', columnGap: '8px', rowGap: '6px', alignItems: 'center' }}>
               <div />
-              <div style={{ fontSize: '13px', fontWeight: '900', color: '#9A3412' }}>應該</div>
+              <div style={{ fontSize: '13px', fontWeight: '900', color: ivTheme.ink }}>應該</div>
               <div style={{ fontSize: '13px', fontWeight: '900', color: hasMeasuredPace ? paceColor : '#C4A484' }}>你而家</div>
-              <div style={{ fontSize: '14px', fontWeight: '900', color: '#9C4221' }}>5 秒</div>
-              <div style={{ fontSize: '32px', fontWeight: '900', color: '#C05621', lineHeight: 1 }}>
+              <div style={{ fontSize: '14px', fontWeight: '900', color: ivTheme.ink }}>5 秒</div>
+              <div style={{ fontSize: '32px', fontWeight: '900', color: ivTheme.number, lineHeight: 1 }}>
                 {rawGttPerMin > 0 ? formatDrops(targetDrops5) : '—'}<span style={{ fontSize: '13px', fontWeight: '800' }}> 滴</span>
               </div>
               <div style={{ fontSize: '32px', fontWeight: '900', lineHeight: 1, color: hasMeasuredPace ? paceColor : '#C4A484' }}>
                 {hasMeasuredPace ? formatDrops(measuredDrops5) : '—'}{hasMeasuredPace && <span style={{ fontSize: '13px', fontWeight: '800' }}> 滴</span>}
               </div>
-              <div style={{ fontSize: '14px', fontWeight: '900', color: '#9C4221' }}>10 秒</div>
-              <div style={{ fontSize: '32px', fontWeight: '900', color: '#C05621', lineHeight: 1 }}>
+              <div style={{ fontSize: '14px', fontWeight: '900', color: ivTheme.ink }}>10 秒</div>
+              <div style={{ fontSize: '32px', fontWeight: '900', color: ivTheme.number, lineHeight: 1 }}>
                 {rawGttPerMin > 0 ? formatDrops(targetDrops10) : '—'}<span style={{ fontSize: '13px', fontWeight: '800' }}> 滴</span>
               </div>
               <div style={{ fontSize: '32px', fontWeight: '900', lineHeight: 1, color: hasMeasuredPace ? paceColor : '#C4A484' }}>
                 {hasMeasuredPace ? formatDrops(measuredDrops10) : '—'}{hasMeasuredPace && <span style={{ fontSize: '13px', fontWeight: '800' }}> 滴</span>}
               </div>
             </div>
-            <div style={{ marginTop: '8px', fontSize: '12px', fontWeight: '800', color: '#9A3412' }}>綠色差唔多岩 · 紅色要調</div>
+            <div style={{ marginTop: '8px', fontSize: '12px', fontWeight: '800', color: ivTheme.ink }}>畫面變綠就差唔多岩</div>
           </div>
 
           <div style={{ marginTop: '16px', textAlign: 'center' }}>
-            <div style={{ fontSize: '14px', fontWeight: '900', color: '#9C4221' }}>篤篤板</div>
-            <div style={{ marginTop: '2px', fontSize: '12px', fontWeight: '700', color: '#7B341E' }}>望住滴壺，每滴篤一下</div>
+            <div style={{ fontSize: '14px', fontWeight: '900', color: ivTheme.ink }}>篤篤板</div>
+            <div style={{ marginTop: '2px', fontSize: '12px', fontWeight: '700', color: ivTheme.muted }}>望住滴壺，每滴篤一下</div>
             <button
               type="button"
               aria-label="跟住每一滴篤一下"
@@ -1438,9 +1444,9 @@ export default function App() {
                 height: '168px',
                 margin: '12px auto 0',
                 borderRadius: '50%',
-                border: `6px solid ${hasMeasuredPace ? paceColor : '#DD6B20'}`,
-                backgroundColor: tapPressed ? '#FBD38D' : '#fff',
-                color: '#C05621',
+                border: `6px solid ${hasMeasuredPace && !paceOn ? paceColor : ivTheme.border}`,
+                backgroundColor: tapPressed ? ivTheme.pressed : '#fff',
+                color: ivTheme.number,
                 fontSize: '32px',
                 fontWeight: '900',
                 cursor: 'pointer',
@@ -1452,7 +1458,7 @@ export default function App() {
             >
               篤
             </button>
-            <div style={{ marginTop: '10px', fontSize: '15px', fontWeight: '800', color: '#7B341E', lineHeight: 1.5 }}>
+            <div style={{ marginTop: '10px', fontSize: '15px', fontWeight: '800', color: ivTheme.muted, lineHeight: 1.5 }}>
               {dripTaps.length < 2 ? '再篤一下就有速度' : projectedMins > 0 ? `照呢個速度要 ${formatMins(projectedMins)} 滴完` : ''}
             </div>
             {paceText && (
@@ -1461,7 +1467,7 @@ export default function App() {
               </div>
             )}
             {measuredGtt > 60 && (
-              <div style={{ marginTop: '4px', fontSize: '12px', fontWeight: '700', color: '#9A3412' }}>
+              <div style={{ marginTop: '4px', fontSize: '12px', fontWeight: '700', color: ivTheme.ink }}>
                 滴得太快，手會追唔切，用上面 10 秒嗰行數
               </div>
             )}
@@ -1469,7 +1475,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setDripTaps([])}
-                style={{ marginTop: '8px', border: 'none', background: 'transparent', color: '#9C4221', fontWeight: '800', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
+                style={{ marginTop: '8px', border: 'none', background: 'transparent', color: ivTheme.ink, fontWeight: '800', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
               >
                 再篤過
               </button>
