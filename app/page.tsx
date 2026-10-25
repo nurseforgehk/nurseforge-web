@@ -544,36 +544,8 @@ export default function App() {
 
   const totalMins = ivTimeUnit === 'hrs' ? numTime * 60 : numTime;
   const rawGttPerMin = totalMins > 0 ? (numVol * numDrop) / totalMins : 0;
-  const gttPerMin = Math.round(rawGttPerMin);
-  const dropsIn10Sec = Math.round(rawGttPerMin / 6);
-
-  const getClinicalRhythm = (rate: number) => {
-    if (!rate || rate <= 0) return { sec: 0, drops: 0, text: '---' };
-    
-    const dps = rate / 60; // drops per second
-    let best = { sec: 1, drops: 1, err: Infinity };
-
-    for (let drops = 1; drops <= 10; drops++) {
-      const exactSec = drops / dps;
-      const sec = Math.round(exactSec);
-      if (sec >= 1 && sec <= 60) {
-        const approxDps = drops / sec;
-        const err = Math.abs(approxDps - dps) / dps;
-        const score = err + (sec * 0.005) + (drops * 0.005);
-        if (score < best.err) {
-          best = { sec, drops, err: score };
-        }
-      }
-    }
-
-    return {
-      sec: best.sec,
-      drops: best.drops,
-      text: `約 ${best.sec} 秒 ${best.drops} 滴`
-    };
-  };
-
-  const rhythm = getClinicalRhythm(rawGttPerMin);
+  const targetDrops5 = rawGttPerMin / 12;
+  const targetDrops10 = rawGttPerMin / 6;
 
   const recordDripTap = () => {
     const now = performance.now();
@@ -594,6 +566,18 @@ export default function App() {
     ? 60000 / (dripIntervals.reduce((sum, gapMs) => sum + gapMs, 0) / dripIntervals.length)
     : 0;
   const projectedMins = measuredGtt > 0 && numVol > 0 && numDrop > 0 ? (numVol * numDrop) / measuredGtt : 0;
+  const measuredDrops5 = measuredGtt / 12;
+  const measuredDrops10 = measuredGtt / 6;
+  const hasMeasuredPace = dripIntervals.length > 0;
+  const formatDrops = (count: number) => {
+    if (!(count > 0)) return '0';
+    if (count < 2) {
+      const tenths = Math.round(count * 10) / 10;
+      if (tenths <= 0) return '不足 1';
+      return Number.isInteger(tenths) ? String(tenths) : tenths.toFixed(1);
+    }
+    return String(Math.round(count));
+  };
   const formatMins = (mins: number) => {
     const total = Math.max(0, Math.round(mins));
     const hours = Math.floor(total / 60);
@@ -604,6 +588,7 @@ export default function App() {
   };
   const paceDiff = projectedMins - totalMins;
   const paceClose = totalMins > 0 && Math.abs(paceDiff) <= Math.max(2, totalMins * 0.08);
+  const paceColor = paceClose ? '#166534' : '#DC2626';
   const paceText = totalMins <= 0 || projectedMins <= 0
     ? ''
     : paceClose
@@ -1412,13 +1397,26 @@ export default function App() {
             padding: '12px 10px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '40px', fontWeight: '900', color: '#C05621', lineHeight: 1 }}>{gttPerMin}</div>
-            <div style={{ fontSize: '14px', fontWeight: '800', color: '#9A3412', marginTop: '2px' }}>滴/分鐘</div>
-            {rawGttPerMin > 0 && (
-              <div style={{ marginTop: '8px', fontSize: '15px', fontWeight: '800', color: '#7B341E' }}>
-                {rhythm.text} · 10 秒 {dropsIn10Sec} 滴
+            <div style={{ display: 'grid', gridTemplateColumns: '56px 1fr 1fr', columnGap: '8px', rowGap: '6px', alignItems: 'center' }}>
+              <div />
+              <div style={{ fontSize: '13px', fontWeight: '900', color: '#9A3412' }}>應該</div>
+              <div style={{ fontSize: '13px', fontWeight: '900', color: hasMeasuredPace ? paceColor : '#C4A484' }}>你而家</div>
+              <div style={{ fontSize: '14px', fontWeight: '900', color: '#9C4221' }}>5 秒</div>
+              <div style={{ fontSize: '32px', fontWeight: '900', color: '#C05621', lineHeight: 1 }}>
+                {rawGttPerMin > 0 ? formatDrops(targetDrops5) : '—'}<span style={{ fontSize: '13px', fontWeight: '800' }}> 滴</span>
               </div>
-            )}
+              <div style={{ fontSize: '32px', fontWeight: '900', lineHeight: 1, color: hasMeasuredPace ? paceColor : '#C4A484' }}>
+                {hasMeasuredPace ? formatDrops(measuredDrops5) : '—'}{hasMeasuredPace && <span style={{ fontSize: '13px', fontWeight: '800' }}> 滴</span>}
+              </div>
+              <div style={{ fontSize: '14px', fontWeight: '900', color: '#9C4221' }}>10 秒</div>
+              <div style={{ fontSize: '32px', fontWeight: '900', color: '#C05621', lineHeight: 1 }}>
+                {rawGttPerMin > 0 ? formatDrops(targetDrops10) : '—'}<span style={{ fontSize: '13px', fontWeight: '800' }}> 滴</span>
+              </div>
+              <div style={{ fontSize: '32px', fontWeight: '900', lineHeight: 1, color: hasMeasuredPace ? paceColor : '#C4A484' }}>
+                {hasMeasuredPace ? formatDrops(measuredDrops10) : '—'}{hasMeasuredPace && <span style={{ fontSize: '13px', fontWeight: '800' }}> 滴</span>}
+              </div>
+            </div>
+            <div style={{ marginTop: '8px', fontSize: '12px', fontWeight: '800', color: '#9A3412' }}>綠色差唔多岩 · 紅色要調</div>
           </div>
 
           <div style={{ marginTop: '16px', textAlign: 'center' }}>
@@ -1440,7 +1438,7 @@ export default function App() {
                 height: '168px',
                 margin: '12px auto 0',
                 borderRadius: '50%',
-                border: '6px solid #DD6B20',
+                border: `6px solid ${hasMeasuredPace ? paceColor : '#DD6B20'}`,
                 backgroundColor: tapPressed ? '#FBD38D' : '#fff',
                 color: '#C05621',
                 fontSize: '32px',
@@ -1455,15 +1453,10 @@ export default function App() {
               篤
             </button>
             <div style={{ marginTop: '10px', fontSize: '15px', fontWeight: '800', color: '#7B341E', lineHeight: 1.5 }}>
-              {dripTaps.length < 2 ? '再篤一下就有速度' : `而家約 ${Math.round(measuredGtt)} 滴/分鐘`}
+              {dripTaps.length < 2 ? '再篤一下就有速度' : projectedMins > 0 ? `照呢個速度要 ${formatMins(projectedMins)} 滴完` : ''}
             </div>
-            {projectedMins > 0 && (
-              <div style={{ fontSize: '15px', fontWeight: '800', color: '#9A3412', lineHeight: 1.5 }}>
-                照呢個速度要 {formatMins(projectedMins)} 滴完
-              </div>
-            )}
             {paceText && (
-              <div style={{ fontSize: '15px', fontWeight: '900', color: paceClose ? '#166534' : '#C2410C', lineHeight: 1.5 }}>
+              <div style={{ fontSize: '18px', fontWeight: '900', color: paceColor, lineHeight: 1.45 }}>
                 想要 {formatMins(totalMins)}，{paceText}
               </div>
             )}
