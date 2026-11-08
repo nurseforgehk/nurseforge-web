@@ -211,6 +211,7 @@ export default function App() {
   const [showColorPreview, setShowColorPreview] = useState(false);
   const [showIvCalc, setShowIvCalc] = useState(false);
   const [showCodes, setShowCodes] = useState(false);
+  const [showStoreStock, setShowStoreStock] = useState(false);
   const [codeUnlocked, setCodeUnlocked] = useState(false);
   const [codePassword, setCodePassword] = useState('');
   const [codePasswordWrong, setCodePasswordWrong] = useState(false);
@@ -247,7 +248,6 @@ export default function App() {
   };
 
   const [items, setItems] = useState(initialItems);
-  const [emoGiftRn, setEmoGiftRn] = useState<number | null>(null);
   const [coverColors, setCoverColors] = useState<Record<string, number> | null>(null);
   const [coverEditorOpen, setCoverEditorOpen] = useState(false);
   const [shipping, setShipping] = useState({ 
@@ -298,7 +298,6 @@ export default function App() {
         setCoverColors(readCoverColors(saved.coverColors, saved.items));
         if (typeof saved.promoCode === 'string') setPromoCode(saved.promoCode.slice(0, 40));
         if (typeof saved.agreed === 'boolean') setAgreed(saved.agreed);
-        if (typeof saved.emoGiftRn === 'number' && Number.isFinite(saved.emoGiftRn)) setEmoGiftRn(Math.max(0, Math.floor(saved.emoGiftRn)));
         setOrderId(typeof saved.orderId === 'string' && saved.orderId ? saved.orderId : newOrderId());
         setToday(typeof saved.today === 'string' && saved.today ? saved.today : hkToday());
       } else {
@@ -314,11 +313,11 @@ export default function App() {
   useEffect(() => {
     if (!draftReady) return;
     try {
-      localStorage.setItem(ORDER_DRAFT_KEY, JSON.stringify({ items, shipping, promoCode, agreed, orderId, today, coverColors, emoGiftRn }));
+      localStorage.setItem(ORDER_DRAFT_KEY, JSON.stringify({ items, shipping, promoCode, agreed, orderId, today, coverColors }));
     } catch {
       // 手機儲存已滿或被封鎖時，呢一頁仍然可以落單。
     }
-  }, [draftReady, items, shipping, promoCode, agreed, orderId, today, coverColors, emoGiftRn]);
+  }, [draftReady, items, shipping, promoCode, agreed, orderId, today, coverColors]);
 
   useEffect(() => {
     if (!draftReady) return;
@@ -472,33 +471,9 @@ export default function App() {
     { k: 'AppleGreen', n: '🍏 青蘋果綠' }
   ];
 
-  const emoPaid = items.keyringEmoRn + items.keyringEmoApn;
-  const emoFree = Math.floor(emoPaid / 5);
-  const emoGiftRnCount = emoFree <= 0
-    ? 0
-    : Math.min(
-        emoFree,
-        Math.max(0, emoGiftRn == null
-          ? (items.keyringEmoApn === 0 || items.keyringEmoRn >= items.keyringEmoApn ? emoFree : 0)
-          : emoGiftRn)
-      );
-  const emoGiftApnCount = emoFree - emoGiftRnCount;
-  const emoProduct = (label: string, paid: number, gift: number) => {
-    const ship = paid + gift;
-    if (ship <= 0) return null;
-    return {
-      name: `「emo人員」鎖匙扣 (${label})`,
-      code: label === 'RN' ? 'EMORN' : 'EMOAPN',
-      qty: ship,
-      shipQty: ship,
-      lineTotal: paid * 38,
-      price: 38,
-      detail: gift > 0 ? `其中 ${gift} 個係買五送一` : ''
-    };
-  };
   const activeProducts: any[] = [
-    emoProduct('RN', items.keyringEmoRn, emoGiftRnCount),
-    emoProduct('APN', items.keyringEmoApn, emoGiftApnCount),
+    { name: '「emo人員」鎖匙扣 (RN)', code: 'EMORN', qty: items.keyringEmoRn, price: 38 },
+    { name: '「emo人員」鎖匙扣 (APN)', code: 'EMOAPN', qty: items.keyringEmoApn, price: 38 },
     { name: '白色膠紙座', code: '白色', qty: items.tapeWhite, price: 58 },
     { name: '灰色膠紙座', code: '灰色', qty: items.tapeGrey, price: 58 },
     ...customColors.map(c => ({ name: c.n + '膠紙座', code: c.n.replace(/^[^\u4e00-\u9fff]+/, '').split(' (')[0], qty: (items as any)[`tape${c.k}`], price: 78 })),
@@ -631,7 +606,6 @@ export default function App() {
   const clearAll = () => {
     if (confirm("確定要清除所有已選商品？收貨資料會保留。")) {
       setItems(initialItems);
-      setEmoGiftRn(null);
       setCoverColors(null);
       setCoverEditorOpen(false);
     }
@@ -796,6 +770,9 @@ export default function App() {
       <button type="button" onClick={() => setShowIvCalc(true)} style={fabLeftStyle}>
         💧 點滴計算器
       </button>
+      <button type="button" onClick={() => setShowStoreStock(true)} style={fabCenterStyle}>
+        門市現貨
+      </button>
       <button
         type="button"
         onClick={() => { setCodeCopyState('idle'); setCodeUnlocked(false); setCodePassword(''); setCodePasswordWrong(false); setShowCodes(true); }}
@@ -842,7 +819,7 @@ export default function App() {
               <div style={{ fontSize: '12.5px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <div>1. ✨ <b>全店滿 $200 即包順豐站/智能櫃運費！</b></div>
                 
-                <div>2. 🔥 <b>新貨上架：</b>「emo人員」鎖匙扣有 RN、APN 兩個版本！買俾身邊成日都 emo 嘅 lo best 啦，一人一個，一齊 emo！🖤（買五送一，兩個版本可以夾）</div>
+                <div>2. 🔥 <b>新貨上架：</b>「emo人員」鎖匙扣有 RN、APN 兩個版本！買俾身邊成日都 emo 嘅 lo best 啦，一人一個，一齊 emo！🖤 $38 一個。</div>
                 
                 <div style={{ paddingTop: '5px', borderTop: '1px dashed #E6C200' }}>
                   3. 📦 <b>膠紙座出貨說明：</b>
@@ -1021,93 +998,32 @@ export default function App() {
 
         <div style={{ marginBottom: '26px' }}>
           <CatalogTitle>鎖匙扣系列</CatalogTitle>
-          <div style={{
-            backgroundColor: '#fff',
-            borderRadius: '20px',
-            overflow: 'hidden',
-            boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
-            border: '3px solid #111827',
-            marginBottom: '12px',
-            color: '#000'
-          }}>
-            <div style={{
-              backgroundColor: '#111827',
-              padding: '10px 14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '8px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '18px' }}>🖤</span>
-                <span style={{ fontSize: '15px', fontWeight: '900', color: '#fff' }}>
-                  「emo人員」鎖匙扣
-                </span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                <span style={{ fontSize: '11px', backgroundColor: '#dc2626', color: '#fff', padding: '2px 7px', borderRadius: '10px', fontWeight: '900' }}>
-                  買5送1
-                </span>
-                <span style={{ fontSize: '12px', backgroundColor: '#374151', color: '#fff', padding: '2px 8px', borderRadius: '10px', fontWeight: '900' }}>
-                  $38 / 個
-                </span>
-              </div>
-            </div>
-            <img
-              src="/emo-versions.jpg"
-              alt="「emo人員」鎖匙扣 RN 同 APN"
-              fetchPriority="high"
-              decoding="async"
-              onClick={() => openPhotoPreview('/emo-versions.jpg', '「emo人員」鎖匙扣 RN / APN')}
-              style={{ width: '100%', height: 'auto', display: 'block', cursor: 'zoom-in', backgroundColor: '#F3F4F6' }}
-            />
-            <div style={{ padding: '8px 14px', backgroundColor: '#fff', fontSize: '12px', fontWeight: '800', color: '#374151', textAlign: 'center' }}>
-              左：APN（紅框）　·　右：RN（間條）
-            </div>
-            <div style={{ padding: '12px 14px', backgroundColor: '#F9FAFB', fontSize: '12.5px', color: '#1F2937', fontWeight: 'bold', lineHeight: '1.6' }}>
-              <div>🖤 <b>買俾身邊成日都 emo 嘅 lo best 啦，一人一個，一齊 emo！</b></div>
-              <div style={{ color: '#374151', fontSize: '12px', marginTop: '3px' }}>📏 <b>尺寸：</b>約 3cm × 6cm　·　RN、APN 都係 $38</div>
-              <div style={{ color: '#4B5563', fontSize: '12px', marginTop: '2px' }}>✉️ 產品夠細可以擺入去本地平郵信封包郵（平郵冇追蹤功能，寄失自負）</div>
-              <div style={{ color: '#B91C1C', fontSize: '12px', fontWeight: '900', marginTop: '4px', backgroundColor: '#FEF2F2', padding: '6px 10px', borderRadius: '8px', border: '1px solid #FECACA' }}>
-                🎉 <b>買五送一</b>：兩個版本一齊計，買 5 個實出 6 個。送邊款你揀。
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '8px' }}>
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: '900', marginBottom: '2px' }}>RN　$38</div>
-                  <PreviewAdd count={items.keyringEmoRn} onAdd={() => update('keyringEmoRn', 1)} onSub={() => update('keyringEmoRn', -1)} addText="加入 RN" />
-                </div>
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: '900', marginBottom: '2px' }}>APN　$38</div>
-                  <PreviewAdd count={items.keyringEmoApn} onAdd={() => update('keyringEmoApn', 1)} onSub={() => update('keyringEmoApn', -1)} addText="加入 APN" />
-                </div>
-              </div>
-              {emoPaid > 0 && emoFree === 0 && (
-                <div style={{ marginTop: '8px', fontSize: '12px', color: '#9A3412' }}>
-                  已選 {emoPaid} 個，再買多 {5 - (emoPaid % 5)} 個就送 1 個。
-                </div>
-              )}
-              {emoFree > 0 && (
-                <div style={{ marginTop: '8px', padding: '8px 12px', backgroundColor: '#ECFDF5', border: '1.5px solid #10B981', borderRadius: '10px', fontSize: '12px', color: '#065F46', fontWeight: 'bold', lineHeight: '1.5' }}>
-                  <div>付款 {emoPaid} 個，送 {emoFree} 個，實出 {emoPaid + emoFree} 個。</div>
-                  <div style={{ marginTop: '6px' }}>送邊款（可以夾）：</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
-                      <button type="button" onClick={() => setEmoGiftRn(Math.max(0, emoGiftRnCount - 1))} style={btnStyle}>-</button>
-                      <span>RN {emoGiftRnCount}</span>
-                      <button type="button" onClick={() => setEmoGiftRn(Math.min(emoFree, emoGiftRnCount + 1))} style={btnStyle}>+</button>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
-                      <button type="button" onClick={() => setEmoGiftRn(Math.min(emoFree, emoGiftRnCount + 1))} style={btnStyle}>-</button>
-                      <span>APN {emoGiftApnCount}</span>
-                      <button type="button" onClick={() => setEmoGiftRn(Math.max(0, emoGiftRnCount - 1))} style={btnStyle}>+</button>
-                    </div>
-                  </div>
-                  <div style={{ marginTop: '6px' }}>實出 RN {items.keyringEmoRn + emoGiftRnCount} 個、APN {items.keyringEmoApn + emoGiftApnCount} 個。</div>
-                </div>
-              )}
-            </div>
-          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+            <div style={{ gridColumn: '1 / -1', backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', color: '#000' }}>
+              <img
+                src="/emo-versions.jpg"
+                alt="「emo人員」鎖匙扣 RN 同 APN"
+                fetchPriority="high"
+                decoding="async"
+                onClick={() => openPhotoPreview('/emo-versions.jpg', '「emo人員」鎖匙扣 RN / APN')}
+                style={{ width: '100%', height: 'auto', display: 'block', cursor: 'zoom-in', backgroundColor: '#F3F4F6' }}
+              />
+              <div style={{ padding: '8px 10px 10px', textAlign: 'center' }}>
+                <div style={{ fontSize: '13px', fontWeight: '900' }}>「emo人員」鎖匙扣</div>
+                <div style={{ fontSize: '12px', color: '#77815C', fontWeight: '900' }}>$38</div>
+                <div style={{ fontSize: '11px', fontWeight: '800', color: '#374151', marginTop: '2px' }}>左：APN（紅框）　·　右：RN（間條）</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '6px', textAlign: 'left' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: '900', marginBottom: '2px' }}>RN　$38</div>
+                    <PreviewAdd count={items.keyringEmoRn} onAdd={() => update('keyringEmoRn', 1)} onSub={() => update('keyringEmoRn', -1)} addText="加入 RN" />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: '900', marginBottom: '2px' }}>APN　$38</div>
+                    <PreviewAdd count={items.keyringEmoApn} onAdd={() => update('keyringEmoApn', 1)} onSub={() => update('keyringEmoApn', -1)} addText="加入 APN" />
+                  </div>
+                </div>
+              </div>
+            </div>
             {[
               { img: 'sick', title: '不想上班', price: '$28', actions: [{ key: 'keyringNoWork' }] },
               { img: 'kc', title: '如意吉場', price: '$28', actions: [{ key: 'keyringLucky' }] }
@@ -1540,6 +1456,32 @@ export default function App() {
           </div>
         </div>
       </div>
+      {showStoreStock && (
+        <div onClick={() => setShowStoreStock(false)} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(17,17,17,0.62)', zIndex: 2550, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '28px 12px', overflowY: 'auto' }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: '480px', backgroundColor: '#fff', borderRadius: '24px', padding: '20px 16px', color: '#111', position: 'relative', border: '3px solid #B81D13' }}>
+            <button
+              type="button"
+              aria-label="關閉門市現貨"
+              onClick={() => setShowStoreStock(false)}
+              style={{ position: 'absolute', top: '12px', right: '12px', width: '36px', height: '36px', borderRadius: '50%', border: '2px solid #111', backgroundColor: '#fff', color: '#111', fontSize: '22px', fontWeight: '900', lineHeight: 1, cursor: 'pointer' }}
+            >
+              ×
+            </button>
+            <h3 style={{ margin: '0 36px 8px 0', fontSize: '18px', fontWeight: '900', color: '#B81D13' }}>🏬 門市現貨</h3>
+            <p style={{ margin: '0 0 12px', fontSize: '13px', fontWeight: '800', color: '#B81D13', backgroundColor: '#FFF0F5', borderRadius: '10px', padding: '8px 10px' }}>門市現場商品全部九折</p>
+            {STORE_STOCK.map((item) => (
+              <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '10px', padding: '10px 0', borderBottom: '1px solid #eee' }}>
+                <span style={{ fontSize: '14px', fontWeight: '800' }}>{item.name}</span>
+                <span style={{ flexShrink: 0, textAlign: 'right' }}>
+                  <span style={{ fontSize: '12px', color: '#888', textDecoration: 'line-through', marginRight: '6px' }}>${item.price}</span>
+                  <span style={{ fontSize: '16px', fontWeight: '900', color: '#B81D13' }}>${Math.round(item.price * 0.9)}</span>
+                </span>
+              </div>
+            ))}
+            <p style={{ margin: '12px 0 0', fontSize: '13px', fontWeight: '800', color: '#444', lineHeight: 1.5 }}>有冇貨最終現場而定，請詢問店員。</p>
+          </div>
+        </div>
+      )}
       {showCodes && (
         <div onClick={() => setShowCodes(false)} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(17,17,17,0.62)', zIndex: 2600, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '28px 12px', overflowY: 'auto' }}>
           <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: '480px', backgroundColor: '#fff', borderRadius: '24px', padding: '20px 16px', color: '#111', position: 'relative' }}>
@@ -1625,7 +1567,14 @@ export default function App() {
 // STYLES
 const announcementStyle: any = { backgroundColor: '#FFF9E6', border: '1.5px solid #FFCC00', borderRadius: '14px', padding: '12px 14px', marginBottom: '16px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', color: '#000' };
 const fabLeftStyle: any = { position: 'absolute', left: '10px', top: '12px', padding: '10px 12px', borderRadius: '20px', backgroundColor: '#fff', color: '#DD6B20', fontWeight: '900', border: '2.5px solid #DD6B20', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1100, fontSize: '11px', cursor: 'pointer' };
+const fabCenterStyle: any = { position: 'absolute', left: '50%', top: '12px', transform: 'translateX(-50%)', padding: '10px 12px', borderRadius: '20px', backgroundColor: '#fff', color: '#B81D13', fontWeight: '900', border: '2.5px solid #B81D13', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1100, fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' };
 const fabRightStyle: any = { position: 'absolute', right: '10px', top: '12px', padding: '10px 12px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '2.5px solid #77815C', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1100, fontSize: '11px', cursor: 'pointer' };
+const STORE_STOCK = [
+  { name: '粉紅膠紙座連防塵蓋', price: 88 },
+  { name: '冰藍膠紙座連防塵蓋', price: 88 },
+  { name: '收聲先鎖匙扣', price: 78 },
+  { name: '不想上班', price: 28 }
+];
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
 const inputStyle: any = { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #ddd', fontSize: '15px', marginBottom: '8px' };
 
