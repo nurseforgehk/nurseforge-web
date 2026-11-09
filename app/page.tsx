@@ -562,7 +562,7 @@ export default function App() {
     return `${hours} 小時 ${minutes} 分`;
   };
   const paceDiff = projectedMins - totalMins;
-  const paceClose = totalMins > 0 && Math.abs(paceDiff) <= Math.max(2, totalMins * 0.08);
+  const paceClose = totalMins > 0 && Math.abs(paceDiff) <= Math.max(2, totalMins * 0.1);
   const paceColor = paceClose ? '#166534' : '#DC2626';
   const paceOn = hasMeasuredPace && paceClose;
   const ivTheme = paceOn
@@ -1118,14 +1118,18 @@ export default function App() {
             <div style={{ paddingLeft: '4px', display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12.5px', fontWeight: '700', color: '#1f2937' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
                 <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 1</span>
-                <span><b>撳「複製訂單文字」</b>（執貨單唔使再截圖）</span>
+                <span><b>填完物流資訊，剔選下面聲明</b></span>
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
                 <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 2</span>
-                <span><b>截圖 PayMe 付款成功頁面</b></span>
+                <span><b>撳「複製訂單文字」，PayMe 按鍵就會出現</b></span>
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
                 <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 3</span>
+                <span><b>截圖 PayMe 付款成功頁面</b></span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 4</span>
                 <span>將<b>複製嘅文字同 PayMe 截圖</b>一併 DM Instagram: <a href="https://instagram.com/nurseforgehk" target="_blank" rel="noreferrer" style={{ color: '#D63384', textDecoration: 'underline' }}>@nurseforgehk</a> 📦</span>
               </div>
             </div>
@@ -1468,14 +1472,11 @@ export default function App() {
               ×
             </button>
             <h3 style={{ margin: '0 36px 8px 0', fontSize: '18px', fontWeight: '900', color: '#B81D13' }}>🏬 門市現貨</h3>
-            <p style={{ margin: '0 0 12px', fontSize: '13px', fontWeight: '800', color: '#B81D13', backgroundColor: '#FFF0F5', borderRadius: '10px', padding: '8px 10px' }}>門市現場商品全部九折</p>
+            <p style={{ margin: '0 0 12px', fontSize: '13px', fontWeight: '800', color: '#B81D13', backgroundColor: '#FFF0F5', borderRadius: '10px', padding: '8px 10px', lineHeight: 1.5 }}>門市現場商品全部九折。最終價錢以門市為準。</p>
             {STORE_STOCK.map((item) => (
               <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '10px', padding: '10px 0', borderBottom: '1px solid #eee' }}>
                 <span style={{ fontSize: '14px', fontWeight: '800' }}>{item.name}</span>
-                <span style={{ flexShrink: 0, textAlign: 'right' }}>
-                  <span style={{ fontSize: '12px', color: '#888', textDecoration: 'line-through', marginRight: '6px' }}>${item.price}</span>
-                  <span style={{ fontSize: '16px', fontWeight: '900', color: '#B81D13' }}>${Math.round(item.price * 0.9)}</span>
-                </span>
+                <span style={{ flexShrink: 0, fontSize: '16px', fontWeight: '900', color: '#B81D13' }}>${item.price}</span>
               </div>
             ))}
             <p style={{ margin: '12px 0 0', fontSize: '13px', fontWeight: '800', color: '#444', lineHeight: 1.5 }}>有冇貨最終現場而定，請詢問店員。</p>
@@ -1598,7 +1599,7 @@ const bottomTotalCardStyle: any = { backgroundColor: '#F9FAF6', padding: '6px 10
 const clearBtnStyle: any = { padding: '3px 8px', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', backgroundColor: '#fff' };
 const paymeBtnStyle: any = { display: 'block', width: '100%', padding: '10px 12px', backgroundColor: '#FF002B', color: '#fff', textDecoration: 'none', borderRadius: '30px', textAlign: 'center', fontWeight: '900', fontSize: '15px', boxShadow: '0 3px 10px rgba(255, 0, 43, 0.25)' };
 const paymeBtnDisabledStyle: any = { display: 'block', width: '100%', padding: '10px 12px', backgroundColor: '#e0e0e0', color: '#666', borderRadius: '30px', textAlign: 'center', fontWeight: '900', fontSize: '12px', cursor: 'not-allowed' };
-const capNoticeStyle: any = { backgroundColor: '#FEF08A', padding: '14px 16px', borderRadius: '16px', marginBottom: '16px', border: '3px solid #CA8A04', textAlign: 'center', width: '95%', maxWidth: '380px', boxShadow: '0 6px 20px rgba(0,0,0,0.15)', color: '#000' };
+const capNoticeStyle: any = { backgroundColor: '#FEF08A', padding: '14px 16px', borderRadius: '16px', marginBottom: '16px', border: '3px solid #DC2626', textAlign: 'center', width: '95%', maxWidth: '380px', boxShadow: '0 6px 20px rgba(0,0,0,0.15)', color: '#000' };
 const orderDraftStyle: any = { backgroundColor: '#fff', padding: '15px', width: '95%', maxWidth: '380px', border: '4px solid #77815C', color: '#000' };
 const orderHeaderStyle: any = { borderBottom: '2px solid #77815C', paddingBottom: '8px', marginBottom: '10px', textAlign: 'center' };
 const orderInfoBoxStyle: any = { fontSize: '12px', marginBottom: '10px', lineHeight: '1.4', backgroundColor: '#f9f9f9', padding: '10px', borderRadius: '8px' };
