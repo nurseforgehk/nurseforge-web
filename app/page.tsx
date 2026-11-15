@@ -1573,7 +1573,12 @@ const fabRightStyle: any = { position: 'absolute', right: '10px', top: '12px', p
 const STORE_STOCK = [
   { name: '粉紅膠紙座連防塵蓋', price: 88 },
   { name: '冰藍膠紙座連防塵蓋', price: 88 },
+  { name: '青苹果绿膠紙座連防塵蓋', price: 88 },
+  { name: '叫人鐘 (正常版)', price: 78 },
+  { name: '叫人鐘 (中指版)', price: 78 },
   { name: '收聲先鎖匙扣', price: 78 },
+  { name: 'emo人員 (RN)', price: 38 },
+  { name: 'emo人員 (APN)', price: 38 },
   { name: '不想上班', price: 28 }
 ];
 const formCardStyle: any = { backgroundColor: '#fff', padding: '25px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', color: '#000' };
