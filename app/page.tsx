@@ -788,6 +788,31 @@ export default function App() {
       </div>
 
       <div style={{ maxWidth: '500px', margin: '0 auto 20px auto' }}>
+        <div style={{ backgroundColor: '#fff', border: '3px solid #111', borderRadius: '18px', overflow: 'hidden', marginBottom: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.18)', color: '#111' }}>
+          <img
+            src="/shift-station.jpg"
+            alt="夠鐘返工資訊站"
+            fetchPriority="high"
+            decoding="async"
+            onClick={() => openPhotoPreview('/shift-station.jpg', '夠鐘返工資訊站')}
+            style={{ width: '100%', height: 'auto', display: 'block', cursor: 'zoom-in', backgroundColor: '#E8EEF5' }}
+          />
+          <div style={{ padding: '12px 14px 14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', flex: 1 }}>夠鐘返工資訊站</h3>
+              <span style={{ flexShrink: 0, fontSize: '11px', fontWeight: '900', color: '#fff', backgroundColor: '#111', borderRadius: '999px', padding: '3px 8px' }}>大製作</span>
+            </div>
+            <div style={{ fontSize: '13px', fontWeight: '700', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div>一塊插電就用得嘅電子小螢幕。返 shift 嘅護士，甚至其他打工仔，出門之前一眼睇晒時間、天氣、更號，同自己常坐嘅巴士仲有幾耐到。</div>
+              <div>唔使再不斷解鎖電話，亦唔使再喺電話打開唔同 App，返工出門之前解放雙手。</div>
+              <div>呢部機係 NurseForgeHK 獨力製作。電路板、3D 打印外殼、寫程式，一手包辦。</div>
+              <div style={{ backgroundColor: '#F3F4F6', borderRadius: '10px', padding: '8px 10px' }}>
+                醫護人員購買會有折扣。首輪限量發售。暫時未有定價，發佈日期容後公布。想要嘅話，直接 DM Instagram <a href="https://instagram.com/nurseforgehk" target="_blank" rel="noreferrer" style={{ color: '#D63384', fontWeight: '900' }}>@nurseforgehk</a> 留名，一出就會通知你。
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* 🏬 實體體驗店獨立公告卡片 */}
         <div style={{ backgroundColor: '#FFF0F5', border: '1.5px solid #FFB6C1', borderRadius: '14px', padding: '12px 14px', marginBottom: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', color: '#000' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', borderBottom: '1.5px solid #FFC0CB', paddingBottom: '4px' }}>
@@ -819,10 +844,8 @@ export default function App() {
               <div style={{ fontSize: '12.5px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <div>1. ✨ <b>全店滿 $200 即包順豐站/智能櫃運費！</b></div>
                 
-                <div>2. 🔥 <b>新貨上架：</b>「emo人員」鎖匙扣有 RN、APN 兩個版本！買俾身邊成日都 emo 嘅 lo best 啦，一人一個，一齊 emo！🖤 $38 一個。</div>
-                
                 <div style={{ paddingTop: '5px', borderTop: '1px dashed #E6C200' }}>
-                  3. 📦 <b>膠紙座出貨說明：</b>
+                  2. 📦 <b>膠紙座出貨說明：</b>
                   <div style={{ paddingLeft: '4px', marginTop: '2px', fontSize: '12px', fontWeight: '600' }}>
                     🚚 <b>順豐速遞：</b>完整組裝好（連螺絲扭緊）先寄出，加購防塵蓋一併入盒，收到即刻用得！<br />
                     ✉️ <b>本地平郵：</b>受郵政厚度限制，會以零件（散件）寄出。
