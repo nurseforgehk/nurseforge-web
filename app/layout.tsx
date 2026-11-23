@@ -3,7 +3,7 @@ import "./globals.css";
 
 const title = "NurseForgeHK 護士鍛造工場";
 const description =
-  "護士小物訂購：膠紙座、防塵蓋、Clicker、鎖匙扣。全店滿 $200 順豐站／智能櫃免運。";
+  "護士小物訂購：膠紙座、防塵蓋、Clicker、鎖匙扣。全店滿 $300 順豐站／智能櫃免運。";
 
 export const metadata: Metadata = {
   title,

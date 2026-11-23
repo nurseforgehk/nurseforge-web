@@ -1,10 +1,110 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
+import sfPoints from '@/data/sf-points.json';
 
 let openPhotoPreview = (_src: string, _title: string) => {};
 
 const ORDER_DRAFT_KEY = 'nurseforge-order-draft';
 const SHIP_METHODS = ['post', 'sf_station', 'sf_locker', 'sf_store', 'sf_direct'];
+
+type SfPoint = { kind: 'station' | 'locker' | 'store'; region: string; area: string; code: string; name: string; address: string };
+const SF_POINTS = sfPoints as SfPoint[];
+const SF_REGIONS = ['香港島', '九龍', '新界', '離島'];
+
+function kindOfMethod(method: string): '' | SfPoint['kind'] {
+  if (method === 'sf_station') return 'station';
+  if (method === 'sf_locker') return 'locker';
+  if (method === 'sf_store') return 'store';
+  return '';
+}
+
+function formatSfPoint(point: SfPoint) {
+  const namedInAddress = point.address.includes(point.name) || (point.name === '順豐智能櫃' && /自助櫃|智能櫃/.test(point.address));
+  return [point.code, namedInAddress ? '' : point.name, point.address].filter(Boolean).join(' ');
+}
+
+function pointFromTypedCode(value: string, kind: string, allowPrefix: boolean) {
+  const match = value.trim().match(/^((?:H852|852)[A-Z0-9]{1,12})\s*$/i);
+  if (!match || !kind) return null;
+  const code = match[1].toUpperCase();
+  const pool = SF_POINTS.filter((point) => point.kind === kind);
+  const point = pool.find((item) => item.code === code);
+  if (!point) return null;
+  if (!allowPrefix && pool.some((item) => item.code !== code && item.code.startsWith(code))) return null;
+  return point;
+}
+
+function SfPointPicker({ kind, onPick }: { kind: 'station' | 'locker' | 'store'; onPick: (point: SfPoint) => void }) {
+  const [region, setRegion] = useState<string | null>(null);
+  const [area, setArea] = useState<string | null>(null);
+  const points = SF_POINTS.filter((point) => point.kind === kind);
+  const regions = SF_REGIONS.filter((name) => points.some((point) => point.region === name));
+  const areas = region
+    ? [...new Set(points.filter((point) => point.region === region).map((point) => point.area))].sort((a, b) => a.localeCompare(b, 'zh-HK'))
+    : [];
+  const places = region && area ? points.filter((point) => point.region === region && point.area === area) : [];
+  const regionStyle = (active: boolean): React.CSSProperties => ({
+    border: '2px solid #1D4ED8',
+    background: active ? '#1D4ED8' : '#DBEAFE',
+    color: active ? '#fff' : '#1E3A8A',
+    borderRadius: '999px',
+    padding: '8px 14px',
+    fontWeight: 900,
+    fontSize: '14px',
+    cursor: 'pointer'
+  });
+  const areaStyle = (active: boolean): React.CSSProperties => ({
+    border: active ? '2px solid #111' : '1.5px solid #77815C',
+    background: active ? '#77815C' : '#fff',
+    color: active ? '#fff' : '#111',
+    borderRadius: '999px',
+    padding: '8px 12px',
+    fontWeight: 900,
+    fontSize: '14px',
+    cursor: 'pointer'
+  });
+  const hint = kind === 'station'
+    ? '請對一對係咪你要嘅站，同埋呢個順豐站仲係咪運作緊。資料來自順豐 2026 年網點表，可能已經搬咗或者停咗。'
+    : kind === 'locker'
+    ? '請對一對係咪你要嘅櫃，同埋個櫃仲係咪運作緊。有啲櫃只供住戶使用。資料來自順豐自助櫃清單，可能已經搬咗或者停咗。'
+    : '請對一對係咪你要嘅合作點，同埋間舖仲係咪幫順豐收件。7-Eleven 已經停止合作，呢度係 OK 便利店同其他合作店，而且有體積限制。';
+
+  return (
+    <div style={{ marginBottom: '8px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+        {regions.map((name) => (
+          <button key={name} type="button" onClick={() => { setRegion(name); setArea(null); }} style={regionStyle(region === name)}>{name}</button>
+        ))}
+      </div>
+      {region && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+          {areas.map((name) => (
+            <button key={name} type="button" onClick={() => setArea(name)} style={areaStyle(area === name)}>{name}</button>
+          ))}
+        </div>
+      )}
+      {region && area && (
+        <div style={{ maxHeight: '280px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' }}>
+          {places.map((point) => (
+            <button
+              key={point.code}
+              type="button"
+              onClick={() => onPick(point)}
+              style={{ textAlign: 'left', background: '#fff', border: '1.5px solid #77815C', borderRadius: '10px', padding: '8px 10px', cursor: 'pointer' }}
+            >
+              <div style={{ fontWeight: 900, fontSize: '13px', color: '#111' }}>
+                <span style={{ color: '#3f4a2e' }}>{point.code}</span>
+                {point.name ? ` · ${point.name}` : ''}
+              </div>
+              <div style={{ fontSize: '12px', color: '#444', lineHeight: 1.4 }}>{point.address}</div>
+            </button>
+          ))}
+        </div>
+      )}
+      <p style={{ margin: '0 0 8px', fontSize: '12px', fontWeight: 700, color: '#9a3412', lineHeight: 1.45 }}>{hint}</p>
+    </div>
+  );
+}
 
 const TAPE_COLORS = [
   { key: 'tapeWhite', label: '白色', swatch: '#ffffff' },
@@ -243,8 +343,7 @@ export default function App() {
     keyringNoWork: 0, keyringLucky: 0,
     clickerLuckyPink: 0, clickerLuckyBlue: 0, clickerShutUp: 0, clickerCombo: 0, 
     clickerCallbellNormal: 0, clickerCallbellFinger: 0, 
-    clickerCallcarNormal: 0, clickerCallcarFinger: 0, 
-    addonDiff: 0 
+    clickerCallcarNormal: 0, clickerCallcarFinger: 0
   };
 
   const [items, setItems] = useState(initialItems);
@@ -265,6 +364,22 @@ export default function App() {
   useEffect(() => {
     if (!showIvCalc) setDripTaps([]);
   }, [showIvCalc]);
+
+  useEffect(() => {
+    const kind = kindOfMethod(shipping.method);
+    if (!kind) return;
+    const point = pointFromTypedCode(shipping.address, kind, true);
+    if (!point) return;
+    const handle = setTimeout(() => {
+      setShipping((prev) => {
+        const nextKind = kindOfMethod(prev.method);
+        const next = pointFromTypedCode(prev.address, nextKind, true);
+        if (!next) return prev;
+        return { ...prev, address: formatSfPoint(next) };
+      });
+    }, 500);
+    return () => clearTimeout(handle);
+  }, [shipping.address, shipping.method]);
 
   useEffect(() => {
     try {
@@ -441,7 +556,7 @@ export default function App() {
   
   const totalTapeCount = tapeColorQuantities.reduce((acc, curr) => acc + curr, 0);
 
-  const hasRealProducts = Object.entries(items).some(([key, qty]) => key !== 'addonDiff' && qty > 0);
+  const hasRealProducts = Object.values(items).some((qty) => qty > 0);
 
   const rawTotal = [
     { qty: items.keyringEmoRn + items.keyringEmoApn, p: 38 },
@@ -453,12 +568,11 @@ export default function App() {
     { qty: items.clickerCallcarNormal + items.clickerCallcarFinger, p: 145 },
     { qty: items.clickerLuckyPink, p: 68 }, { qty: items.clickerLuckyBlue, p: 68 },
     { qty: items.clickerCombo, p: 125 }, { qty: items.clickerShutUp, p: 78 },
-    { qty: items.keyringNoWork, p: 28 }, { qty: items.keyringLucky, p: 28 },
-    { qty: 1, p: items.addonDiff }
+    { qty: items.keyringNoWork, p: 28 }, { qty: items.keyringLucky, p: 28 }
   ].reduce((acc, curr) => acc + (curr.qty * curr.p), 0);
 
   const total = isPromoApplied ? Math.round(rawTotal * 0.9) : rawTotal;
-  const isFreeSF = total >= 200;
+  const isFreeSF = total >= 300;
 
   const customColors = [
     { k: 'Marble', n: '🏛️ 大理石' },
@@ -493,23 +607,32 @@ export default function App() {
     { name: '吉床套裝 (粉紅白吉床x1, 藍白吉床x1)', code: 'BED', qty: items.clickerCombo, price: 125 },
     { name: '收聲先', code: 'CM', qty: items.clickerShutUp, price: 78 },
     { name: '不想上班鎖匙扣', code: 'SL', qty: items.keyringNoWork, price: 28 },
-    { name: '如意吉場鎖匙扣', code: 'KC', qty: items.keyringLucky, price: 28 },
-    { name: '💰 補錢湊數', qty: 1, price: items.addonDiff }
-  ].filter(p => p && (p.name === '💰 補錢湊數' ? p.price > 0 : p.qty > 0));
+    { name: '如意吉場鎖匙扣', code: 'KC', qty: items.keyringLucky, price: 28 }
+  ].filter(p => p && p.qty > 0);
 
   const methodMap: any = { 
     post: "本地平郵 (包郵)", 
     sf_station: isFreeSF ? "順豐站 (免運)" : "順豐站 (到付)", 
     sf_locker: isFreeSF ? "智能櫃 (免運)" : "智能櫃 (到付)",
-    sf_store: "順豐合作便利店 (到付)",
+    sf_store: "順豐合作點 (到付)",
     sf_direct: "順豐送上門 (到付)" 
   };
   const addressPlaceholder: any = {
     post: '✉️ 請填平郵收件地址：屋苑、座數、樓層、室',
     sf_station: '🏪 請填順豐站點碼（如 852XXX）同站名，方便直接對賬',
     sf_locker: '📦 請填智能櫃點碼同櫃位置（如 H852XXX）',
-    sf_store: '🏬 請填順豐合作便利店點碼同店舖地址',
+    sf_store: '🏬 請填合作點點碼同店舖地址',
     sf_direct: '🏠 請填送貨上門地址：屋苑、座數、樓層、室'
+  };
+  const sfKind = kindOfMethod(shipping.method);
+  const changeAddress = (value: string) => {
+    const point = pointFromTypedCode(value, sfKind, false);
+    setShipping({ ...shipping, address: point ? formatSfPoint(point) : value });
+  };
+  const blurAddress = () => {
+    const point = pointFromTypedCode(shipping.address, sfKind, true);
+    if (!point) return;
+    setShipping((prev) => ({ ...prev, address: formatSfPoint(point) }));
   };
 
   // ======= 💧 IV Drip Rate 計算邏輯 =======
@@ -624,7 +747,6 @@ export default function App() {
   const remarkOutput = [shipping.remarks.trim(), coverRemark].filter(Boolean).join('\n');
 
   const selectedProductText = activeProducts.map((p) => {
-    if (!p.code && String(p.name).includes('補錢')) return `補錢湊數 $${p.price}`;
     const qty = p.shipQty ?? p.qty;
     return `${p.name} x${qty}${p.detail ? `（${p.detail}）` : ''}`;
   }).join('、');
@@ -679,27 +801,54 @@ export default function App() {
     ? '請先複製訂單文字，再去 PayMe'
     : '';
 
-  const renderCopyButton = () => (
-    <button
-      type="button"
-      onClick={copyOrder}
-      disabled={!hasRealProducts}
-      style={{
-        display: 'block',
-        width: '100%',
-        marginTop: '8px',
-        padding: '12px',
-        backgroundColor: !hasRealProducts ? '#e0e0e0' : copyState === 'copied' ? '#2E7D32' : '#111',
-        color: !hasRealProducts ? '#666' : '#fff',
-        border: 'none',
-        borderRadius: '30px',
-        fontWeight: 900,
-        fontSize: '15px',
-        cursor: hasRealProducts ? 'pointer' : 'not-allowed'
-      }}
-    >
-      {!hasRealProducts ? '請先揀選商品先可以複製' : copyState === 'copied' ? '已複製，撳多次都得' : copyState === 'failed' ? '再試一次複製' : '複製訂單文字'}
-    </button>
+  const renderCopyButton = (offerSend = false) => (
+    <>
+      <button
+        type="button"
+        className={hasRealProducts ? 'copy-press' : undefined}
+        onClick={copyOrder}
+        disabled={!hasRealProducts}
+        style={{
+          display: 'block',
+          width: '100%',
+          marginTop: '8px',
+          padding: '12px',
+          backgroundColor: !hasRealProducts ? '#e0e0e0' : copyState === 'copied' ? '#2E7D32' : '#111',
+          color: !hasRealProducts ? '#666' : '#fff',
+          border: 'none',
+          borderRadius: '30px',
+          fontWeight: 900,
+          fontSize: '15px',
+          cursor: hasRealProducts ? 'pointer' : 'not-allowed'
+        }}
+      >
+        {!hasRealProducts ? '請先揀選商品先可以複製' : copyState === 'copied' ? '已複製，撳多次都得' : copyState === 'failed' ? '再試一次複製' : '複製訂單文字'}
+      </button>
+      {offerSend && copyState === 'copied' && (
+        <a
+          href="https://ig.me/m/nurseforgehk"
+          target="_blank"
+          rel="noreferrer"
+          className="copy-press"
+          style={{
+            display: 'block',
+            width: '100%',
+            marginTop: '8px',
+            padding: '12px',
+            backgroundColor: '#fff',
+            color: '#111',
+            border: '3px solid #111',
+            borderRadius: '30px',
+            fontWeight: 900,
+            fontSize: '15px',
+            textAlign: 'center',
+            textDecoration: 'none'
+          }}
+        >
+          去 @nurseforgehk 傳送訂單
+        </a>
+      )}
+    </>
   );
 
   if (!draftReady) {
@@ -711,7 +860,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ padding: '20px 15px 230px 15px', backgroundColor: '#77815C', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
+    <div style={{ padding: '20px 15px 280px 15px', backgroundColor: '#77815C', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
       
       {photoPreview && <PhotoLightbox src={photoPreview.src} title={photoPreview.title} onClose={() => setPhotoPreview(null)} />}
 
@@ -756,14 +905,15 @@ export default function App() {
           box-shadow: 0 0.5px 0 #d0d0d0, 0 1px 2px rgba(0,0,0,0.1);
         }
 
-        .btn-3d-diff {
-          box-shadow: 0 2.5px 0 #b02065, 0 3px 6px rgba(0,0,0,0.1);
-          transition: all 0.08s ease;
-          user-select: none;
+        .copy-press {
+          box-shadow: 0 4px 0 #1f2937;
+          transform: translateY(0);
+          transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
         }
-        .btn-3d-diff:active {
-          transform: translateY(1.5px);
-          box-shadow: 0 0.5px 0 #b02065, 0 1px 2px rgba(0,0,0,0.1);
+        .copy-press:active {
+          transform: translateY(4px);
+          box-shadow: 0 0 0 #1f2937;
+          filter: brightness(0.9);
         }
       `}</style>
 
@@ -800,14 +950,23 @@ export default function App() {
           <div style={{ padding: '12px 14px 14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', flex: 1 }}>夠鐘返工資訊站</h3>
-              <span style={{ flexShrink: 0, fontSize: '11px', fontWeight: '900', color: '#fff', backgroundColor: '#111', borderRadius: '999px', padding: '3px 8px' }}>大製作</span>
+              <span style={{ flexShrink: 0, fontSize: '11px', fontWeight: '900', color: '#fff', backgroundColor: '#111', borderRadius: '999px', padding: '3px 8px' }}>coming soon</span>
             </div>
-            <div style={{ fontSize: '13px', fontWeight: '700', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div>一塊插電就用得嘅電子小螢幕。返 shift 嘅護士，甚至其他打工仔，出門之前一眼睇晒時間、天氣、更號，同自己常坐嘅巴士仲有幾耐到。</div>
-              <div>唔使再不斷解鎖電話，亦唔使再喺電話打開唔同 App，返工出門之前解放雙手。</div>
-              <div>呢部機係 NurseForgeHK 獨力製作。電路板、3D 打印外殼、寫程式，一手包辦。</div>
-              <div style={{ backgroundColor: '#F3F4F6', borderRadius: '10px', padding: '8px 10px' }}>
-                醫護人員購買會有折扣。首輪限量發售。暫時未有定價，發佈日期容後公布。想要嘅話，直接 DM Instagram <a href="https://instagram.com/nurseforgehk" target="_blank" rel="noreferrer" style={{ color: '#D63384', fontWeight: '900' }}>@nurseforgehk</a> 留名，一出就會通知你。
+            <div style={{ fontSize: '13px', fontWeight: '700', lineHeight: 1.65, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div>整咗塊插電就用得嘅小螢幕——「夠鐘返工資訊站」，12月1日正式開賣！</div>
+              <div>專為返 Shift 同日日趕車嘅大家而設。出門前擺喺檯頭望一眼，時間、天文台天氣、今日返咩更、同埋樓下三條巴士線仲有幾耐到，全部一目了然，唔使再不斷解鎖部電話睇幾個 App。</div>
+              <div>由電路、3D 外殼到寫 Code，全部都係 NurseForgeHK 一手一腳整出嚟。</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <div>▪️ 尺寸：54 × 90 × 13 mm</div>
+                <div>▪️ 供電：5V Type-C</div>
+              </div>
+              <div style={{ backgroundColor: '#F3F4F6', borderRadius: '10px', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div>開賣價錢：</div>
+                <div>・原價 $330</div>
+                <div>・醫護同路人（在職／學生）九折 $297</div>
+                <div>・12月1日至10日早鳥優惠：醫護八折 $264</div>
+                <div style={{ marginTop: '4px' }}>（DM 影張職員證／學生證核對就得，記得遮返晒敏感資料，見到學校／公司名同有效日期就 OK）</div>
+                <div>想留名第一批入手，直接 DM IG <a href="https://instagram.com/nurseforgehk" target="_blank" rel="noreferrer" style={{ color: '#D63384', fontWeight: '900' }}>@nurseforgehk</a> 啦！</div>
               </div>
             </div>
           </div>
@@ -842,10 +1001,11 @@ export default function App() {
               </h3>
               
               <div style={{ fontSize: '12.5px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div>1. ✨ <b>全店滿 $200 即包順豐站/智能櫃運費！</b></div>
+                <div>1. 📺 <b>夠鐘返工資訊站準備出，12月1日發售。</b></div>
+                <div>2. ✨ <b>全店滿 $300 即包順豐站/智能櫃運費！</b></div>
                 
                 <div style={{ paddingTop: '5px', borderTop: '1px dashed #E6C200' }}>
-                  2. 📦 <b>膠紙座出貨說明：</b>
+                  3. 📦 <b>膠紙座出貨說明：</b>
                   <div style={{ paddingLeft: '4px', marginTop: '2px', fontSize: '12px', fontWeight: '600' }}>
                     🚚 <b>順豐速遞：</b>完整組裝好（連螺絲扭緊）先寄出，加購防塵蓋一併入盒，收到即刻用得！<br />
                     ✉️ <b>本地平郵：</b>受郵政厚度限制，會以零件（散件）寄出。
@@ -1084,15 +1244,24 @@ export default function App() {
               {!hasClicker && <Radio label="本地平郵 (包郵)" active={shipping.method === 'post'} onClick={() => setShipping({...shipping, method: 'post'})} />}
               <Radio label={isFreeSF ? "順豐站 (免運)" : "順豐站 (到付)"} active={shipping.method === 'sf_station'} onClick={() => setShipping({...shipping, method: 'sf_station'})} />
               <Radio label={isFreeSF ? "智能櫃 (免運)" : "智能櫃 (到付)"} active={shipping.method === 'sf_locker'} onClick={() => setShipping({...shipping, method: 'sf_locker'})} />
-              <Radio label="便利店 (到付)" active={shipping.method === 'sf_store'} onClick={() => setShipping({...shipping, method: 'sf_store'})} />
+              <Radio label="合作點 (到付)" active={shipping.method === 'sf_store'} onClick={() => setShipping({...shipping, method: 'sf_store'})} />
               <Radio label="送上門 (到付)" active={shipping.method === 'sf_direct'} onClick={() => setShipping({...shipping, method: 'sf_direct'})} />
             </div>
             
+            {sfKind && (
+              <SfPointPicker
+                key={sfKind}
+                kind={sfKind}
+                onPick={(point) => setShipping({ ...shipping, address: formatSfPoint(point) })}
+              />
+            )}
+
             <textarea 
               placeholder={addressPlaceholder[shipping.method]} 
               style={{...inputStyle, height: '80px'} as any} 
               value={shipping.address} 
-              onChange={e => setShipping({...shipping, address: e.target.value})} 
+              onChange={e => changeAddress(e.target.value)}
+              onBlur={blurAddress}
             />
             
             <input placeholder="備註" style={inputStyle} value={shipping.remarks} onChange={e => setShipping({...shipping, remarks: e.target.value})} />
@@ -1118,13 +1287,6 @@ export default function App() {
               ) : null}
             </div>
 
-            <div style={addonCardStyle}>
-              <span style={{ fontSize: '15px', fontWeight: '900', color: '#D63384' }}>💰 補錢湊數：${items.addonDiff}</span>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button type="button" onClick={() => update('addonDiff', -1)} className="btn-3d-diff" style={diffBtnStyle}>-1</button>
-                <button type="button" onClick={() => update('addonDiff', 1)} className="btn-3d-diff" style={diffBtnStyle}>+1</button>
-              </div>
-            </div>
           </Section>
         </div>
       </div>
@@ -1139,22 +1301,19 @@ export default function App() {
 
           <div style={{ backgroundColor: '#fff', padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #EAB308', textAlign: 'left', fontSize: '13px', lineHeight: '1.6', color: '#333' }}>
             <div style={{ paddingLeft: '4px', display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12.5px', fontWeight: '700', color: '#1f2937' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 1</span>
-                <span><b>填完物流資訊，剔選下面聲明</b></span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 2</span>
-                <span><b>撳「複製訂單文字」，PayMe 按鍵就會出現</b></span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 3</span>
-                <span><b>截圖 PayMe 付款成功頁面</b></span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>步驟 4</span>
-                <span>將<b>複製嘅文字同 PayMe 截圖</b>一併 DM Instagram: <a href="https://instagram.com/nurseforgehk" target="_blank" rel="noreferrer" style={{ color: '#D63384', textDecoration: 'underline' }}>@nurseforgehk</a> 📦</span>
-              </div>
+              {[
+                <span key="1"><b>填好物流資料，核對清楚地址同點碼</b></span>,
+                <span key="2"><b>剔選下面聲明</b></span>,
+                <span key="3"><b>撳「複製訂單文字」</b></span>,
+                <span key="4"><b>PayMe 付款，付款訊息記得寫低你嘅 IG 名</b></span>,
+                <span key="5"><b>截圖 PayMe 付款成功頁面</b></span>,
+                <span key="6">去 <a href="https://ig.me/m/nurseforgehk" target="_blank" rel="noreferrer" style={{ color: '#D63384', textDecoration: 'underline' }}>@nurseforgehk</a> 貼上訂單文字同截圖</span>
+              ].map((step, index) => (
+                <div key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                  <span style={{ backgroundColor: '#FEF08A', color: '#854d0e', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '900', flexShrink: 0 }}>步驟 {index + 1}</span>
+                  {step}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -1204,7 +1363,7 @@ export default function App() {
             )}
             <div style={{ fontSize: '24px', fontWeight: '900', color: '#77815C' }}>Total: HKD ${total}</div>
           </div>
-          {renderCopyButton()}
+          {renderCopyButton(true)}
           {copyState === 'copied' && (
             <div style={{ marginTop: '8px', fontSize: '12px', fontWeight: 'bold', color: '#166534', textAlign: 'center', lineHeight: 1.5 }}>
               已複製。去 PayMe 同 IG 之後返嚟，張單仍然喺度，可以再複製。
@@ -1447,17 +1606,20 @@ export default function App() {
             <div style={{ borderTop: '1px dashed #e2e8f0', marginTop: '5px', paddingTop: '4px', textAlign: 'center', lineHeight: '1.2' }}>
               {!isFreeSF ? (
                 <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#b97a00' }}>
-                  💡 再買多 <b style={{ fontSize: '12px', color: '#dc3545' }}>${200 - total}</b> 享順豐站/智能櫃免運費！
+                  💡 再買多 <b style={{ fontSize: '12px', color: '#dc3545' }}>${300 - total}</b> 享順豐站/智能櫃免運費！
                 </span>
               ) : (
                 <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#2E7D32' }}>
-                  🎉 已滿 $200！已享順豐站/智能櫃免運費！
+                  🎉 已滿 $300！已享順豐站/智能櫃免運費！
                 </span>
               )}
             </div>
           </div>
           
           {renderCopyButton()}
+          <p style={{ margin: '8px 0 0', fontSize: '12px', lineHeight: 1.45, fontWeight: 800, color: '#9a3412', textAlign: 'center' }}>
+            PayMe 付款訊息請寫低你嘅 IG 帳號名。付咗錢如果冇傳訂單，我唔知筆錢係邊個。
+          </p>
           <div style={{ marginTop: '6px' }}>
             {paymeLockedReason === '' ? (
               <button
@@ -1637,19 +1799,6 @@ const quoteAreaStyle: any = { marginTop: '10px', padding: '8px 5px', borderTop: 
 const agreementBoxStyle: any = { width: '95%', maxWidth: '380px', marginTop: '20px', padding: '18px', backgroundColor: '#FFF9E6', borderRadius: '16px', border: '2px solid #FFCC00' };
 const igLinkBtnStyle: any = { flex: 1, padding: '10px', borderRadius: '12px', background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', color: '#fff', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', textAlign: 'center' };
 const privacyNoticeStyle: any = { fontSize: '11px', color: '#666', marginBottom: '10px' };
-const addonCardStyle: any = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: '#FFF5F7', borderRadius: '15px', border: '2px solid #FFD1DC', marginTop: '15px' };
-
-// 🔘 升級：補錢湊數的立體按鈕樣式
-const diffBtnStyle: any = { 
-  width: '35px', 
-  height: '35px', 
-  border: '1px solid #D63384', 
-  backgroundColor: '#fff', 
-  color: '#D63384', 
-  borderRadius: '10px', 
-  fontWeight: 'bold', 
-  cursor: 'pointer' 
-};
 
 // COMPONENTS
 function PreviewAdd({ count, onAdd, onSub, label, addText, compact }: any) {
