@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 import sfPoints from '@/data/sf-points.json';
+import { LoginQrTool } from './login-qr';
 
 let openPhotoPreview = (_src: string, _title: string) => {};
 
@@ -310,6 +311,7 @@ export default function App() {
   const [showFireworks, setShowFireworks] = useState(false);
   const [showColorPreview, setShowColorPreview] = useState(false);
   const [showIvCalc, setShowIvCalc] = useState(false);
+  const [showLoginQr, setShowLoginQr] = useState(false);
   const [showCodes, setShowCodes] = useState(false);
   const [showStoreStock, setShowStoreStock] = useState(false);
   const [codeUnlocked, setCodeUnlocked] = useState(false);
@@ -920,6 +922,9 @@ export default function App() {
       <button type="button" onClick={() => setShowIvCalc(true)} style={fabLeftStyle}>
         💧 點滴計算器
       </button>
+      <button type="button" onClick={() => setShowLoginQr(true)} style={fabQrStyle}>
+        QR code製作
+      </button>
       <button type="button" onClick={() => setShowStoreStock(true)} style={fabCenterStyle}>
         門市現貨
       </button>
@@ -931,7 +936,7 @@ export default function App() {
         貨品代碼
       </button>
 
-      <div style={{ textAlign: 'center', marginBottom: '20px', color: '#fff', paddingTop: '50px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '20px', color: '#fff', paddingTop: '100px' }}>
         <div style={{ fontSize: '16px', fontWeight: '900', letterSpacing: '2px', marginBottom: '2px', opacity: 0.95 }}>護士鍛造工場</div>
         <h1 style={{ fontSize: '34px', fontWeight: '900', margin: '0' }}>NurseForgeHK</h1>
         <p style={{ fontSize: '13px', fontWeight: 'bold', marginTop: '4px', opacity: 0.9 }}>by @nursingmeme_hk</p>
@@ -1405,6 +1410,8 @@ export default function App() {
         </div>
       </div>
 
+      {showLoginQr && <LoginQrTool onClose={() => setShowLoginQr(false)} />}
+
       {showIvCalc && (
         <div onClick={() => setShowIvCalc(false)} style={{ position: 'fixed', inset: 0, backgroundColor: ivTheme.overlay, zIndex: 2500, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '28px 12px', overflowY: 'auto', transition: 'background-color 0.2s ease' }}>
         <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: '480px' }}>
@@ -1753,6 +1760,7 @@ export default function App() {
 // STYLES
 const announcementStyle: any = { backgroundColor: '#FFF9E6', border: '1.5px solid #FFCC00', borderRadius: '14px', padding: '12px 14px', marginBottom: '16px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', color: '#000' };
 const fabLeftStyle: any = { position: 'absolute', left: '10px', top: '12px', padding: '10px 12px', borderRadius: '20px', backgroundColor: '#fff', color: '#DD6B20', fontWeight: '900', border: '2.5px solid #DD6B20', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1100, fontSize: '11px', cursor: 'pointer' };
+const fabQrStyle: any = { position: 'absolute', left: '10px', top: '58px', padding: '10px 12px', borderRadius: '20px', backgroundColor: '#fff', color: '#1E3A8A', fontWeight: '900', border: '2.5px solid #1E3A8A', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1100, fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' };
 const fabCenterStyle: any = { position: 'absolute', left: '50%', top: '12px', transform: 'translateX(-50%)', padding: '10px 12px', borderRadius: '20px', backgroundColor: '#fff', color: '#B81D13', fontWeight: '900', border: '2.5px solid #B81D13', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1100, fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' };
 const fabRightStyle: any = { position: 'absolute', right: '10px', top: '12px', padding: '10px 12px', borderRadius: '20px', backgroundColor: '#fff', color: '#77815C', fontWeight: '900', border: '2.5px solid #77815C', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1100, fontSize: '11px', cursor: 'pointer' };
 const STORE_STOCK = [
