@@ -296,7 +296,33 @@ const PRODUCT_CODES = [
   { group: '鎖匙扣', name: '「emo人員」鎖匙扣 (APN)', code: 'EMOAPN', price: 38 },
   { group: '鎖匙扣', name: '不想上班鎖匙扣', code: 'SL', price: 28 },
   { group: '鎖匙扣', name: '如意吉場鎖匙扣', code: 'KC', price: 28 },
+  { group: '夠鐘返工資訊站', name: '「夠鐘返工資訊站」電子屏幕（原價）', code: 'GK', price: 330 },
+  { group: '夠鐘返工資訊站', name: '「夠鐘返工資訊站」電子屏幕（醫護九折）', code: 'GK9', price: 297 },
+  { group: '夠鐘返工資訊站', name: '「夠鐘返工資訊站」電子屏幕（醫護八折）', code: 'GK8', price: 264 },
 ];
+
+const SHIFT_SALE_AT = Date.parse('2026-12-01T00:00:00+08:00');
+const SHIFT_NURSE_FULL_AT = Date.parse('2026-12-11T00:00:00+08:00');
+
+function shiftDeal(now: number | null, healthcare: boolean) {
+  const earlyBird = now == null || now < SHIFT_NURSE_FULL_AT;
+  const onSale = now != null && now >= SHIFT_SALE_AT;
+  const price = healthcare ? (earlyBird ? 264 : 297) : 330;
+  const tier = healthcare ? (earlyBird ? '醫護八折' : '醫護九折') : '原價';
+  const code = healthcare ? (earlyBird ? 'GK8' : 'GK9') : 'GK';
+  return { onSale, earlyBird, price, tier, code };
+}
+
+function shiftCountdown(now: number | null) {
+  if (now == null) return null;
+  const totalSec = Math.max(0, Math.floor((SHIFT_SALE_AT - now) / 1000));
+  return {
+    days: Math.floor(totalSec / 86400),
+    hours: Math.floor((totalSec % 86400) / 3600),
+    mins: Math.floor((totalSec % 3600) / 60),
+    secs: totalSec % 60
+  };
+}
 
 function productCodeText() {
   return ['貨品\t代碼\t價錢', ...PRODUCT_CODES.map((item) => `${item.name}\t${item.code}\t$${item.price}`)].join('\n');
@@ -323,6 +349,9 @@ export default function App() {
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const [copyFallback, setCopyFallback] = useState('');
   const [allowFireworks, setAllowFireworks] = useState(false);
+  const [now, setNow] = useState<number | null>(null);
+  const [shiftHealthcare, setShiftHealthcare] = useState(false);
+  const [shiftDetailsOpen, setShiftDetailsOpen] = useState(false);
   openPhotoPreview = (src, title) => setPhotoPreview({ src, title });
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -345,7 +374,8 @@ export default function App() {
     keyringNoWork: 0, keyringLucky: 0,
     clickerLuckyPink: 0, clickerLuckyBlue: 0, clickerShutUp: 0, clickerCombo: 0, 
     clickerCallbellNormal: 0, clickerCallbellFinger: 0, 
-    clickerCallcarNormal: 0, clickerCallcarFinger: 0
+    clickerCallcarNormal: 0, clickerCallcarFinger: 0,
+    shiftStation: 0
   };
 
   const [items, setItems] = useState(initialItems);
@@ -413,6 +443,7 @@ export default function App() {
           }));
         }
         setCoverColors(readCoverColors(saved.coverColors, saved.items));
+        if (typeof saved.shiftHealthcare === 'boolean') setShiftHealthcare(saved.shiftHealthcare);
         if (typeof saved.promoCode === 'string') setPromoCode(saved.promoCode.slice(0, 40));
         if (typeof saved.agreed === 'boolean') setAgreed(saved.agreed);
         setOrderId(typeof saved.orderId === 'string' && saved.orderId ? saved.orderId : newOrderId());
@@ -430,11 +461,23 @@ export default function App() {
   useEffect(() => {
     if (!draftReady) return;
     try {
-      localStorage.setItem(ORDER_DRAFT_KEY, JSON.stringify({ items, shipping, promoCode, agreed, orderId, today, coverColors }));
+      localStorage.setItem(ORDER_DRAFT_KEY, JSON.stringify({ items, shipping, promoCode, agreed, orderId, today, coverColors, shiftHealthcare }));
     } catch {
       // 手機儲存已滿或被封鎖時，呢一頁仍然可以落單。
     }
-  }, [draftReady, items, shipping, promoCode, agreed, orderId, today, coverColors]);
+  }, [draftReady, items, shipping, promoCode, agreed, orderId, today, coverColors, shiftHealthcare]);
+
+  useEffect(() => {
+    const tick = () => setNow(Date.now());
+    tick();
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!draftReady || now == null || now >= SHIFT_SALE_AT) return;
+    setItems((prev) => (prev.shiftStation > 0 ? { ...prev, shiftStation: 0 } : prev));
+  }, [draftReady, now, items.shiftStation]);
 
   useEffect(() => {
     if (!draftReady) return;
@@ -559,6 +602,8 @@ export default function App() {
   const totalTapeCount = tapeColorQuantities.reduce((acc, curr) => acc + curr, 0);
 
   const hasRealProducts = Object.values(items).some((qty) => qty > 0);
+  const shift = shiftDeal(now, shiftHealthcare);
+  const shiftLeft = shiftCountdown(now);
 
   const rawTotal = [
     { qty: items.keyringEmoRn + items.keyringEmoApn, p: 38 },
@@ -570,7 +615,8 @@ export default function App() {
     { qty: items.clickerCallcarNormal + items.clickerCallcarFinger, p: 145 },
     { qty: items.clickerLuckyPink, p: 68 }, { qty: items.clickerLuckyBlue, p: 68 },
     { qty: items.clickerCombo, p: 125 }, { qty: items.clickerShutUp, p: 78 },
-    { qty: items.keyringNoWork, p: 28 }, { qty: items.keyringLucky, p: 28 }
+    { qty: items.keyringNoWork, p: 28 }, { qty: items.keyringLucky, p: 28 },
+    { qty: items.shiftStation, p: shift.price }
   ].reduce((acc, curr) => acc + (curr.qty * curr.p), 0);
 
   const total = isPromoApplied ? Math.round(rawTotal * 0.9) : rawTotal;
@@ -609,7 +655,8 @@ export default function App() {
     { name: '吉床套裝 (粉紅白吉床x1, 藍白吉床x1)', code: 'BED', qty: items.clickerCombo, price: 125 },
     { name: '收聲先', code: 'CM', qty: items.clickerShutUp, price: 78 },
     { name: '不想上班鎖匙扣', code: 'SL', qty: items.keyringNoWork, price: 28 },
-    { name: '如意吉場鎖匙扣', code: 'KC', qty: items.keyringLucky, price: 28 }
+    { name: '如意吉場鎖匙扣', code: 'KC', qty: items.keyringLucky, price: 28 },
+    { name: `「夠鐘返工資訊站」電子屏幕（${shift.tier}）`, code: shift.code, qty: items.shiftStation, price: shift.price }
   ].filter(p => p && p.qty > 0);
 
   const methodMap: any = { 
@@ -946,33 +993,85 @@ export default function App() {
         <div style={{ backgroundColor: '#fff', border: '3px solid #111', borderRadius: '18px', overflow: 'hidden', marginBottom: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.18)', color: '#111' }}>
           <img
             src="/shift-station.jpg"
-            alt="夠鐘返工資訊站"
+            alt="「夠鐘返工資訊站」電子屏幕"
             fetchPriority="high"
             decoding="async"
-            onClick={() => openPhotoPreview('/shift-station.jpg', '夠鐘返工資訊站')}
+            onClick={() => openPhotoPreview('/shift-station.jpg', '「夠鐘返工資訊站」電子屏幕')}
             style={{ width: '100%', height: 'auto', display: 'block', cursor: 'zoom-in', backgroundColor: '#E8EEF5' }}
           />
           <div style={{ padding: '12px 14px 14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', flex: 1 }}>夠鐘返工資訊站</h3>
-              <span style={{ flexShrink: 0, fontSize: '11px', fontWeight: '900', color: '#fff', backgroundColor: '#111', borderRadius: '999px', padding: '3px 8px' }}>coming soon</span>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', flex: 1 }}>「夠鐘返工資訊站」電子屏幕</h3>
+              {!shift.onSale && <span style={{ flexShrink: 0, fontSize: '11px', fontWeight: '900', color: '#fff', backgroundColor: '#111', borderRadius: '999px', padding: '3px 8px' }}>coming soon</span>}
             </div>
             <div style={{ fontSize: '13px', fontWeight: '700', lineHeight: 1.65, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div>整咗塊插電就用得嘅小螢幕——「夠鐘返工資訊站」，12月1日正式開賣！</div>
-              <div>專為返 Shift 同日日趕車嘅大家而設。出門前擺喺檯頭望一眼，時間、天文台天氣、今日返咩更、同埋樓下三條巴士線仲有幾耐到，全部一目了然，唔使再不斷解鎖部電話睇幾個 App。</div>
-              <div>由電路、3D 外殼到寫 Code，全部都係 NurseForgeHK 一手一腳整出嚟。</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <div>▪️ 尺寸：54 × 90 × 13 mm</div>
-                <div>▪️ 供電：5V Type-C</div>
-              </div>
-              <div style={{ backgroundColor: '#F3F4F6', borderRadius: '10px', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <div>開賣價錢：</div>
-                <div>・原價 $330</div>
-                <div>・醫護同路人（在職／學生）九折 $297</div>
-                <div>・12月1日至10日早鳥優惠：醫護八折 $264</div>
-                <div style={{ marginTop: '4px' }}>（DM 影張職員證／學生證核對就得，記得遮返晒敏感資料，見到學校／公司名同有效日期就 OK）</div>
+              {!shift.onSale && (
+                <div style={{ backgroundColor: '#111', color: '#fff', borderRadius: '14px', padding: '12px 10px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 800, marginBottom: '8px' }}>距離 12月1日 00:00 開賣</div>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                    {[
+                      [shiftLeft ? String(shiftLeft.days).padStart(2, '0') : '--', '日'],
+                      [shiftLeft ? String(shiftLeft.hours).padStart(2, '0') : '--', '時'],
+                      [shiftLeft ? String(shiftLeft.mins).padStart(2, '0') : '--', '分'],
+                      [shiftLeft ? String(shiftLeft.secs).padStart(2, '0') : '--', '秒']
+                    ].map(([value, unit]) => (
+                      <div key={unit} style={{ minWidth: '54px' }}>
+                        <div style={{ fontSize: '26px', fontWeight: 900, fontVariantNumeric: 'tabular-nums', backgroundColor: '#1F2937', borderRadius: '10px', padding: '8px 0' }}>{value}</div>
+                        <div style={{ fontSize: '11px', marginTop: '4px', fontWeight: 800 }}>{unit}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <button
+                type="button"
+                aria-expanded={shiftDetailsOpen}
+                onClick={() => setShiftDetailsOpen((open) => !open)}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: '12px', border: '2px solid #111', backgroundColor: '#fff', color: '#111', fontWeight: 900, fontSize: '14px', cursor: 'pointer' }}
+              >
+                {shiftDetailsOpen ? '收起介紹' : '展開介紹'}
+              </button>
+              {shiftDetailsOpen && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div>整咗塊插電就用得嘅小螢幕——「夠鐘返工資訊站」，12月1日正式開賣！</div>
+                  <div>專為返 Shift 同日日趕車嘅大家而設。出門前擺喺檯頭望一眼，時間、天文台天氣、今日返咩更、同埋樓下三條巴士線仲有幾耐到，全部一目了然，唔使再不斷解鎖部電話睇幾個 App。</div>
+                  <div>由電路、3D 外殼到寫 Code，全部都係 NurseForgeHK 一手一腳整出嚟。</div>
+                  <div>▪️ 尺寸：54 × 90 × 13 mm</div>
+                  <div>▪️ 供電：5V Type-C</div>
+                  <div style={{ backgroundColor: '#F8FAFC', borderRadius: '10px', padding: '10px 12px' }}>
+                    <div style={{ fontWeight: 900, marginBottom: '4px' }}>盒入面有</div>
+                    <div>「夠鐘返工資訊站」電子屏幕 x1</div>
+                    <div>充電線 x1</div>
+                    <div>坐枱支架 x1</div>
+                    <div>屏幕筆 x1</div>
+                  </div>
+                </div>
+              )}
+              <div style={{ backgroundColor: '#F3F4F6', borderRadius: '10px', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div>開賣價錢：<b>${shift.price}</b>（{shift.tier}）</div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button type="button" onClick={() => setShiftHealthcare(false)} style={{ flex: 1, padding: '8px', borderRadius: '10px', border: shiftHealthcare ? '1.5px solid #111' : '2px solid #111', backgroundColor: shiftHealthcare ? '#fff' : '#111', color: shiftHealthcare ? '#111' : '#fff', fontWeight: 900, cursor: 'pointer' }}>非醫護 $330</button>
+                  <button type="button" onClick={() => setShiftHealthcare(true)} style={{ flex: 1, padding: '8px', borderRadius: '10px', border: shiftHealthcare ? '2px solid #111' : '1.5px solid #111', backgroundColor: shiftHealthcare ? '#111' : '#fff', color: shiftHealthcare ? '#fff' : '#111', fontWeight: 900, cursor: 'pointer' }}>{shift.earlyBird ? '醫護八折 $264' : '醫護九折 $297'}</button>
+                </div>
+                <div>12月1日 00:00 至 10日 23:59，醫護八折 $264</div>
+                <div>12月11日 00:00 起，醫護九折 $297</div>
+                <div>非醫護由 12月1日 00:00 起原價 $330</div>
+                <div>（DM 影張職員證／學生證核對就得，記得遮返晒敏感資料，見到學校／公司名同有效日期就 OK）</div>
                 <div>想留名第一批入手，直接 DM IG <a href="https://instagram.com/nurseforgehk" target="_blank" rel="noreferrer" style={{ color: '#D63384', fontWeight: '900' }}>@nurseforgehk</a> 啦！</div>
               </div>
+              {shift.onSale ? (
+                <PreviewAdd count={items.shiftStation} onAdd={() => update('shiftStation', 1)} onSub={() => update('shiftStation', -1)} addText="加入" />
+              ) : (
+                <button
+                  type="button"
+                  className="btn-3d"
+                  aria-disabled="true"
+                  onClick={() => {}}
+                  style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '2px solid #9CA3AF', backgroundColor: '#E5E7EB', color: '#4B5563', fontWeight: 900, fontSize: '15px', cursor: 'pointer' }}
+                >
+                  加入（未開賣）
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1006,7 +1105,7 @@ export default function App() {
               </h3>
               
               <div style={{ fontSize: '12.5px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div>1. 📺 <b>夠鐘返工資訊站準備出，12月1日發售。</b></div>
+                <div>1. 📺 <b>「夠鐘返工資訊站」電子屏幕準備出，12月1日發售。</b></div>
                 <div>2. ✨ <b>全店滿 $300 即包順豐站/智能櫃運費！</b></div>
                 
                 <div style={{ paddingTop: '5px', borderTop: '1px dashed #E6C200' }}>
