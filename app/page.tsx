@@ -7,6 +7,7 @@ let openPhotoPreview = (_src: string, _title: string) => {};
 
 const ORDER_DRAFT_KEY = 'nurseforge-order-draft';
 const SHIP_METHODS = ['post', 'sf_station', 'sf_locker', 'sf_store', 'sf_direct'];
+const FREE_SF_MIN = 350;
 
 type SfPoint = { kind: 'station' | 'locker' | 'store'; region: string; area: string; code: string; name: string; address: string };
 const SF_POINTS = sfPoints as SfPoint[];
@@ -620,7 +621,7 @@ export default function App() {
   ].reduce((acc, curr) => acc + (curr.qty * curr.p), 0);
 
   const total = isPromoApplied ? Math.round(rawTotal * 0.9) : rawTotal;
-  const isFreeSF = total >= 300;
+  const isFreeSF = total >= FREE_SF_MIN;
 
   const customColors = [
     { k: 'Marble', n: '🏛️ 大理石' },
@@ -1023,6 +1024,10 @@ export default function App() {
                   </div>
                 </div>
               )}
+              <div style={{ backgroundColor: '#FFFBEB', border: '2px solid #111', borderRadius: '12px', padding: '10px 12px' }}>
+                <div>呢部機由我一個人從零研發、設計到製作。</div>
+                <div>用緊有任何問題，或者想許願新功能，隨時 DM 我 <a href="https://ig.me/m/nurseforgehk" target="_blank" rel="noreferrer" style={{ color: '#D63384', fontWeight: '900' }}>@nurseforgehk</a>——你哋嘅意見係我繼續更新最大嘅動力！</div>
+              </div>
               <button
                 type="button"
                 aria-expanded={shiftDetailsOpen}
@@ -1039,11 +1044,18 @@ export default function App() {
                   <div>▪️ 尺寸：54 × 90 × 13 mm</div>
                   <div>▪️ 供電：5V Type-C</div>
                   <div style={{ backgroundColor: '#F8FAFC', borderRadius: '10px', padding: '10px 12px' }}>
-                    <div style={{ fontWeight: 900, marginBottom: '4px' }}>盒入面有</div>
-                    <div>「夠鐘返工資訊站」電子屏幕 x1</div>
-                    <div>充電線 x1</div>
-                    <div>坐枱支架 x1</div>
-                    <div>屏幕筆 x1</div>
+                    <div style={{ fontWeight: 900, marginBottom: '8px' }}>盒入面有</div>
+                    <div style={{ position: 'relative' }}>
+                      <img
+                        src="/shift-box.jpg"
+                        alt="盒入面有電子屏幕、充電線、坐枱支架同屏幕筆"
+                        style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '10px', border: '2px solid #111' }}
+                      />
+                      <span style={{ position: 'absolute', left: '10%', top: '16%', backgroundColor: '#111', color: '#fff', fontWeight: 900, fontSize: '12px', lineHeight: 1.2, padding: '4px 8px', borderRadius: '999px', whiteSpace: 'nowrap' }}>充電線</span>
+                      <span style={{ position: 'absolute', right: '8%', top: '8%', backgroundColor: '#111', color: '#fff', fontWeight: 900, fontSize: '12px', lineHeight: 1.2, padding: '4px 8px', borderRadius: '999px', whiteSpace: 'nowrap' }}>坐枱支架</span>
+                      <span style={{ position: 'absolute', left: '3%', bottom: '7%', backgroundColor: '#fff', color: '#111', fontWeight: 900, fontSize: '12px', lineHeight: 1.2, padding: '4px 8px', borderRadius: '999px', border: '2px solid #111', whiteSpace: 'nowrap' }}>電子屏幕</span>
+                      <span style={{ position: 'absolute', right: '8%', bottom: '8%', backgroundColor: '#111', color: '#fff', fontWeight: 900, fontSize: '12px', lineHeight: 1.2, padding: '4px 8px', borderRadius: '999px', whiteSpace: 'nowrap' }}>屏幕筆</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1106,7 +1118,7 @@ export default function App() {
               
               <div style={{ fontSize: '12.5px', color: '#664d03', fontWeight: 'bold', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <div>1. 📺 <b>「夠鐘返工資訊站」電子屏幕準備出，12月1日發售。</b></div>
-                <div>2. ✨ <b>全店滿 $300 即包順豐站/智能櫃運費！</b></div>
+                <div>2. ✨ <b>全店滿 ${FREE_SF_MIN} 即包順豐站/智能櫃運費！</b></div>
                 
                 <div style={{ paddingTop: '5px', borderTop: '1px dashed #E6C200' }}>
                   3. 📦 <b>膠紙座出貨說明：</b>
@@ -1712,11 +1724,11 @@ export default function App() {
             <div style={{ borderTop: '1px dashed #e2e8f0', marginTop: '5px', paddingTop: '4px', textAlign: 'center', lineHeight: '1.2' }}>
               {!isFreeSF ? (
                 <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#b97a00' }}>
-                  💡 再買多 <b style={{ fontSize: '12px', color: '#dc3545' }}>${300 - total}</b> 享順豐站/智能櫃免運費！
+                  💡 再買多 <b style={{ fontSize: '12px', color: '#dc3545' }}>${FREE_SF_MIN - total}</b> 享順豐站/智能櫃免運費！
                 </span>
               ) : (
                 <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#2E7D32' }}>
-                  🎉 已滿 $300！已享順豐站/智能櫃免運費！
+                  🎉 已滿 ${FREE_SF_MIN}！已享順豐站/智能櫃免運費！
                 </span>
               )}
             </div>
